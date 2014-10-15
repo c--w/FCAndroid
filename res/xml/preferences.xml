@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:picker="http://schemas.android.com/apk/res/afzkl.development.colorpickerview.demo" >
+
+    <PreferenceCategory android:title="Game settings" >
+        <ListPreference
+            android:defaultValue="3"
+            android:entries="@array/glider_number"
+            android:entryValues="@array/glider_number"
+            android:key="numpg"
+            android:summary="Number of paraglider AIs in solo game"
+            android:title="Paragliders" />
+        <ListPreference
+            android:defaultValue="3"
+            android:entries="@array/glider_number"
+            android:entryValues="@array/glider_number"
+            android:key="numhg"
+            android:summary="Number of hangglider AIs in solo game"
+            android:title="Hanggliders" />
+        <ListPreference
+            android:defaultValue="3"
+            android:entries="@array/glider_number"
+            android:entryValues="@array/glider_number"
+            android:key="numsp"
+            android:summary="Number of sailplane AIs in solo game"
+            android:title="Sailplanes" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="UI settings" >
+        <afzkl.development.colorpickerview.preference.ColorPickerPreference
+            android:defaultValue="0xFF0000FF"
+            android:key="glider_color"
+            android:title="Glider color"
+            android:summary="Choose color of your glider" />
+
+        <afzkl.development.colorpickerview.preference.ColorPickerPreference
+            android:defaultValue="0xFFFFFF00"
+            android:key="pilot_color"
+            android:title="Pilot color"
+            android:summary="Choose color of your pilot" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="show_controls"
+            android:title="Show controls screen" >
+        </CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="show_task_info"
+            android:title="Show task info" >
+        </CheckBoxPreference>
+    </PreferenceCategory>
+
+</PreferenceScreen>

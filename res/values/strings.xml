@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Flight Club</string>
+    <string name="app_id">244233240392</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_start_flight_club">Start Flight Club</string>
+    <string name="dialog_color_picker">Choose color</string>
+    <string name="title_activity_score">ScoreActivity</string>
+    <string name="title_activity_choose">Choose</string>
+
+</resources>

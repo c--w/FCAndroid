@@ -1,0 +1,74 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <RadioGroup
+            android:id="@+id/radioGlider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/controls_width" >
+
+            <RadioButton
+                android:id="@+id/radio0"
+                style="@style/radio_button_text"
+                android:checked="true"
+                android:text="PG" />
+
+            <RadioButton
+                android:id="@+id/radio1"
+                style="@style/radio_button_text"
+                android:text="HG" />
+
+            <RadioButton
+                android:id="@+id/radio2"
+                style="@style/radio_button_text"
+                android:text="Sailplane" />
+        </RadioGroup>
+
+        <RadioGroup
+            android:id="@+id/radioTask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/controls_width" >
+
+            <RadioButton
+                android:id="@+id/radio00"
+                style="@style/radio_button_text"
+                android:checked="true"
+                android:text="Task 1 - 50km, 2TP" />
+
+            <RadioButton
+                android:id="@+id/radio11"
+                style="@style/radio_button_text"
+                android:text="Task 2 - 100km" />
+            <RadioButton
+                android:id="@+id/radio22"
+                style="@style/radio_button_text"
+                android:text="Task 3 - 70km" />
+            </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|bottom"
+        android:gravity="center_vertical"
+        android:layout_margin="@dimen/controls_padding"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/choose_continue"
+            style="@style/start_button_text"
+            android:text="Game >>" />
+    </LinearLayout>
+
+</FrameLayout>

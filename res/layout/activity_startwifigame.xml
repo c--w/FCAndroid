@@ -1,0 +1,107 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cloudwalk.flightclub.MainActivity" >
+
+    <com.cloudwalk.framework3d.ModelView
+        android:id="@+id/xcmodelview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <TextView
+        android:id="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|bottom"
+        android:padding="5dp"
+        android:text="-"
+        android:textColor="@color/dark_gray" />
+
+    <FrameLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.cloudwalk.flightclub.MainActivity" >
+
+        <LinearLayout
+            android:id="@+id/otherbuttons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|left"
+            android:layout_marginRight="20dp"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/zoomin"
+                style="@style/button_text"
+                android:text="+" />
+
+            <Button
+                android:id="@+id/zoomout"
+                style="@style/button_text"
+                android:text="-" />
+
+            <Button
+                android:id="@+id/pause"
+                style="@style/button_text"
+                android:text="p" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/viewbuttons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|right"
+            android:layout_marginRight="20dp"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/view0"
+                style="@style/button_text"
+                android:text="1" />
+
+            <Button
+                android:id="@+id/view1"
+                style="@style/button_text"
+                android:text="2" />
+
+            <Button
+                android:id="@+id/view2"
+                style="@style/button_text"
+                android:text="3" />
+
+            <Button
+                android:id="@+id/view3"
+                style="@style/button_text"
+                android:text="4" />
+
+            <Button
+                android:id="@+id/view4"
+                style="@style/button_text"
+                android:text="5" />
+
+            <Button
+                android:id="@+id/view5"
+                style="@style/button_text"
+                android:text="6" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/startbuttons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/start_race"
+                style="@style/start_button_text"
+                android:text="Start race" />
+
+        </LinearLayout>
+
+        <include layout="@layout/controls" />
+    </FrameLayout>
+
+</FrameLayout>

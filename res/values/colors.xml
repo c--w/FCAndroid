@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="primary">#00AE68</color>
+	<color name="complement">#FF5197</color>
+
+	<color name="primary_transparent">#D000B74A</color>
+	<color name="complement_transparent">#D0FF3100</color>
+	<color name="complement_transparent2">#80FF3100</color>
+	<color name="complement_pale">#FF8E73</color>
+	<color name="dark">#00462A</color>
+	<color name="bright">#37DB79</color>
+	<color name="dark_pale">#007730</color>
+	<color name="bright_pale">#63DB93</color>
+
+	<color name="lightest_gray">#efefef</color>
+	<color name="light_gray">#e0e0e0</color>
+	<color name="gray">#a0a0a0</color>
+	<color name="gray_transparent">#80808080</color>
+	<color name="white_transparent">#80FFFFFF</color>
+	<color name="dark_gray">#808080</color>
+	<color name="white">#fff</color>
+	<color name="black">#000</color>
+	<color name="transparent">#00000000</color>
+
+	<color name="red">#f00</color>
+	<color name="green">#0f0</color>
+	<color name="blue">#00f</color>
+	<color name="cyan">#0ff</color>
+	<color name="magenta">#f0f</color>
+	<color name="yellow">#ff0</color>
+</resources>
