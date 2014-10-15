@@ -6,14 +6,11 @@ import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 public class ScoreActivity extends BaseGameActivity {
-	String[] TASK1_LEADERBOARD_IDS = { "CgkIyP69640HEAIQCw", "CgkIyP69640HEAIQAg", "CgkIyP69640HEAIQCg" };
-	String[] TASK2_LEADERBOARD_IDS = { "CgkIyP69640HEAIQDA", "CgkIyP69640HEAIQDQ", "CgkIyP69640HEAIQDg" };
-	String[] TASK3_LEADERBOARD_IDS = { "CgkIyP69640HEAIQDw", "CgkIyP69640HEAIQEA", "CgkIyP69640HEAIQEQ" };
 	int pilot_type;
 	int best_time;
 	boolean show_all;
 	String task;
-	String[] LEADERBOARD;
+	String LEADERBOARD;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,12 +21,54 @@ public class ScoreActivity extends BaseGameActivity {
 		best_time = getIntent().getIntExtra("best_time", 10000);
 		show_all = getIntent().hasExtra("show_all");
 		task = getIntent().getStringExtra("task");
-		if ("default".equals(task))
-			LEADERBOARD = TASK1_LEADERBOARD_IDS;
-		else if ("t001".equals(task))
-			LEADERBOARD = TASK2_LEADERBOARD_IDS;
-		else if ("t002".equals(task))
-			LEADERBOARD = TASK3_LEADERBOARD_IDS;
+		if ("default".equals(task)) {
+			switch (pilot_type) {
+			case 0:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_1__pg);
+				break;
+			case 1:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_1__hg);
+				break;
+			case 2:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_1__sailplane);
+				break;
+
+			default:
+				break;
+			}
+		} else if ("t001".equals(task)) {
+			switch (pilot_type) {
+			case 0:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_2__pg);
+				break;
+			case 1:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_2__hg);
+				break;
+			case 2:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_2__sailplane);
+				break;
+
+			default:
+				break;
+			}
+
+		} else if ("t002".equals(task)) {
+			switch (pilot_type) {
+			case 0:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_3__pg);
+				break;
+			case 1:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_3__hg);
+				break;
+			case 2:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_3__sailplane);
+				break;
+
+			default:
+				break;
+			}
+			
+		}
 	}
 
 	@Override
@@ -43,8 +82,8 @@ public class ScoreActivity extends BaseGameActivity {
 		if (show_all) {
 			startActivityForResult(Games.Leaderboards.getAllLeaderboardsIntent(getApiClient()), 111);
 		} else {
-			Games.Leaderboards.submitScore(getApiClient(), LEADERBOARD[pilot_type], best_time);
-			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(getApiClient(), LEADERBOARD[pilot_type]), 111);
+			Games.Leaderboards.submitScore(getApiClient(), LEADERBOARD, best_time);
+			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(getApiClient(), LEADERBOARD), 111);
 		}
 		finish();
 	}
