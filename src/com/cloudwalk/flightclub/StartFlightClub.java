@@ -8,6 +8,7 @@ import java.net.InetAddress;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -98,22 +99,6 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		}
 	};
 
-	private void showInfoDialog(String title, String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(StartFlightClub.this);
-
-		builder.setTitle(title);
-		builder.setMessage(message);
-
-		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-			}
-
-		}).show();
-
-	}
-
 	private void submitScore(final int pilotType, final int current_time) {
 		if (wasPaused) {
 			Toast.makeText(this, "Don't pause the game if you want to submit score to Google Leaderboards!", Toast.LENGTH_LONG).show();
@@ -155,9 +140,6 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 			modelViewerThin.init((ModelEnv) StartFlightClub.this);
 			((XCModelViewer) modelViewerThin).start();
 			((XCModelViewer) modelViewerThin).clock.addObserver(StartFlightClub.this);
-			if (prefs.getBoolean("show_task_info", true) && ((XCModelViewer) modelViewerThin).xcModel.task.desc.length() > 0) {
-				showInfoDialog("Task info:", ((XCModelViewer) modelViewerThin).xcModel.task.desc);
-			}
 		}
 		landed = false;
 		finished = false;
@@ -169,7 +151,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 
 			@Override
 			public void run() {
-				server = new XCGameServer(Tools.SERVER_PORT);
+				server = new XCGameServer(Tools.SERVER_PORT, task, pilotType);
 				serving = true;
 				server.serveClients();
 			}
@@ -195,7 +177,12 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		typeNums = new int[] { numpg, numhg, numsp, 0 };
 		if (intent.hasExtra("net")) {
 			if (intent.hasExtra("server")) {
-				hostPort = intent.getStringExtra("server") + ":" + Tools.SERVER_PORT;
+				String server = intent.getStringExtra("server");
+				if (server.contains(":")) {
+					hostPort = server;
+				} else {
+					hostPort = intent.getStringExtra("server") + ":" + Tools.SERVER_PORT;
+				}
 			} else {
 				String myip = Tools.getIPAddress(true);
 				startGameServer(Tools.SERVER_PORT);
@@ -400,7 +387,8 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	public void onBackPressed() {
 		if (modelViewerThin != null)
 			((XCModelViewer) modelViewerThin).stop();
-		XCGameServer.stop();
+		if (server != null)
+			server.stop();
 		broadcasting = false;
 		modelViewerThin = null;
 		super.onBackPressed();
@@ -410,7 +398,8 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	public void onDestroy() {
 		if (modelViewerThin != null)
 			((XCModelViewer) modelViewerThin).stop();
-		XCGameServer.stop();
+		if (server != null)
+			server.stop();
 		broadcasting = false;
 		modelViewerThin = null;
 		super.onDestroy();
@@ -577,6 +566,21 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				}
 			}
 		}).start();
+	}
+
+	@Override
+	public void setPilotType(int pilotType) {
+		this.pilotType = pilotType;
+	}
+
+	@Override
+	public void setTask(String task) {
+		this.task = task;
+	}
+
+	@Override
+	public Context getContext() {
+		return this;
 	}
 
 }

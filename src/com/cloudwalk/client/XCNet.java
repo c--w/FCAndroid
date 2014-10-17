@@ -10,6 +10,7 @@ import java.util.StringTokenizer;
 
 import android.util.Log;
 
+import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
@@ -80,7 +81,7 @@ public class XCNet implements Runnable {
 			GliderManager gliderManager = xcModelViewer.xcModel.gliderManager;
 
 			while ((nextLine = in.readLine()) != null) {
-				nextLine = nextLine.toUpperCase();
+				//nextLine = nextLine.toUpperCase();
 				Log.w("FC XCNET", "IN: " + nextLine); // debug
 
 				if (nextLine.indexOf("TIME:") == 0) { // what's the model time
@@ -95,8 +96,23 @@ public class XCNet implements Runnable {
 					if (nextLine.indexOf("+HELLO:") == 0) { // what player id am
 															// i ?
 						String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
-						int myID = Tools3d.parseInt(tmp);
-						gliderManager.setMyID(myID);
+						String[] parts = tmp.split("#");
+						int myID = Tools3d.parseInt(parts[0]);
+						if (parts.length == 2) {
+							String[] taskGlider = parts[1].split(":");
+							String task = taskGlider[0];
+							int pilotType = Integer.parseInt(taskGlider[1]);
+							xcModelViewer.modelEnv.setPilotType(pilotType);
+							xcModelViewer.modelEnv.setTask(task);
+							xcModelViewer.xcModel.loadTask(xcModelViewer.modelEnv.getTask(), xcModelViewer.modelEnv.getPilotType(), xcModelViewer.modelEnv.getTypeNums());
+							gliderManager.createUser(pilotType);
+							gliderManager.setMyID(myID);
+							xcModelViewer.clock.start();
+							xcModelViewer.xcModel.startPlay();
+						} else {
+							Tools.showInfoDialog("Error", "Game server is not compatible with this client.\nPlease update Flight Club on phone that acts as Game Server", xcModelViewer.modelEnv.getContext());
+						}
+
 					}
 
 					// first time we have model time

@@ -9,8 +9,11 @@
  */
 package com.cloudwalk.client;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.Model;
 
 /**
@@ -59,7 +62,8 @@ public class XCModel extends Model {
 			Log.i("FC", msg);
 			task = new Task(xcModelViewer); // default task
 		} else {
-			//xcModelViewer.modelView.setText("Loading task: " + id + "...", PROMPT_LINE);
+			// xcModelViewer.modelView.setText("Loading task: " + id + "...",
+			// PROMPT_LINE);
 			try {
 				task = new Task(xcModelViewer, id);
 			} catch (Exception e) {
@@ -70,7 +74,6 @@ public class XCModel extends Model {
 			}
 		}
 
-		gliderManager = new GliderManager(xcModelViewer, pilotType);
 		if (!xcModelViewer.netFlag) {
 			if (typeNums != null) {
 				gliderManager.createAIs(typeNums[0], typeNums[1], typeNums[2], typeNums[3]);
@@ -79,6 +82,11 @@ public class XCModel extends Model {
 				gliderManager.createAIs(1, 1, 1, 1);
 			}
 		}
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xcModelViewer.modelEnv.getContext());
+		if (prefs.getBoolean("show_task_info", true) && task.desc.length() > 0) {
+			Tools.showInfoDialog("Task info:", task.desc, xcModelViewer.modelEnv.getContext());
+		}
+
 	}
 
 	private boolean userPlay_ = false; // flag true *after* calling startPlay
@@ -184,8 +192,8 @@ public class XCModel extends Model {
 		serverStatus();
 
 		// frame rate for when testing etc
-//		String status = "FPS: " + modelViewer.clock.getFrameRate(); // tmp
-//		modelViewer.modelView.setText(status, 0);
+		// String status = "FPS: " + modelViewer.clock.getFrameRate(); // tmp
+		// modelViewer.modelView.setText(status, 0);
 	}
 
 	/**
@@ -197,9 +205,9 @@ public class XCModel extends Model {
 			s = "Offline";
 		} else {
 			int n = 1 + gliderManager.numNet;
-			s = n + " pilots online";
+			s = "Server: " + xcModelViewer.xcNet.host + " (" + n + " pilots online)";
 		}
-		modelViewer.modelView.setText(s + ", " + xcCameraMan.getStatusMsg(), SERVER_LINE);
+		modelViewer.modelView.setText(s + "\n" + xcCameraMan.getStatusMsg(), SERVER_LINE);
 	}
 
 	public void start(int gliderType) {

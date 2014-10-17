@@ -29,16 +29,13 @@ public class XCGameServer {
 	static XCClock clock = null;
 	private static PrintWriter log = null;
 	public boolean started = false;
+	String task;
+	int glider_type;
 
-	// static final String BASE_DIR = "/home/dan/xc/class/"; // for log file
-
-	public static void main(String[] args) {
-		XCGameServer server = new XCGameServer(SERVER_PORT);
-		server.serveClients();
-	}
-
-	public XCGameServer(int port) {
+	public XCGameServer(int port, String task, int glider_type) {
 		SERVER_PORT = port;
+		this.task = task;
+		this.glider_type = glider_type;
 		lastXCClient = 0;
 		XCClient = new XCHandler[MAX_CLIENTS];
 		XCClientThreads = new Thread[MAX_CLIENTS];
@@ -54,7 +51,7 @@ public class XCGameServer {
 		}
 
 		// a clock which sends a heartbeat to the clients
-		clock = new XCClock(0);
+		clock = new XCClock(0, this);
 		clock.start();
 	}
 
@@ -80,17 +77,17 @@ public class XCGameServer {
 		}
 	}
 
-	public static void disconnectXCClient(int myID) {
+	public void disconnectXCClient(int myID) {
 		if (XCClient[myID] != null) {
 			XCClient[myID] = null;
 			XCClientThreads[myID] = null;
 		}
 	}
 
-	public static int ConnectXCClient(Socket clientSocket) {
+	public int ConnectXCClient(Socket clientSocket) {
 		for (int index = 0; index < MAX_CLIENTS; index++) {
 			if (XCClient[index] == null) {
-				XCClient[index] = new XCHandler(clientSocket, index);
+				XCClient[index] = new XCHandler(clientSocket, index, this);
 				XCClientThreads[index] = new Thread(XCClient[index]);
 				XCClientThreads[index].start();
 				return index;
@@ -99,7 +96,7 @@ public class XCGameServer {
 		return -1;
 	}
 
-	public static void sendToAll(int from, String Message) {
+	public void sendToAll(int from, String Message) {
 		for (int index = 0; index < MAX_CLIENTS; index++) {
 			if (XCClient[index] != null && index != from) {
 				XCClient[index].send(from + "> " + Message);
@@ -107,7 +104,7 @@ public class XCGameServer {
 		}
 	}
 
-	public static void sendTime(float time) {
+	public void sendTime(float time) {
 		String msg = "Time: " + time;
 		for (int index = 0; index < MAX_CLIENTS; index++) {
 			if (XCClient[index] != null) {
@@ -116,39 +113,39 @@ public class XCGameServer {
 		}
 	}
 
-	public static void disconnectAllXCClient() {
+	public void disconnectAllXCClient() {
 		for (int index = 0; index < MAX_CLIENTS; index++) {
 			disconnectXCClient(index);
 		}
 	}
 
-	public static void sendWelcomeMessage(int from) {
+	public void sendWelcomeMessage(int from) {
 		for (int index = 0; index < MAX_CLIENTS; index++) {
 			if (XCClient[index] != null && index != from) {
-				XCClient[from].send("+" + index + "> Connected: " + XCClient[index].gliderType);
+				XCClient[from].send("+" + index + "> CONNECTED: " + XCClient[index].gliderType);
 
-				if (XCClient[index].lastSended.length() > 0) {
-					XCClient[from].send(index + "> " + XCClient[index].lastSended);
+				if (XCClient[index].lastReceived.length() > 0) {
+					XCClient[from].send(index + "> " + XCClient[index].lastReceived);
 				}
 			}
 		}
 	}
 
-	public static void stop() {
+	public void stop() {
 		try {
 			listenSocket.close();
 		} catch (Exception e) {
 		}
 	}
 
-	public static boolean getKeepRunning() {
+	public boolean getKeepRunning() {
 		return keepRunning;
 	}
 
 	/**
 	 * Writes to log file and prints to console (whilst developing ?).
 	 */
-	static void log(String msg) {
+	void log(String msg) {
 		Log.i("FC", msg);
 		if (log != null) {
 			log.println(new Date() + "-> " + msg);
@@ -156,7 +153,7 @@ public class XCGameServer {
 		}
 	}
 
-	static void closeLog() {
+	void closeLog() {
 		log("XC game server stopped: " + new Date());
 		if (log != null) {
 			log.close();
@@ -169,12 +166,18 @@ class XCHandler implements Runnable {
 	private PrintWriter clientSend = null;
 	private BufferedReader clientReceive = null;
 	private int myID = -1;
-	public String lastSended = "";
+	public String lastReceived = "";
 	public int gliderType = 0; // default to 1 until user takes off
+	XCGameServer server;
+	
+	public XCHandler(int lastXCClient) {
+		myID = lastXCClient;
+	}
 
-	public XCHandler(Socket newSocket, int lastXCClient) {
+	public XCHandler(Socket newSocket, int lastXCClient, XCGameServer server) {
 		mySocket = newSocket;
 		myID = lastXCClient;
+		this.server = server;
 	}
 
 	public void send(String Message) {
@@ -190,15 +193,15 @@ class XCHandler implements Runnable {
 				if (mySocket != null)
 					mySocket.close();
 			} catch (IOException excpt) {
-				XCGameServer.log("Failed I/O: " + excpt);
+				server.log("Failed I/O: " + excpt);
 			}
 		}
 	}
 
 	private void cleanUpOnDisconnected() {
-		XCGameServer.sendToAll(myID, "UnConnected");
-		XCGameServer.disconnectXCClient(myID);
-		XCGameServer.log("User " + myID + " disconnected");
+		server.sendToAll(myID, "UNCONNECTED");
+		server.disconnectXCClient(myID);
+		server.log("User " + myID + " disconnected");
 	}
 
 	public void run() {
@@ -207,19 +210,19 @@ class XCHandler implements Runnable {
 			clientSend = new PrintWriter(new OutputStreamWriter(mySocket.getOutputStream()));
 			clientReceive = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
 
-			clientSend.println("+Hello: " + myID);
+			clientSend.println("+HELLO: " + myID + "#" + server.task + ":" + server.glider_type);
 			clientSend.flush();
 
-			clientSend.println("+Time: " + XCGameServer.clock.getModelTime());
+			clientSend.println("+TIME: " + XCGameServer.clock.getModelTime());
 			clientSend.flush();
 
-			XCGameServer.sendWelcomeMessage(myID);
-			XCGameServer.sendToAll(myID, "Connected: " + gliderType);
+			server.sendWelcomeMessage(myID);
+			server.sendToAll(myID, "CONNECTED: " + server.glider_type);
 
 			while ((nextLine = clientReceive.readLine()) != null) {
 				nextLine = nextLine.toUpperCase();
 
-				if (!XCGameServer.getKeepRunning()) {
+				if (!server.getKeepRunning()) {
 					break;
 				} else if (nextLine.indexOf("QUIT") == 0) {
 					break;
@@ -227,22 +230,22 @@ class XCHandler implements Runnable {
 					clientSend.println("+OK ");
 					clientSend.flush();
 				} else if (nextLine.indexOf("KILLALL") == 0) {
-					XCGameServer.disconnectAllXCClient();
+					server.disconnectAllXCClient();
 				} else if (nextLine.indexOf("LAUNCH") == 0) {
 					String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.indexOf(":") + 3);
 					gliderType = parseInt(tmp);
-					XCGameServer.sendToAll(myID, nextLine);
+					server.sendToAll(myID, nextLine);
 				} else if (nextLine.indexOf("WARM_FRONT") == 0) { // secret code
 																	// to shut
 																	// down the
 																	// server
-					XCGameServer.log("User " + myID + ": warm_front => closing server !");
-					XCGameServer.disconnectAllXCClient();
-					XCGameServer.stop();
+					server.log("User " + myID + ": warm_front => closing server !");
+					server.disconnectAllXCClient();
+					server.stop();
 				} else {
-					XCGameServer.sendToAll(myID, nextLine);
+					server.sendToAll(myID, nextLine);
 				}
-				lastSended = nextLine;
+				lastReceived = nextLine;
 			}
 			clientSend.println("+BYE");
 			clientSend.flush();
@@ -252,7 +255,7 @@ class XCHandler implements Runnable {
 			if (excpt.getMessage().indexOf("Connection reset by peer:") == 0) {
 				cleanUpOnDisconnected();
 			} else {
-				XCGameServer.log("Failed I/O: " + excpt);
+				server.log("Failed I/O: " + excpt);
 			}
 		} finally {
 			try {
@@ -263,7 +266,7 @@ class XCHandler implements Runnable {
 				if (mySocket != null)
 					mySocket.close();
 			} catch (IOException excpt) {
-				XCGameServer.log("Failed I/O: " + excpt);
+				server.log("Failed I/O: " + excpt);
 			}
 		}
 	}
@@ -282,14 +285,16 @@ class XCClock implements Runnable {
 	float modelTime;
 	float t0;
 	long startTick, sleepTime;
+	XCGameServer server;
 
 	static final int TICK_LEN = 10; // how many seconds between heartbeats to
 									// clients
 	static final int DAY_LEN = 60 * 60 * 24; // how many seconds in the loop
 	static final int LOG_BEAT = 60 * 60; // every hour
 
-	public XCClock(float modelTime) {
+	public XCClock(float modelTime, XCGameServer server) {
 		this.t0 = modelTime;
+		this.server = server;
 	}
 
 	public void start() {
@@ -321,7 +326,7 @@ class XCClock implements Runnable {
 
 		// log
 		if (t - lastLog > LOG_BEAT || t < lastLog) {
-			XCGameServer.log("t = " + t);
+			server.log("t = " + t);
 			lastLog = t;
 		}
 		return t;
@@ -331,7 +336,7 @@ class XCClock implements Runnable {
 		while (ticker != null) {
 			long currentTick = System.currentTimeMillis();
 
-			XCGameServer.sendTime(getModelTime());
+			server.sendTime(getModelTime());
 
 			long now = System.currentTimeMillis();
 			long timeLeft = TICK_LEN * 1000 + currentTick - now;

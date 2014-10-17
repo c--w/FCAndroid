@@ -86,11 +86,6 @@ public class Clock implements Runnable {
 	public void stop() {
 		if (ticker != null) {
 			ticker.interrupt();
-			while (ticker != null)
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-				}
 		}
 		ticker = null;
 	}

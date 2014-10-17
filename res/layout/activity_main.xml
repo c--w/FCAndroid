@@ -15,4 +15,8 @@
         style="@style/start_button_text"
         android:text="Multiplayer (local WIFI)" />
 
+    <Button
+        android:id="@+id/startNetworkOnline"
+        style="@style/start_button_text"
+        android:text="Multiplayer (online)" android:visibility="gone"/>
 </LinearLayout>

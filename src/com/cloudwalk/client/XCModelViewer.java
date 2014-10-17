@@ -14,6 +14,7 @@ import java.io.IOException;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.ModelView;
 import com.cloudwalk.framework3d.ModelViewer;
 
@@ -28,8 +29,9 @@ public class XCModelViewer extends ModelViewer {
 
 	public XCModel xcModel;
 	public boolean netFlag = false; // true; // flag - net game or single player
-	public boolean netTimeFlag = false; // flag set to true when we first recieve the
-									// model time from the server
+	public boolean netTimeFlag = false; // flag set to true when we first
+										// recieve the
+	// model time from the server
 	XCNet xcNet = null; // connection to server with a send method
 
 	/** Connects to game server. */
@@ -37,7 +39,7 @@ public class XCModelViewer extends ModelViewer {
 		try {
 			xcNet = new XCNet(this);
 			xcNet.start();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			Log.e("FC", "Error connecting to game server ", e);
 			// degrade to single player mode
 			// todo: display server offline msg
@@ -64,29 +66,35 @@ public class XCModelViewer extends ModelViewer {
 	public void start() {
 		if (clock != null) {
 			setNetFlag();
-			xcModel.loadTask(this.modelEnv.getTask(), this.modelEnv.getPilotType(), this.modelEnv.getTypeNums());
+
+			xcModel.gliderManager = new GliderManager(this, -1);
 			if (netFlag) {
 				new Thread(new Runnable() {
-					
+
 					@Override
 					public void run() {
 						Log.w("FC", "Connect to server");
 						connectToServer();
-						Log.w("FC", "Connected");
 						if (netFlag && xcNet == null) { // unable to connect !
+							netFlag = false;
+							Tools.showInfoDialog("ERROR", "Unable to connect to server.\nLoading default solo game.", modelEnv.getContext());
 							int[] typeNums = modelEnv.getTypeNums();
-							xcModel.gliderManager.createAIs(typeNums[0], typeNums[1], typeNums[2], typeNums[3]);
+							xcModel.loadTask(modelEnv.getTask(), modelEnv.getPilotType(), modelEnv.getTypeNums());
+							xcModel.gliderManager.createUser(modelEnv.getPilotType());
+							clock.start();
+							xcModel.startPlay();
+						} else {
+							Log.w("FC", "Connected");
 						}
-						clock.start();
-						xcModel.startPlay();
 					}
 				}).start();
 			} else {
-				//xcModel.gliderManager.createAIs(3, 3, 3, 3);
+				// xcModel.gliderManager.createAIs(3, 3, 3, 3);
+				xcModel.loadTask(modelEnv.getTask(), modelEnv.getPilotType(), modelEnv.getTypeNums());
+				xcModel.gliderManager.createUser(modelEnv.getPilotType());
 				clock.start();
 				xcModel.startPlay();
 			}
-			
 
 		} else {
 			pendingStart = true;
@@ -114,5 +122,5 @@ public class XCModelViewer extends ModelViewer {
 			xcNet.destroyMe(); // close socket
 		}
 	}
-	
+
 }

@@ -21,12 +21,15 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -71,12 +74,42 @@ public class MainActivity extends Activity {
 					intent.putExtra("task", task);
 					Toast.makeText(getApplicationContext(), "Found Game Server!", Toast.LENGTH_SHORT).show();
 					Log.i("FC Main", "Found server: " + address + glider + task);
+					startActivity(intent);
 				} else {
-					intent = new Intent(getApplicationContext(), ChooseActivity.class);
-					intent.putExtra("net", true);
-					Toast.makeText(getApplicationContext(), "Game Server not found.\nStarting my own...", Toast.LENGTH_LONG).show();
+
+					AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+
+					alert.setTitle("Game server not found");
+					alert.setMessage("Enter server address and tap 'Connect'\nor tap 'Start' to start your own server");
+
+					// Set an EditText view to get user input
+					final EditText input = new EditText(MainActivity.this);
+					input.setText(Tools.getSubnet(getApplicationContext()));
+					input.setInputType(EditorInfo.TYPE_CLASS_PHONE);
+					alert.setView(input);
+					alert.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+							String server = input.getText().toString();
+							Intent intent = new Intent(getApplicationContext(), StartFlightClub.class);
+							intent.putExtra("net", true);
+							intent.putExtra("server", server);
+							startActivity(intent);
+
+						}
+					});
+
+					alert.setNegativeButton("Start", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+							Intent intent = new Intent(getApplicationContext(), ChooseActivity.class);
+							intent.putExtra("net", true);
+							Toast.makeText(getApplicationContext(), "Starting game server after task and glider is set...", Toast.LENGTH_LONG).show();
+							startActivity(intent);
+						}
+					});
+
+					alert.show();
+					input.setSelection(input.getText().length());
 				}
-				startActivity(intent);
 				// finish();
 
 			} catch (Exception e) {
@@ -111,6 +144,26 @@ public class MainActivity extends Activity {
 				} else {
 					Toast.makeText(getApplicationContext(), "Connect to WIFI network for a multiplayer game.", Toast.LENGTH_SHORT).show();
 				}
+			}
+		});
+		findViewById(R.id.startNetworkOnline).setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent intent = null;
+				intent = new Intent(getApplicationContext(), StartFlightClub.class);
+				intent.putExtra("net", true);
+				InetAddress add;
+				// add = InetAddress.getByName(new
+				// URL("xcserver.herokuapp.com").getHost());
+				String address = "54.243.160.109:80";
+				String glider = "0";
+				String task = "default";
+				intent.putExtra("server", address);
+				intent.putExtra("glider", Integer.parseInt(glider));
+				intent.putExtra("task", task);
+				startActivity(intent);
+
 			}
 		});
 		findViewById(R.id.startSolo).setOnClickListener(new OnClickListener() {
@@ -220,7 +273,7 @@ public class MainActivity extends Activity {
 				Intent launchPreferencesIntent = new Intent().setClass(this, Preferences.class);
 				startActivity(launchPreferencesIntent);
 				return true;
-			} else if(item.getItemId() == R.id.leaderboards) {
+			} else if (item.getItemId() == R.id.leaderboards) {
 				Intent launchScoresIntent = new Intent().setClass(this, ScoreActivity.class);
 				launchScoresIntent.putExtra("show_all", true);
 				startActivity(launchScoresIntent);

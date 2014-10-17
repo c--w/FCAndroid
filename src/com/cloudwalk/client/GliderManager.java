@@ -41,7 +41,8 @@ public class GliderManager implements ClockObserver {
 		this.xcModelViewer = xcModelViewer;
 		xcModelViewer.clock.addObserver(this);
 		initTypes();
-		createUser(pilotType);
+		if (pilotType >= 0)
+			createUser(pilotType);
 		if (xcModelViewer.netFlag) {
 			netGliders = new Glider[MAX_USERS];
 		}

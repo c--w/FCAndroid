@@ -330,9 +330,9 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	}
 
 	private void setColor() {
-		final int COLOR = 230; // 230
-		final int COLOR_STEP = 20; // how much darker are strong clouds
-		final int BASE_UP = 10; // 20;
+		final int COLOR = 250; // 230
+		final int COLOR_STEP = 30; // how much darker are strong clouds
+		final int BASE_UP = -10; // 20;
 
 		// bigger clouds are darker
 		int c = COLOR;
@@ -341,8 +341,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		}
 		color = Color.rgb(c, c, c);
 
-		// make the base lighter because the
-		// cloud lets light thru' from above
+		// make the base darker
 		color_ = Color.rgb(c + BASE_UP, c + BASE_UP, c + BASE_UP);
 	}
 

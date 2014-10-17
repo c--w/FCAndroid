@@ -12,6 +12,8 @@ package com.cloudwalk.startup;
 import java.io.*;
 import java.awt.*;
 
+import android.content.Context;
+
 /**
    This interface enables a ModelViewer to be used in either an
    applet or an application (a frame).  
@@ -21,9 +23,12 @@ public interface ModelEnv {
     InputStream openFile(String s);
   //  InputStream openFile(String s);
     String getTask(); // hack - should extend interface ?
-    int getPilotType(); 
+    int getPilotType();
+    void setPilotType(int pilotType);
+    void setTask(String task);
     String getHostPort(); 
     int[] getTypeNums();
-	void play(int sound); 
+	void play(int sound);
+	Context getContext();
 }
    
