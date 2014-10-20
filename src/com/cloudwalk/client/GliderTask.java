@@ -9,7 +9,10 @@
  */
 package com.cloudwalk.client;
 
-import com.cloudwalk.framework3d.*;
+import android.graphics.Color;
+import android.util.Log;
+
+import com.cloudwalk.framework3d.Tools3d;
 
 /**
  * Adds next turn point to glider state. This class contains stuff common to
@@ -112,8 +115,11 @@ public class GliderTask extends Glider {
 	public String getShortStatus() {
 		String currentFlightValues = "G: " + (iP + 1) + " S: " + (int) (groundSpeed * 100) + " L/D: " + (int) groundGlideRatio;
 		String height = " H: " + (int) ((p[2] / 3) * 1500) + "m";
-		String distance = " D: " + (int)(distanceFlown() / 2) + "km";
-		return playerName + " - " + currentFlightValues + height + distance;
+		String distance = " D: " + (int) (distanceFlown() / 2) + "km";
+		String hexColor = String.format("#%06X", (0xFFFFFF & color));
+		String ret = "<font color=\"" + hexColor + "\">" + playerName + "</font> - " + currentFlightValues + height + distance;
+		Log.i("FC GT", ret);
+		return ret;
 	}
 
 	static final float EYE_D = 2; // 3.0f; //2

@@ -206,7 +206,7 @@ public class XCModel extends Model {
 					});
 				String list = "";
 				for (GliderTask gliderTask : gliders) {
-					list += gliderTask.getShortStatus() + "\n";
+					list += gliderTask.getShortStatus() + "<br/>";
 				}
 				list.substring(0, list.length() - 1);
 				modelViewer.modelView.setText(list, GLIDER_LINE);
@@ -234,7 +234,7 @@ public class XCModel extends Model {
 			int n = 1 + gliderManager.numNet;
 			s = "Server: " + xcModelViewer.xcNet.host + " (" + n + " pilots online)";
 		}
-		modelViewer.modelView.setText(s + "\n" + xcCameraMan.getStatusMsg(), SERVER_LINE);
+		modelViewer.modelView.setText(s + "<br/>" + xcCameraMan.getStatusMsg(), SERVER_LINE);
 	}
 
 	public void start(int gliderType) {

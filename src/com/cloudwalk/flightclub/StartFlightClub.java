@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
@@ -92,7 +93,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 					if (v.getVisibility() == View.VISIBLE)
 						v.setVisibility(View.GONE);
 				}
-				((TextView) findViewById(R.id.info)).setText(surfaceView.getInfoText());
+				((TextView) findViewById(R.id.info)).setText(Html.fromHtml(surfaceView.getInfoText()));
 			} catch (Exception e) {
 				// TODO: handle exception
 			}

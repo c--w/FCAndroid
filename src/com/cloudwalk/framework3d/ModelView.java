@@ -223,7 +223,7 @@ public class ModelView extends SurfaceView {
 
 	public String getInfoText() {
 		infoBuffer.setLength(0);
-		infoBuffer.append(status1).append("\n").append(status2).append("\n").append(status3);
+		infoBuffer.append(status1).append("<br/>").append(status2).append("<br/>").append(status3);
 		return infoBuffer.toString();
 	}
 

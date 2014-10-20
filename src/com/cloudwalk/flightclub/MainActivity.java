@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -131,7 +132,10 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
+		if (prefs.getInt("glider_color", 7) == 7) {
+			int color = Color.rgb((int) (Math.random() * 200) + 50, (int) (Math.random() * 200) + 50, (int) (Math.random() * 200) + 50);
+			prefs.edit().putInt("glider_color", color).commit();
+		}
 		findViewById(R.id.startNetwork).setOnClickListener(new OnClickListener() {
 
 			@Override
