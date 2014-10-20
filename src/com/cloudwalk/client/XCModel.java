@@ -70,7 +70,7 @@ public class XCModel extends Model {
 			try {
 				task = new Task(xcModelViewer, id);
 			} catch (Exception e) {
-				msg = "Error loading task: " + id + "\n" + e;
+				msg = "Error loading task: " + id + "<br/>" + e;
 				xcModelViewer.modelView.setText(msg, PROMPT_LINE);
 				Log.e("FC", msg, e);
 				System.exit(1); // ?

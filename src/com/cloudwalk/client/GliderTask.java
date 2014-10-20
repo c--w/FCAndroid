@@ -99,9 +99,9 @@ public class GliderTask extends Glider {
 	 * time: divide by 2 gives minutes distance: divide by 2 gives kilometers
 	 */
 	public String getStatusMsg() {
-		String taskTime = "\nTask time: " + (int) timeFlying;
-		String currentFlightValues = "\nGear: " + (iP + 1) + "  Speed: " + (int) (groundSpeed * 100) + "  L/D: " + (int) groundGlideRatio;
-		String height = "\nHeight: " + (int) ((p[2] / 3) * 1500) + "m  ";
+		String taskTime = "<br/>Task time: " + (int) timeFlying;
+		String currentFlightValues = "<br/>Gear: " + (iP + 1) + "  Speed: " + (int) (groundSpeed * 100) + "  L/D: " + (int) groundGlideRatio;
+		String height = "<br/>Height: " + (int) ((p[2] / 3) * 1500) + "m  ";
 
 		if (finished) {
 			return "You have reached goal in " + timeFinished + "!";
