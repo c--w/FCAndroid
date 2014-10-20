@@ -20,6 +20,8 @@ public class GliderTask extends Glider {
 	float groundSpeed;
 	float groundGlideRatio;
 	float lastx, lasty, lastz;
+	float distanceFlown;
+	String playerName;
 
 	public GliderTask(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
 		super(xcModelViewer, gliderType, id);
@@ -67,7 +69,7 @@ public class GliderTask extends Glider {
 	public float timeFinished = 0;
 
 	private void finishedTask() {
-		if(!finished) {
+		if (!finished) {
 			finished = true;
 			timeFinished = timeFlying;
 		}
@@ -78,12 +80,13 @@ public class GliderTask extends Glider {
 	 * turn point, A, from the task start and add the distance that we are away
 	 * from A in the direction of the next turn point, B.
 	 */
-	private float distanceFlown() {
+	public float distanceFlown() {
 		TurnPoint tp = nextTP.prevTP;
 		float[] r = new float[3];
 		Tools3d.subtract(p, new float[] { tp.x, tp.y, p[2] }, r);
 		float d2 = Tools3d.dot(r, new float[] { tp.dx, tp.dy, 0 });
-		return d2 + tp.distanceFromStart;
+		distanceFlown = d2 + tp.distanceFromStart;
+		return distanceFlown;
 	}
 
 	/**
@@ -104,6 +107,13 @@ public class GliderTask extends Glider {
 		} else {
 			return "Flown so far: " + (int) (this.distanceFlown() / 2) + "km" + taskTime + currentFlightValues + height;
 		}
+	}
+
+	public String getShortStatus() {
+		String currentFlightValues = "G: " + (iP + 1) + " S: " + (int) (groundSpeed * 100) + " L/D: " + (int) groundGlideRatio;
+		String height = " H: " + (int) ((p[2] / 3) * 1500) + "m";
+		String distance = " D: " + (int)(distanceFlown() / 2) + "km";
+		return playerName + " - " + currentFlightValues + height + distance;
 	}
 
 	static final float EYE_D = 2; // 3.0f; //2
@@ -140,6 +150,14 @@ public class GliderTask extends Glider {
 		// return new float[] {p[0], p[1], p[2]};
 		// return new float[] {p[0] - v[0] * EYE_D, p[1] - v[1] * EYE_D, p[2] -
 		// v[2] * EYE_D};
+	}
+
+	public String getPlayerName() {
+		return playerName;
+	}
+
+	public void setPlayerName(String playerName) {
+		this.playerName = playerName;
 	}
 
 }

@@ -12,6 +12,8 @@ package com.cloudwalk.client;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.cloudwalk.framework3d.ClockObserver;
@@ -29,7 +31,7 @@ public class GliderManager implements ClockObserver {
 	private int n = 1; // count as we create gliders (user glider is always
 						// zero)
 
-	Glider[] netGliders; // array of connected users
+	GliderTask[] netGliders; // array of connected users
 	int numNet = 0; // how many connected
 	boolean raceStarted = false;
 
@@ -44,7 +46,7 @@ public class GliderManager implements ClockObserver {
 		if (pilotType >= 0)
 			createUser(pilotType);
 		if (xcModelViewer.netFlag) {
-			netGliders = new Glider[MAX_USERS];
+			netGliders = new GliderTask[MAX_USERS];
 		}
 	}
 
@@ -80,8 +82,13 @@ public class GliderManager implements ClockObserver {
 				gliderUser.destroyMe();
 			}
 		}
-		gliderUser = new GliderUser(xcModelViewer, types[pilotType], id);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xcModelViewer.modelEnv.getContext());
+		gliderUser = new GliderUser(xcModelViewer, types[pilotType], id, prefs.getString("playerName", "P" + getRandomLetter()));
 		pilotType_ = pilotType;
+	}
+
+	char getRandomLetter() {
+		return (char) ('a' + (int) (Math.floor(Math.random() * 26)));
 	}
 
 	/**
@@ -236,7 +243,7 @@ public class GliderManager implements ClockObserver {
 	 * @see XCGameNetConnector
 	 */
 	void addUser(int index, int type) {
-		netGliders[index] = new Glider(xcModelViewer, types[type], index);
+		netGliders[index] = new GliderTask(xcModelViewer, types[type], index);
 		netType[index] = type;
 		numNet++;
 	}
@@ -256,7 +263,7 @@ public class GliderManager implements ClockObserver {
 				netGliders[index].destroyMe();
 			}
 		}
-		netGliders[index] = new Glider(xcModelViewer, types[pilotType], index);
+		netGliders[index] = new GliderTask(xcModelViewer, types[pilotType], index);
 		netGliders[index].color = color;
 		netGliders[index].obj.setColor(color, true);
 		netType[index] = pilotType;
@@ -308,6 +315,11 @@ public class GliderManager implements ClockObserver {
 		netGliders[index].hitTheSpuds();
 		checkRaceOver();
 		Log.i("FCGM landNetUser", "numNet:" + numNet + " raceStarted:" + raceStarted + " launchedByUser:" + gliderUser.launched);
+	}
+
+	void nameNetUser(int index, String playerName) {
+		netGliders[index].setPlayerName(playerName);
+		Log.i("FCGM nameNetUser", "numNet:" + numNet + " raceStarted:" + raceStarted + " launchedByUser:" + gliderUser.launched);
 	}
 
 	void startRace(boolean sendUserLaunch) {

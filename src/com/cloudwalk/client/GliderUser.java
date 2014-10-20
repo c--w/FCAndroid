@@ -25,8 +25,9 @@ public class GliderUser extends GliderTask {
 	Variometer vario;
 	int cameraMode = XCCameraMan.USER;
 
-	public GliderUser(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
+	public GliderUser(XCModelViewer xcModelViewer, GliderType gliderType, int id, String playerName) {
 		super(xcModelViewer, gliderType, id);
+		this.playerName = playerName;
 		setColor();
 		vario = new Variometer(xcModelViewer, this);
 	}

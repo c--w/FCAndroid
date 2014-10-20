@@ -81,7 +81,7 @@ public class XCNet implements Runnable {
 			GliderManager gliderManager = xcModelViewer.xcModel.gliderManager;
 
 			while ((nextLine = in.readLine()) != null) {
-				//nextLine = nextLine.toUpperCase();
+				// nextLine = nextLine.toUpperCase();
 				Log.w("FC XCNET", "IN: " + nextLine); // debug
 
 				if (nextLine.indexOf("TIME:") == 0) { // what's the model time
@@ -104,13 +104,17 @@ public class XCNet implements Runnable {
 							int pilotType = Integer.parseInt(taskGlider[1]);
 							xcModelViewer.modelEnv.setPilotType(pilotType);
 							xcModelViewer.modelEnv.setTask(task);
-							xcModelViewer.xcModel.loadTask(xcModelViewer.modelEnv.getTask(), xcModelViewer.modelEnv.getPilotType(), xcModelViewer.modelEnv.getTypeNums());
+							xcModelViewer.xcModel.loadTask(xcModelViewer.modelEnv.getTask(), xcModelViewer.modelEnv.getPilotType(),
+									xcModelViewer.modelEnv.getTypeNums());
 							gliderManager.createUser(pilotType);
 							gliderManager.setMyID(myID);
 							xcModelViewer.clock.start();
 							xcModelViewer.xcModel.startPlay();
+							send("PLAYER:" + gliderManager.gliderUser.getPlayerName());
 						} else {
-							Tools.showInfoDialog("Error", "Game server is not compatible with this client.\nPlease update Flight Club on phone that acts as Game Server", xcModelViewer.modelEnv.getContext());
+							Tools.showInfoDialog("Error",
+									"Game server is not compatible with this client.\nPlease update Flight Club on phone that acts as Game Server",
+									xcModelViewer.modelEnv.getContext());
 						}
 
 					}
@@ -181,6 +185,10 @@ public class XCNet implements Runnable {
 						gliderManager.landNetUser(parseId2(nextLine));
 					}
 
+					if (cmdLine.indexOf("PLAYER") == 0) {
+						gliderManager.nameNetUser(parseId2(nextLine), cmdLine.split(":")[1]);
+					}
+					
 					if (cmdLine.indexOf("#") == 0) {
 						gliderManager.changeUser(parseId2(nextLine), cmdLine.substring(1, cmdLine.length()));
 					}

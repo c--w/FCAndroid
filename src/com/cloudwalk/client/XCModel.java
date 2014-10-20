@@ -9,6 +9,9 @@
  */
 package com.cloudwalk.client;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -184,8 +187,32 @@ public class XCModel extends Model {
 			Glider g = gliderManager.gliderUser;
 			compass.setArrow(g.v[0], g.v[1]);
 			slider.setValue(g.getSink() + g.air[2]);
+			if (xcModelViewer.netFlag == true) {
+				GliderTask[] gliders = new GliderTask[gliderManager.numNet + 1];
+				int i = 0;
+				for (GliderTask glider : gliderManager.netGliders) {
+					if (glider != null)
+						gliders[i++] = glider;
+				}
+				gliders[gliders.length - 1] = gliderManager.gliderUser;
+				if (gliders.length > 1)
+					Arrays.sort(gliders, new Comparator<GliderTask>() {
 
-			modelViewer.modelView.setText(g.getStatusMsg(), GLIDER_LINE);
+						@Override
+						public int compare(GliderTask lhs, GliderTask rhs) {
+							// TODO Auto-generated method stub
+							return (int) Math.signum(lhs.distanceFlown - rhs.distanceFlown);
+						}
+					});
+				String list = "";
+				for (GliderTask gliderTask : gliders) {
+					list += gliderTask.getShortStatus() + "\n";
+				}
+				list.substring(0, list.length() - 1);
+				modelViewer.modelView.setText(list, GLIDER_LINE);
+			} else {
+				modelViewer.modelView.setText(g.getStatusMsg(), GLIDER_LINE);
+			}
 		}
 
 		// server status

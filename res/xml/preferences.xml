@@ -26,17 +26,22 @@
             android:title="Sailplanes" />
     </PreferenceCategory>
     <PreferenceCategory android:title="UI settings" >
+        <EditTextPreference
+            android:key="playerName"
+            android:summary="Your handle to appear in multiplayer games"
+            android:title="Player name" />
+
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFF0000FF"
             android:key="glider_color"
-            android:title="Glider color"
-            android:summary="Choose color of your glider" />
-
+            android:summary="Choose color of your glider"
+            android:title="Glider color" />
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFFFFFF00"
             android:key="pilot_color"
-            android:title="Pilot color"
-            android:summary="Choose color of your pilot" />
+            android:summary="Choose color of your pilot"
+            android:title="Pilot color" />
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="show_controls"
