@@ -24,7 +24,7 @@ public class GliderTask extends Glider {
 	float groundGlideRatio;
 	float lastx, lasty, lastz;
 	float distanceFlown;
-	String playerName;
+	String playerName = "";
 
 	public GliderTask(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
 		super(xcModelViewer, gliderType, id);
@@ -115,11 +115,15 @@ public class GliderTask extends Glider {
 	public String getShortStatus() {
 		String currentFlightValues = "G: " + (iP + 1) + " S: " + (int) (groundSpeed * 100) + " L/D: " + (int) groundGlideRatio;
 		String height = " H: " + (int) ((p[2] / 3) * 1500) + "m";
-		String distance = " D: " + (int) (distanceFlown() / 2) + "km";
+		String distance = " D: " + (round1(distanceFlown() / 2f)) + "km";
 		String hexColor = String.format("#%06X", (0xFFFFFF & color));
 		String ret = "<font color=\"" + hexColor + "\">" + playerName + "</font> - " + currentFlightValues + height + distance;
 		Log.i("FC GT", ret);
 		return ret;
+	}
+
+	public float round1(float val) {
+		return Math.round(val * 10) / 10f;
 	}
 
 	static final float EYE_D = 2; // 3.0f; //2

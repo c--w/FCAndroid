@@ -110,7 +110,6 @@ public class XCNet implements Runnable {
 							gliderManager.setMyID(myID);
 							xcModelViewer.clock.start();
 							xcModelViewer.xcModel.startPlay();
-							send("PLAYER:" + gliderManager.gliderUser.getPlayerName());
 						} else {
 							Tools.showInfoDialog("Error",
 									"Game server is not compatible with this client.\nPlease update Flight Club on phone that acts as Game Server",
@@ -178,6 +177,11 @@ public class XCNet implements Runnable {
 						String colorString = st.nextToken();
 						int color = Tools3d.parseInt(colorString);
 						gliderManager.changeNetGlider(id, wingType, color);
+						try { //for older clients
+							String playerName=st.nextToken();
+							gliderManager.nameNetUser(id, playerName);
+						} catch (Exception e) {
+						}
 						gliderManager.launchNetUser(id);
 					}
 
@@ -185,10 +189,6 @@ public class XCNet implements Runnable {
 						gliderManager.landNetUser(parseId2(nextLine));
 					}
 
-					if (cmdLine.indexOf("PLAYER") == 0) {
-						gliderManager.nameNetUser(parseId2(nextLine), cmdLine.split(":")[1]);
-					}
-					
 					if (cmdLine.indexOf("#") == 0) {
 						gliderManager.changeUser(parseId2(nextLine), cmdLine.substring(1, cmdLine.length()));
 					}

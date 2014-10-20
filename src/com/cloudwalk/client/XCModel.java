@@ -201,7 +201,7 @@ public class XCModel extends Model {
 						@Override
 						public int compare(GliderTask lhs, GliderTask rhs) {
 							// TODO Auto-generated method stub
-							return (int) Math.signum(lhs.distanceFlown - rhs.distanceFlown);
+							return (int) Math.signum(rhs.distanceFlown - lhs.distanceFlown);
 						}
 					});
 				String list = "";

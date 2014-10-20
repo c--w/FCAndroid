@@ -89,8 +89,8 @@ public class GliderUser extends GliderTask {
 		if (nextTurn != _nextTurn || iP != _iP || xcModelViewer.clock.getTime() - lastSend > 0.5) {
 			if (xcModelViewer.xcNet != null) {
 				lastSend = xcModelViewer.clock.getTime();
-				xcModelViewer.xcNet.send("#" + round(this.p[0]) + ":" + round(this.p[1]) + ":" + round(this.p[2]) + ":" + round(this.v[0])
-						+ ":" + round(this.v[1]) + ":" + this.iP + ":" + (int) nextTurn + ":" + t);
+				xcModelViewer.xcNet.send("#" + round(this.p[0]) + ":" + round(this.p[1]) + ":" + round(this.p[2]) + ":" + round(this.v[0]) + ":"
+						+ round(this.v[1]) + ":" + this.iP + ":" + (int) nextTurn + ":" + t);
 				_nextTurn = (int) nextTurn;
 				_iP = iP;
 			}
@@ -99,7 +99,7 @@ public class GliderUser extends GliderTask {
 
 	/** Round to floats to n decimal places. */
 	private float round(float x) {
-		//return x;
+		// return x;
 		return Math.round(x * 10000f) / 10000f;
 	}
 
@@ -114,7 +114,7 @@ public class GliderUser extends GliderTask {
 		Log.w("FC takeOff", "gliderUser takeoff" + myID);
 		super.takeOff(really);
 		if (xcModelViewer.xcNet != null && send) {
-			xcModelViewer.xcNet.send("Launched: " + this.typeID + ":" + this.color);
+			xcModelViewer.xcNet.send("LAUNCHED: " + this.typeID + ":" + this.color + ":" + this.playerName);
 		}
 	}
 
