@@ -425,7 +425,7 @@ class Hill implements LiftSource, CameraSubject {
 	@Override
 	public float getLift() {
 		// TODO Auto-generated method stub
-		return 3 * Cloud.LIFT_UNIT;
+		return 2.8f * Cloud.LIFT_UNIT;
 	}
 
 }

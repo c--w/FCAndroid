@@ -105,12 +105,12 @@ class MovementManager {
 			return headForTarget();
 		}
 
-		if (circuit != null) {
-			return followCircuit();
-		}
-
 		if (cloud != null) {
 			return thermal();
+		}
+
+		if (circuit != null) {
+			return followCircuit();
 		}
 
 		if (circlePoint != null) {

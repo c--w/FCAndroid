@@ -9,6 +9,7 @@
  */
 package com.cloudwalk.client;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 import android.graphics.Color;
@@ -70,6 +71,7 @@ class Node implements CameraSubject {
 	void sleep() {
 		if (mode == SLEEPING)
 			return;
+		Log.i("FC Node", "Sleep:" + myID);
 		float t = xcModelViewer.clock.getTime();
 		for (int i = 0; i < next; i++) {
 			triggers[i].sleep(t);
@@ -176,12 +178,12 @@ class Node implements CameraSubject {
 	 * 					     nextTP
 	 * </pre>
 	 */
-	LiftSource search(GliderAI glider) {
+	LiftSource search(GliderAI glider, double searchSector) {
 		float[] p = glider.p;
 		int found = -1;
 		float[] r = new float[3];
 		// only consider lift within the glider's search sector
-		float cosSector = (float) Math.cos(glider.searchSector);
+		float cosSector = (float) Math.cos(searchSector);
 		float[] onTrack = glider.onTrack();
 		TurnPoint nextTP = glider.nextTP;
 		float glideAngle = glider.glideAngle();
@@ -216,10 +218,10 @@ class Node implements CameraSubject {
 									// dmin = d;
 									// cosMax = cos;
 								}
-							}
-						}
-					}
-				}
+							} 
+						} 
+					} 
+				} 
 			}
 		}
 		if (found != -1) {

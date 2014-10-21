@@ -28,7 +28,7 @@ public class GliderAI extends GliderTask {
 	MovementManager moveManager;
 	private boolean tryLater = false; // no lift found yet so glide for a bit on
 										// track
-
+	LiftSource currentLS;
 	// vars for delayed camera cuts
 	boolean cutPending = false;
 	float cutWhen = 0;
@@ -36,6 +36,8 @@ public class GliderAI extends GliderTask {
 
 	// search in a sector this far either side of being on track
 	final double searchSector = Math.PI / 4;
+	final double desperateSearchSector = Math.PI;
+	boolean desperate = true;
 
 	// if a search for lift fails then try again after this much time
 	private static final float T_LATER = 1.0f;
@@ -44,7 +46,7 @@ public class GliderAI extends GliderTask {
 	public GliderAI(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
 		super(xcModelViewer, gliderType, id);
 		moveManager = new MovementManager(xcModelViewer, this);
-		this.color=colors[myID % colors.length];
+		this.color = colors[myID % colors.length];
 		this.obj.setColor(this.color, true);
 	}
 
@@ -59,20 +61,31 @@ public class GliderAI extends GliderTask {
 	// time of last search for lift (an expensive operation)
 	private float t_ = 0;
 
-	/**
-	 * Searches my node for the next lift source.
-	 */
-	void makeDecision(float t) {
+	LiftSource searchNodes(double searchSector) {
 		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.loadedNodes();
 		LiftSource ls = null;
 		for (int i = 0; i < nodes.length; i++) {
-			ls = nodes[i].search(this);
+			ls = nodes[i].search(this, searchSector);
 			if (ls != null) {
 				break;
 			}
 		}
-		t_ = t; // note time of search
+		return ls;
+	}
 
+	/**
+	 * Searches my node for the next lift source.
+	 */
+	void makeDecision(float t) {
+		
+		desperate = false;
+		t_ = t; // note time of search
+		LiftSource ls = searchNodes(searchSector);
+		if (ls == null) {
+			desperate = true;
+			ls = searchNodes(desperateSearchSector);
+		}
+		currentLS = ls;
 		if (ls == null) { // glide torwards next turn point
 			this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
 			tryLater = true;
@@ -88,6 +101,7 @@ public class GliderAI extends GliderTask {
 				cutWhen = t + whenArrive(cloud.x, cloud.y) - 2;
 				cutSubject = (CameraSubject) cloud;
 			}
+			return;
 		} catch (Exception e) {
 			;
 		}
@@ -104,17 +118,11 @@ public class GliderAI extends GliderTask {
 	 * Is there a better lift source within reach ?
 	 */
 	void reviewDecision(float t) {
-		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.loadedNodes();
-		LiftSource ls = null;
-		for (int i = 0; i < nodes.length; i++) {
-			ls = nodes[i].search(this);
-			if (ls != null) {
-				break;
-			}
-		}
+		LiftSource ls = searchNodes(searchSector);
+
 		t_ = t; // note time of search
 
-		if (ls == null) {
+		if (ls == null || ls == currentLS) {
 			// stick to last decision
 			return;
 		}
@@ -122,7 +130,7 @@ public class GliderAI extends GliderTask {
 		// glide to cloud if it is *stronger*
 		try {
 			Cloud cloud = (Cloud) ls;
-			if (moveManager.cloud == null || cloud.getLift() > moveManager.cloud.getLift()) {
+			if (moveManager.cloud == null || cloud.getLift() > moveManager.cloud.getLift() || desperate) {
 				this.moveManager.setCloud(cloud);
 				if (filmID == myID) {
 					cutPending = true;
@@ -130,6 +138,7 @@ public class GliderAI extends GliderTask {
 					cutSubject = (CameraSubject) cloud;
 				}
 			}
+			return;
 		} catch (Exception e) {
 			;
 		}

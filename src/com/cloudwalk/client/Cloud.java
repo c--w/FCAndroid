@@ -208,7 +208,6 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		// am i history ?
 		if (lifeCycle.isDead()) {
-			Log.w("FC Cloud", "Destroy isDead");
 			destroyMe();
 			return;
 		}
