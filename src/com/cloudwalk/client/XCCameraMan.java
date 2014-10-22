@@ -52,7 +52,6 @@ public class XCCameraMan extends CameraMan {
 	int gliderID = -1;
 
 	public void setMode(int inMode) {
-		Log.i("FC", "Mode: " + mode);
 		if (xcModel == null) {
 			xcModel = ((XCModelViewer) modelViewer).xcModel;
 		}

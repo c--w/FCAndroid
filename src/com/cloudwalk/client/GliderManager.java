@@ -178,7 +178,7 @@ public class GliderManager implements ClockObserver {
 		if (xcModelViewer.xcNet != null && !xcModelViewer.netTimeFlag) {
 			return;
 		}
-		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.loadedNodes();
+		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.nodes; // check all nodes, not just loaded nodes - because AIgliders on unloaded nodes never finish
 
 		// User
 		setLift(gliderUser, nodes);

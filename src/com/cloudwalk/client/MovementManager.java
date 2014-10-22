@@ -77,8 +77,7 @@ class MovementManager {
 
 	float nextMove() {
 		/*
-		 * called by the particle each tick - turn left (-1) right (+1) or
-		 * straight on (0)
+		 * called by the particle each tick - turn left (-1) right (+1) or straight on (0)
 		 */
 
 		if (wiggleCount > 0) {
@@ -92,9 +91,8 @@ class MovementManager {
 		/*
 		 * TODO: do NOT overload nextMoveUser !
 		 * 
-		 * only use nextMoveUser for following a circuit - a kludge to get
-		 * turning in a certain direction after reaching a circuit point. Note
-		 * we clear the value as soon as we use it.
+		 * only use nextMoveUser for following a circuit - a kludge to get turning in a certain direction after reaching a circuit point. Note we clear the
+		 * value as soon as we use it.
 		 */
 		if (avoidHillCount > 0) {
 			avoidHillCount--;
@@ -148,6 +146,10 @@ class MovementManager {
 		clearControllers();
 		cloud = c;
 		grounded = false;
+	}
+
+	Cloud getCloud() {
+		return cloud;
 	}
 
 	void setTargetDirection(float[] d) {
@@ -242,9 +244,7 @@ class MovementManager {
 		// are we heading in almost the right direction
 		if (sin <= sin1 * 2 && sin >= -sin1 * 2) {
 			/*
-			 * maintain ~ current heading (with a bit of fine tuning to
-			 * eliminate wobble) eq1: ds = r * dtheta eq2: dtheta ~ sin(dtheta)
-			 * ( for small dtheta )
+			 * maintain ~ current heading (with a bit of fine tuning to eliminate wobble) eq1: ds = r * dtheta eq2: dtheta ~ sin(dtheta) ( for small dtheta )
 			 */
 			if (c[2] > 0)
 				sin *= -1; // left
@@ -276,6 +276,9 @@ class MovementManager {
 			nextMoveUser = circuit.turnDir();
 			avoidHillCount = 10;
 		}
+		if (particle instanceof Glider) {
+			((Glider) particle).setPolar(0);
+		}
 		joinedCircuit = true;
 		circuitPoint = circuit.next();
 		if (circuitPoint == null) {
@@ -303,7 +306,9 @@ class MovementManager {
 		if (d > tR * 3) {
 			return headTowards(x, y);
 		}
-
+		if (particle instanceof Glider) {
+			((Glider) particle).setPolar(0);
+		}
 		float[] cross = new float[3];
 		Tools3d.cross(r, particle.v, cross);
 

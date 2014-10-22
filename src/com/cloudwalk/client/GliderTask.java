@@ -100,7 +100,7 @@ public class GliderTask extends Glider {
 	 */
 	public String getStatusMsg() {
 		String taskTime = "<br/>Task time: " + (int) timeFlying;
-		String currentFlightValues = "<br/>Gear: " + (iP + 1) + "  Speed: " + (int) (groundSpeed * 100) + "  L/D: " + (int) groundGlideRatio;
+		String currentFlightValues = "<br/>Gear: " + (getiP() + 1) + "  Speed: " + (int) (groundSpeed * 100) + "  L/D: " + (int) groundGlideRatio;
 		String height = "<br/>Height: " + (int) ((p[2] / 3) * 1500) + "m  ";
 
 		if (finished) {
@@ -113,7 +113,7 @@ public class GliderTask extends Glider {
 	}
 
 	public String getShortStatus() {
-		String currentFlightValues = "G: " + (iP + 1) + " S: " + (int) (groundSpeed * 100) + " L/D: " + (int) groundGlideRatio;
+		String currentFlightValues = "G: " + (getiP() + 1) + " S: " + (int) (groundSpeed * 100) + " L/D: " + (int) groundGlideRatio;
 		String height = " H: " + (int) ((p[2] / 3) * 1500) + "m";
 		String distance = " D: " + (round1(distanceFlown() / 2f)) + "km";
 		String hexColor = String.format("#%06X", (0xFFFFFF & color));

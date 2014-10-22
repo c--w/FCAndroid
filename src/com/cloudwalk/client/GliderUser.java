@@ -86,13 +86,13 @@ public class GliderUser extends GliderTask {
 	float lastSend = 0;
 
 	private void netSend(float t) {
-		if (nextTurn != _nextTurn || iP != _iP || xcModelViewer.clock.getTime() - lastSend > 0.5) {
+		if (nextTurn != _nextTurn || getiP() != _iP || xcModelViewer.clock.getTime() - lastSend > 0.5) {
 			if (xcModelViewer.xcNet != null) {
 				lastSend = xcModelViewer.clock.getTime();
 				xcModelViewer.xcNet.send("#" + round(this.p[0]) + ":" + round(this.p[1]) + ":" + round(this.p[2]) + ":" + round(this.v[0]) + ":"
-						+ round(this.v[1]) + ":" + this.iP + ":" + (int) nextTurn + ":" + t);
+						+ round(this.v[1]) + ":" + getiP() + ":" + (int) nextTurn + ":" + t);
 				_nextTurn = (int) nextTurn;
-				_iP = iP;
+				_iP = getiP();
 			}
 		}
 	}

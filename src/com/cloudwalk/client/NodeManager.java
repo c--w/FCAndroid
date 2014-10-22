@@ -109,7 +109,6 @@ class NodeManager {
 	void loadNodes(int pNode, float t) {
 		if (pNode == currentNode || allLoad)
 			return;
-		Log.i("FC", "pNode: " + pNode);
 
 		for (int i = 0; i < nodes.length; i++) {
 			if (i < pNode - 1 || i >= pNode + UPFRONT_NODES) {
@@ -229,7 +228,7 @@ class NodeManager {
 	 * @see TurnPoint.renderMe(boolean)
 	 */
 	boolean contains(float x, float y) {
-		Node[] xs = this.loadedNodes();
+		Node[] xs = this.nodes;
 		for (int i = 0; i < xs.length; i++) {
 			if (xs[i].contains(x, y)) {
 				return true;

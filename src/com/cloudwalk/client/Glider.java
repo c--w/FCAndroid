@@ -17,16 +17,14 @@ import com.cloudwalk.framework3d.Obj3dDir;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * This class implements a glider. The class is abstract because any actual
- * glider must have a controller. The possible controllers are AI, Network and
- * User.
+ * This class implements a glider. The class is abstract because any actual glider must have a controller. The possible controllers are AI, Network and User.
  */
 public class Glider extends MovingBody {
 	XCModelViewer xcModelViewer;
 	private String typeName;
 	protected int typeID; // 0 - para, 1 - hang, 2 -sail
-	private List<float[]> polar;
-	protected int iP; // the current point on the polar
+	public List<float[]> polar;
+	private int iP; // the current point on the polar
 	protected boolean landed = true;
 	float[] air = new float[] { 0, 0, 0 }; // air movement
 	private float ground = 0; // ground level
@@ -53,9 +51,8 @@ public class Glider extends MovingBody {
 	static final int SINK = 1;
 
 	/**
-	 * Creates a glider using the spec given in the GliderType object. We create
-	 * our own copy of the 3d object because it will have changing *state*. The
-	 * other data is static so we may simply assign references.
+	 * Creates a glider using the spec given in the GliderType object. We create our own copy of the 3d object because it will have changing *state*. The other
+	 * data is static so we may simply assign references.
 	 */
 	public Glider(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
 		super(xcModelViewer, new Obj3dDir(gliderType.obj, true));
@@ -70,9 +67,7 @@ public class Glider extends MovingBody {
 		/**
 		 * Wind does not change, so set once here for now, but...
 		 * 
-		 * TODO: 1. Make wind an observable that may change thru the day. 2.
-		 * Introduce wind shear - task designer may divide air vertically into
-		 * *two* layers.
+		 * TODO: 1. Make wind an observable that may change thru the day. 2. Introduce wind shear - task designer may divide air vertically into *two* layers.
 		 */
 		this.air[0] = xcModelViewer.xcModel.task.wind_x;
 		this.air[1] = xcModelViewer.xcModel.task.wind_y;
@@ -99,15 +94,16 @@ public class Glider extends MovingBody {
 	}
 
 	public void setPolar(int iP) {
-		this.iP = iP;
-		setPolar();
+		if (this.iP != iP) {
+			Log.i("FC Glider", "setIP" + iP);
+			this.iP = iP;
+			setPolar();
+		}
 	}
 
 	/**
-	 * Takes off starting at point p and heading in the direction given by the
-	 * v[0] and v[1]. Note that v[2], the vertical component of v, is not used.
-	 * The glide angle and speed are determined by the first point on the polar
-	 * curve.
+	 * Takes off starting at point p and heading in the direction given by the v[0] and v[1]. Note that v[2], the vertical component of v, is not used. The
+	 * glide angle and speed are determined by the first point on the polar curve.
 	 */
 	private void takeOff(float[] p, float[] v) {
 		landed = false;
@@ -126,9 +122,8 @@ public class Glider extends MovingBody {
 	private static final float TO_DIST = 0.4f; // seperate gliders at launch
 
 	/**
-	 * Start flying the task. We use the glider's unique id to ensure that
-	 * gliders do not start on top of each other. The dummy flag enables a
-	 * glider to positioned on the ground ready for take off.
+	 * Start flying the task. We use the glider's unique id to ensure that gliders do not start on top of each other. The dummy flag enables a glider to
+	 * positioned on the ground ready for take off.
 	 */
 
 	public void takeOff2(boolean really) {
@@ -161,9 +156,8 @@ public class Glider extends MovingBody {
 	}
 
 	/**
-	 * Sets speed and v[2] to new values when we move to a new point on the
-	 * polar curve. Things get a bit fiddly because v must remain a unit vector.
-	 * So we scale the x and y components of v accordingly.
+	 * Sets speed and v[2] to new values when we move to a new point on the polar curve. Things get a bit fiddly because v must remain a unit vector. So we
+	 * scale the x and y components of v accordingly.
 	 * 
 	 * <pre>
 	 * 
@@ -199,7 +193,7 @@ public class Glider extends MovingBody {
 		}
 	}
 
-	private int getBestGlideIndex() {
+	int getBestGlideIndex() {
 		int pos = 0;
 		float bestGlide = 0;
 		if (polar != null) {
@@ -229,11 +223,9 @@ public class Glider extends MovingBody {
 	}
 
 	/**
-	 * This utility fn is used by setPolar and hitTheSpuds. Without changing the
-	 * direction of v in the xy plane change its length so that v has unit
-	 * length. Note if v[2] equals 1 then there is no horizontal component to
-	 * the motion. This will cause things to blow up pretty soon. The moral is
-	 * keep sink < speed in all gliderType polar curves.
+	 * This utility fn is used by setPolar and hitTheSpuds. Without changing the direction of v in the xy plane change its length so that v has unit length.
+	 * Note if v[2] equals 1 then there is no horizontal component to the motion. This will cause things to blow up pretty soon. The moral is keep sink < speed
+	 * in all gliderType polar curves.
 	 */
 	private void scaleVxy() {
 		float _length = (float) Math.sqrt(v[0] * v[0] + v[1] * v[1]);
@@ -248,7 +240,7 @@ public class Glider extends MovingBody {
 	boolean hitGround() {
 		if (p[2] <= ground)
 			return true;
-		if(xcModelViewer.xcModel.task.hills==null)
+		if (xcModelViewer.xcModel.task.hills == null)
 			return false;
 		for (Hill hill : xcModelViewer.xcModel.task.hills) {
 			if (hill.contains(p) && hill.getHeight(p[0], p[1]) > p[2])
@@ -313,8 +305,7 @@ public class Glider extends MovingBody {
 	}
 
 	/**
-	 * Returns the sink rate for a given point on the polar, or the current
-	 * point.
+	 * Returns the sink rate for a given point on the polar, or the current point.
 	 */
 	public float getSink(int i) {
 		return randomizeValue(polar.get(i)[SINK]);
@@ -336,8 +327,7 @@ public class Glider extends MovingBody {
 	}
 
 	/**
-	 * Returns a text message giving current state of glider. See GliderAI for
-	 * user friendly stuff. This is for debug.
+	 * Returns a text message giving current state of glider. See GliderAI for user friendly stuff. This is for debug.
 	 */
 	public String getStatusMsg() {
 		if (!landed) {
@@ -360,8 +350,7 @@ public class Glider extends MovingBody {
 	}
 
 	/**
-	 * Sets the drone flag so this glider maintains a contstant height. Handy
-	 * for testing ?
+	 * Sets the drone flag so this glider maintains a contstant height. Handy for testing ?
 	 */
 	void makeDrone() {
 		drone = true;
@@ -371,9 +360,17 @@ public class Glider extends MovingBody {
 		return polar.get(iP)[SPEED] / -polar.get(iP)[SINK];
 	}
 
+	float glideAngle(int iP) {
+		return polar.get(iP)[SPEED] / -polar.get(iP)[SINK];
+	}
+
 	// for debugging
 	protected void finalize() {
 		Log.w("FC", "Goodbye from glider(" + myID + ")");
+	}
+
+	public int getiP() {
+		return iP;
 	}
 
 }

@@ -20,8 +20,7 @@ import com.cloudwalk.framework3d.Obj3d;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * This class implements a node. The task is 'covered' using N nodes (cf mobile
- * phone transmitters).
+ * This class implements a node. The task is 'covered' using N nodes (cf mobile phone transmitters).
  */
 class Node implements CameraSubject {
 	float x, y;
@@ -51,9 +50,7 @@ class Node implements CameraSubject {
 	}
 
 	/**
-	 * Registers a trigger with a node. Note that a trigger may belong to more
-	 * than one node. We double the size of the array if we hit the end (cf
-	 * Obj3d.ps[])
+	 * Registers a trigger with a node. Note that a trigger may belong to more than one node. We double the size of the array if we hit the end (cf Obj3d.ps[])
 	 */
 	void addTrigger(Trigger tt) {
 		if (next >= triggers.length) {
@@ -65,29 +62,28 @@ class Node implements CameraSubject {
 	}
 
 	/**
-	 * Unloads the node... - switch off all triggers - unload any ground
-	 * features
+	 * Unloads the node... - switch off all triggers - unload any ground features
 	 */
 	void sleep() {
-		if (mode == SLEEPING)
-			return;
-		Log.i("FC Node", "Sleep:" + myID);
-		float t = xcModelViewer.clock.getTime();
-		for (int i = 0; i < next; i++) {
-			triggers[i].sleep(t);
-		}
-		mode = SLEEPING;
-		renderMe();
+		// this whole node crap just generate problems - AIgliders newer finish
+		// if 'node focus' escapes them
+		// if (mode == SLEEPING)
+		// return;
+		// Log.i("FC Node", "Sleep:" + myID);
+		// float t = xcModelViewer.clock.getTime();
+		// for (int i = 0; i < next; i++) {
+		// triggers[i].sleep(t);
+		// }
+		// mode = SLEEPING;
+		// renderMe();
 	}
 
 	/**
-	 * Loads this node (with state at model time t). Switch on all triggers and
-	 * render any ground features. If the node was already awake we still wake
-	 * up the triggers. Why ? An overlapping* node may have sent one of the
-	 * triggers to sleep.
+	 * Loads this node (with state at model time t). Switch on all triggers and render any ground features. If the node was already awake we still wake up the
+	 * triggers. Why ? An overlapping* node may have sent one of the triggers to sleep.
 	 */
 	void wakeUp(float t) {
-		Log.i("FC Node", "Wakeup:" + myID);
+		//Log.i("FC Node", "Wakeup:" + myID);
 		for (int i = 0; i < next; i++) {
 			triggers[i].wakeUp(t);
 		}
@@ -133,8 +129,7 @@ class Node implements CameraSubject {
 	boolean flagNoRender = false;
 
 	/**
-	 * Adds a visual representation of this node to the model. We draw a big
-	 * circle on the ground showing the coverage of the node.
+	 * Adds a visual representation of this node to the model. We draw a big circle on the ground showing the coverage of the node.
 	 */
 	private void renderMe() {
 		if (flagNoRender) {
@@ -157,13 +152,10 @@ class Node implements CameraSubject {
 	}
 
 	/**
-	 * Returns the 'next' lift source along the task route. We look for the lift
-	 * source which is closest whilst being approx on track. In the case where
-	 * we find nothing the glider will continue flying on track. Soon it will
-	 * enter the next node.
+	 * Returns the 'next' lift source along the task route. We look for the lift source which is closest whilst being approx on track. In the case where we find
+	 * nothing the glider will continue flying on track. Soon it will enter the next node.
 	 * 
-	 * We may look for the nearest climb, the climb that is closest to being on
-	 * track or the fastest climb.
+	 * We may look for the nearest climb, the climb that is closest to being on track or the fastest climb.
 	 * 
 	 * <pre>
 	 * = theta
@@ -178,7 +170,7 @@ class Node implements CameraSubject {
 	 * 					     nextTP
 	 * </pre>
 	 */
-	LiftSource search(GliderAI glider, double searchSector) {
+	LiftSourceGlide search(GliderAI glider, double searchSector) {
 		float[] p = glider.p;
 		int found = -1;
 		float[] r = new float[3];
@@ -186,16 +178,15 @@ class Node implements CameraSubject {
 		float cosSector = (float) Math.cos(searchSector);
 		float[] onTrack = glider.onTrack();
 		TurnPoint nextTP = glider.nextTP;
-		float glideAngle = glider.glideAngle();
 		float t = 0; // how long to glide to the cloud
-		float speed = glider.getSpeed();
 		float liftMax = 0;
 		float cosMax = 0;
 		float dmin = 10000;
 		float lift;
 
-		// loop thru' lift sources to find the one that is closest to
-		// being on track
+		// loop thru' lift sources to find the one that is closest to being on track
+		LiftSource bestLS = null;
+		int bestIP = 0;
 		synchronized (liftSources) {
 			for (int i = 0; i < liftSources.size(); i++) {
 				LiftSource ls = (LiftSource) liftSources.elementAt(i);
@@ -203,29 +194,31 @@ class Node implements CameraSubject {
 					Tools3d.subtract(ls.getP(), p, r);
 					r[2] = 0; // work in a horizontal plane
 					float d = Tools3d.length(r);
-					if (d <= p[2] * glideAngle) { // within glide
+					boolean grounded = (ls instanceof Hill ? true : false);
+					int iP = glider.withinGlide(ls.getP()[0], ls.getP()[1], grounded);
+					if (iP != -1) { // within glide
+						float speed = glider.getSpeed(iP);
 						Tools3d.makeUnit(r);
-						if (Tools3d.dot(r, onTrack) >= cosSector) { // && d <=
-																	// dmin)
-																	// {
+						if (Tools3d.dot(r, onTrack) >= cosSector) { // && d <= dmin) {
 							t = d / speed;
-							if (ls.isActive(t)) { // still active when we get
-													// there
+							if (ls.isActive(t)) { // still active when we get there
 								if ((lift = ls.getLift()) > liftMax) {
-									found = i;
+									bestLS = ls;
 									liftMax = lift;
+									bestIP = iP;
+									break;
 									// other searches...
 									// dmin = d;
 									// cosMax = cos;
 								}
-							} 
-						} 
-					} 
-				} 
+							}
+						}
+					}
+				}
 			}
 		}
-		if (found != -1) {
-			return (LiftSource) liftSources.elementAt(found);
+		if (bestLS != null) {
+			return new LiftSourceGlide(bestLS, bestIP);
 		} else {
 			return null;
 		}

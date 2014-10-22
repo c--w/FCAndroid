@@ -9,6 +9,8 @@
  */
 package com.cloudwalk.client;
 
+import java.util.Arrays;
+
 import android.graphics.Color;
 import android.util.Log;
 
@@ -16,11 +18,9 @@ import com.cloudwalk.framework3d.CameraSubject;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * This class implements an AI glider. The glider will sniff out lift, climb to
- * base then fly downwind in search of more lift.
+ * This class implements an AI glider. The glider will sniff out lift, climb to base then fly downwind in search of more lift.
  * 
- * TODO: When to climb and when to glide to a *better* climb ? Also, a rule that
- * if h < h1then be *cautious* ?
+ * TODO: When to climb and when to glide to a *better* climb ? Also, a rule that if h < h1then be *cautious* ?
  * 
  * TODO: Different AI profiles: eg. racer vs floater
  */
@@ -35,9 +35,11 @@ public class GliderAI extends GliderTask {
 	CameraSubject cutSubject = null;
 
 	// search in a sector this far either side of being on track
+	final double narrowSearchSector = Math.PI / 8;
 	final double searchSector = Math.PI / 4;
 	final double desperateSearchSector = Math.PI;
-	boolean desperate = true;
+	boolean narrowSearch = true;
+	boolean easyGlideToTP = false;
 
 	// if a search for lift fails then try again after this much time
 	private static final float T_LATER = 1.0f;
@@ -61,112 +63,10 @@ public class GliderAI extends GliderTask {
 	// time of last search for lift (an expensive operation)
 	private float t_ = 0;
 
-	LiftSource searchNodes(double searchSector) {
-		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.loadedNodes();
-		LiftSource ls = null;
-		for (int i = 0; i < nodes.length; i++) {
-			ls = nodes[i].search(this, searchSector);
-			if (ls != null) {
-				break;
-			}
-		}
-		return ls;
-	}
-
-	/**
-	 * Searches my node for the next lift source.
-	 */
-	void makeDecision(float t) {
-		
-		desperate = false;
-		t_ = t; // note time of search
-		LiftSource ls = searchNodes(searchSector);
-		if (ls == null) {
-			desperate = true;
-			ls = searchNodes(desperateSearchSector);
-		}
-		currentLS = ls;
-		if (ls == null) { // glide torwards next turn point
-			this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
-			tryLater = true;
-			return;
-		}
-
-		// glide to lift source - a cloud or hill
-		try {
-			Cloud cloud = (Cloud) ls;
-			this.moveManager.setCloud(cloud);
-			if (filmID == myID) {
-				cutPending = true;
-				cutWhen = t + whenArrive(cloud.x, cloud.y) - 2;
-				cutSubject = (CameraSubject) cloud;
-			}
-			return;
-		} catch (Exception e) {
-			;
-		}
-
-		try {
-			Hill hill = (Hill) ls;
-			this.moveManager.setCircuit(hill.getCircuit());
-		} catch (Exception e) {
-			;
-		}
-	}
-
-	/**
-	 * Is there a better lift source within reach ?
-	 */
-	void reviewDecision(float t) {
-		LiftSource ls = searchNodes(searchSector);
-
-		t_ = t; // note time of search
-
-		if (ls == null || ls == currentLS) {
-			// stick to last decision
-			return;
-		}
-
-		// glide to cloud if it is *stronger*
-		try {
-			Cloud cloud = (Cloud) ls;
-			if (moveManager.cloud == null || cloud.getLift() > moveManager.cloud.getLift() || desperate) {
-				this.moveManager.setCloud(cloud);
-				if (filmID == myID) {
-					cutPending = true;
-					cutWhen = t + whenArrive(cloud.x, cloud.y) - 2;
-					cutSubject = (CameraSubject) cloud;
-				}
-			}
-			return;
-		} catch (Exception e) {
-			;
-		}
-
-		try {
-			Hill hill = (Hill) ls;
-			this.moveManager.setCircuit(hill.getCircuit());
-		} catch (Exception e) {
-			;
-		}
-	}
-
-	public void tick(float t, float dt) {
-		if (!landed) {
-			nextTurn = moveManager.nextMove();
-			tickAI(t);
-		}
-		super.tick(t, dt);
-	}
-
-	private boolean finalGlide = false; // set to true when final gliding
-	static final float T_THINK = 1.0f; // don't think too hard (CPU)
-
 	/**
 	 * Checks for certain conditions. Eg. have i reached base ?
 	 * 
-	 * TODO: A better design would not keep checking every tick, but use a call
-	 * back ?
+	 * TODO: A better design would not keep checking every tick, but use a call back ?
 	 */
 	protected void tickAI(float t) {
 		// time for a camera move ?
@@ -176,14 +76,21 @@ public class GliderAI extends GliderTask {
 			}
 		}
 
-		if (finalGlide) {
+		if (finalGlide && t > t_ + T_THINK) {
+			t_ = t;
+			int iP = withinGlide(nextTP.x, nextTP.y, true);
+			if (iP != -1)
+				setPolar(iP);
 			return;
 		}
 
 		// final glide
-		if (nextTP.nextTP == null) {
-			if (withinGlide(nextTP.x, nextTP.y)) {
+		if (nextTP.nextTP == null && !finalGlide) {
+			int iP = withinGlide(nextTP.x, nextTP.y, true);
+			if (iP != -1) {
+				Log.i("FC GLIDERAI", "final glide!!");
 				this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
+				setPolar(iP);
 				finalGlide = true;
 			}
 		}
@@ -222,41 +129,232 @@ public class GliderAI extends GliderTask {
 		}
 	}
 
+	LiftSourceGlide searchNodes(double searchSector) {
+		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.nodes;
+		LiftSourceGlide ls = null;
+		for (int i = 0; i < nodes.length; i++) {
+			ls = nodes[i].search(this, searchSector);
+			if (ls != null) {
+				break;
+			}
+		}
+		return ls;
+	}
+
+	/**
+	 * Searches my node for the next lift source.
+	 */
+	void makeDecision(float t) {
+
+		t_ = t; // note time of search
+		int iP = withinEasyGlide(nextTP.x_, nextTP.y_, true);
+		if (iP != -1) {
+			if (!easyGlideToTP) {
+				Log.i("FC GLIDERAI", "easyglide to TP: " + nextTP.myID);
+				this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
+				easyGlideToTP = true;
+			}
+			setPolar(iP);
+			tryLater = true;
+			return;
+		}
+		easyGlideToTP = false;
+		narrowSearch = true;
+		LiftSourceGlide lsg = searchNodes(narrowSearchSector);
+		if (lsg == null) {
+			lsg = searchNodes(searchSector);
+			narrowSearch = false;
+		}
+		// if (lsg == null) {
+		// desperate = true;
+		// lsg = searchNodes(desperateSearchSector);
+		// }
+		if (lsg == null) { // glide torwards next turn point
+			this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
+			setPolar(bestGlide(nextTP.x_, nextTP.y, true));
+			Log.i("FC GLIDERAI", "glide to TP: " + nextTP.myID + " with IP: " + bestGlide(nextTP.x_, nextTP.y, true));
+			tryLater = true;
+			return;
+		}
+		currentLS = lsg.ls;
+
+		// glide to lift source - a cloud or hill
+		try {
+			Cloud cloud = (Cloud) lsg.ls;
+			if (moveManager.getCloud() != cloud) {
+				setPolar(lsg.glideIndex);
+				Log.i("FC GLIDERAI", "glide to cloud with" + lsg.glideIndex + " LS:" + cloud.myID);
+				this.moveManager.setCloud(cloud);
+				if (filmID == myID) {
+					cutPending = true;
+					cutWhen = t + whenArrive(cloud.x, cloud.y) - 2;
+					cutSubject = (CameraSubject) cloud;
+				}
+			}
+			return;
+		} catch (Exception e) {
+			;
+		}
+
+		try {
+			Hill hill = (Hill) lsg.ls;
+			if (moveManager.getCircuit() != hill.getCircuit()) {
+				setPolar(lsg.glideIndex);
+				Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.x0);
+				this.moveManager.setCircuit(hill.getCircuit());
+			}
+		} catch (Exception e) {
+			;
+		}
+	}
+
+	/**
+	 * Is there a better lift source within reach ?
+	 */
+	void reviewDecision(float t) {
+		LiftSourceGlide lsg = searchNodes(searchSector);
+
+		t_ = t; // note time of search
+
+		if (lsg == null || lsg.ls == currentLS) {
+			// stick to last decision
+			return;
+		} else if (currentLS != null) {
+			float distCurrentLS = Tools3d.length(new float[] { currentLS.getP()[0] - nextTP.x_, currentLS.getP()[1] - nextTP.y_, 0 });
+			float distNewLS = Tools3d.length(new float[] { lsg.ls.getP()[0] - nextTP.x_, lsg.ls.getP()[1] - nextTP.y_, 0 });
+			if (distNewLS > distCurrentLS)
+				return;
+		}
+		currentLS = lsg.ls;
+		// glide to cloud if it is *stronger* or if I was in desperate mode
+		try {
+			Cloud cloud = (Cloud) lsg.ls;
+			if (moveManager.cloud == null || cloud.getLift() > moveManager.cloud.getLift() || narrowSearch) {
+				Log.i("FC GLIDERAI", "review found better LS with " + lsg.glideIndex + " LS: " + cloud.myID);
+				setPolar(lsg.glideIndex);
+				this.moveManager.setCloud(cloud);
+				if (filmID == myID) {
+					cutPending = true;
+					cutWhen = t + whenArrive(cloud.x, cloud.y) - 2;
+					cutSubject = (CameraSubject) cloud;
+				}
+			}
+			return;
+		} catch (Exception e) {
+			;
+		}
+
+		try {
+			Hill hill = (Hill) lsg.ls;
+			if (moveManager.getCircuit() != hill.getCircuit()) {
+				setPolar(lsg.glideIndex);
+				Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.x0);
+				this.moveManager.setCircuit(hill.getCircuit());
+			}
+		} catch (Exception e) {
+			;
+		}
+	}
+
+	public void tick(float t, float dt) {
+		if (!landed) {
+			nextTurn = moveManager.nextMove();
+			tickAI(t);
+		}
+		super.tick(t, dt);
+	}
+
+	private boolean finalGlide = false; // set to true when final gliding
+	static final float T_THINK = 1.0f; // don't think too hard (CPU)
+
 	protected void reachedTurnPoint() {
 		makeDecision(xcModelViewer.clock.getTime());
 	}
 
 	/**
-	 * Returns true if (x, y) is within glide. Adding wind makes this a bit
-	 * fiddly. The glide angle will be reduced by any head wind etc.
+	 * Returns true if (x, y) is within glide. Adding wind makes this a bit fiddly. The glide angle will be reduced by any head wind etc.
 	 */
-	private boolean withinGlide(float x, float y) {
-		float[] u = this.onTrack();
-		float s = this.getSpeed();
-		u[0] *= s;
-		u[1] *= s;
-		u[0] += air[0];
-		u[1] += air[1];
-		float s_ = (float) Math.sqrt(u[0] * u[0] + u[1] * u[1]);
-		float glideAngle_ = s_ / -this.getSink();
+	public int withinGlide(float x, float y, boolean grounded) {
+		for (int j = polar.size() - 1; j >= 0; j--) {
+			float[] u = this.onTrack();
+			float s = this.getSpeed(j);
+			u[0] *= s;
+			u[1] *= s;
+			if (grounded) {
+				u[0] += air[0];
+				u[1] += air[1];
+			}
+			float s_ = (float) Math.sqrt(u[0] * u[0] + u[1] * u[1]);
+			float glideAngle_ = s_ / -this.getSink(j);
 
-		float[] r = new float[3];
-		Tools3d.subtract(new float[] { x, y, p[2] }, p, r);
-		float d = Tools3d.length(r);
-		return d <= p[2] * glideAngle_;
+			float[] r = new float[3];
+			Tools3d.subtract(new float[] { x, y, p[2] }, p, r);
+			float d = Tools3d.length(r);
+			if (d * 1.05f <= p[2] * glideAngle_) // 1.05 - allow some margin
+				return j;
+		}
+		return -1;
+	}
+
+	public int withinEasyGlide(float x, float y, boolean grounded) {
+		for (int j = polar.size() - 1; j >= 0; j--) {
+			float[] u = this.onTrack();
+			float s = this.getSpeed(j);
+			u[0] *= s;
+			u[1] *= s;
+			if (grounded) {
+				u[0] += air[0];
+				u[1] += air[1];
+			}
+			float s_ = (float) Math.sqrt(u[0] * u[0] + u[1] * u[1]);
+			float glideAngle_ = s_ / -this.getSink(j);
+
+			float[] r = new float[3];
+			Tools3d.subtract(new float[] { x, y, p[2] }, p, r);
+			float d = Tools3d.length(r);
+			if (d * 2 <= p[2] * glideAngle_ && p[2] > xcModelViewer.xcModel.task.CLOUDBASE / (1.75 + typeID / 2f))
+				return j;
+		}
+		return -1;
+	}
+
+	public int bestGlide(float x, float y, boolean grounded) {
+		float bestD = 0;
+		int bestIP = 0;
+		for (int j = polar.size() - 1; j >= 0; j--) {
+			float[] u = this.onTrack();
+			float s = this.getSpeed(j);
+			u[0] *= s;
+			u[1] *= s;
+			if (grounded) {
+				u[0] += air[0];
+				u[1] += air[1];
+			}
+			float s_ = (float) Math.sqrt(u[0] * u[0] + u[1] * u[1]);
+			float glideAngle_ = s_ / -this.getSink(j);
+
+			if (p[2] * glideAngle_ > bestD) {
+				bestD = p[2] * glideAngle_;
+				bestIP = j;
+			}
+		}
+		return bestIP;
+
 	}
 
 	/**
-	 * Returns a unit vector pointing in the direction we want to fly. Note we
-	 * glide to (x_, y_), a point inside the turn point sector rather than (x,
-	 * y) itself.
+	 * Returns a unit vector pointing in the direction we want to fly. Note we glide to (x_, y_), a point inside the turn point sector rather than (x, y)
+	 * itself.
 	 * 
-	 * Todo: take into account the wind exactly (need to solve a quadratic eq).
-	 * I have an approx solution which is ok for light winds.
+	 * Todo: take into account the wind exactly (need to solve a quadratic eq). I have an approx solution which is ok for light winds.
 	 */
 	float[] onTrack() {
+		return onTrack(p);
+	}
+
+	float[] onTrack(float[] from) {
 		float[] r = new float[3];
-		Tools3d.subtract(new float[] { nextTP.x_, nextTP.y_, p[2] }, p, r);
+		Tools3d.subtract(new float[] { nextTP.x_, nextTP.y_, from[2] }, from, r);
 
 		// time to get to next turn point assuming nil wind
 		float t = Tools3d.length(r) / this.getSpeed();
@@ -265,14 +363,13 @@ public class GliderAI extends GliderTask {
 		float[] drift = new float[] { air[0] * t, air[1] * t, 0 };
 
 		// offset turn point by - drift to get ~desired heading
-		Tools3d.subtract(new float[] { nextTP.x_ - drift[0], nextTP.y_ - drift[1], p[2] }, p, r);
+		Tools3d.subtract(new float[] { nextTP.x_ - drift[0], nextTP.y_ - drift[1], from[2] }, from, r);
 		Tools3d.makeUnit(r);
 		return r;
 	}
 
 	/**
-	 * How long to get to a cloud. Note we may ignore the wind as both the cloud
-	 * and the glider experience the same drift.
+	 * How long to get to a cloud. Note we may ignore the wind as both the cloud and the glider experience the same drift.
 	 */
 	float whenArrive(float x, float y) {
 		float d = (p[0] - x) * (p[0] - x) + (p[1] - y) * (p[1] - y);
@@ -281,9 +378,7 @@ public class GliderAI extends GliderTask {
 	}
 
 	/**
-	 * Makes a camera cut. This is a bit fiddly - we wait until the glider is
-	 * close to the hill/thermal so the camera does not get ahead of its
-	 * subject.
+	 * Makes a camera cut. This is a bit fiddly - we wait until the glider is close to the hill/thermal so the camera does not get ahead of its subject.
 	 */
 	private void cutNow() {
 		if (Glider.filmID == myID) {

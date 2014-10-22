@@ -38,9 +38,9 @@ class Circuit {
 
 	int turnDir() {
 		if (next == 0)
-			return MovementManager.RIGHT * 2;
-		else if (next == 1)
 			return MovementManager.LEFT * 2;
+		else if (next == 1)
+			return MovementManager.RIGHT * 2;
 		else
 			return 0;
 	}

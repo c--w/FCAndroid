@@ -153,7 +153,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		boolean registered = false;
 
 		if (flag) {
-			nodes = xcModelViewer.xcModel.task.nodeManager.loadedNodes();
+			nodes = xcModelViewer.xcModel.task.nodeManager.nodes;
 			int next = 0;
 			for (int i = 0; i < nodes.length; i++) {
 				if (nodes[i].contains(x, y)) {

@@ -50,6 +50,7 @@ class Hill implements LiftSource, CameraSubject {
 	private Node[] myNodes = new Node[MAX_NODES];
 	private static final int MAX_NODES = 3; // register with upto 3 overlapping
 	private int numNodes = 0; // registered with n nodes
+	Circuit circuit;
 
 	public Hill(Task theApp, StreamTokenizer st) {
 		app = theApp;
@@ -152,7 +153,7 @@ class Hill implements LiftSource, CameraSubject {
 		/*
 		 * add a tile at x0 +i, y0 + j if OR_X else swap i and j
 		 */
-		//Log.i("FC Hill", "i j:" + i + " " + j);
+		// Log.i("FC Hill", "i j:" + i + " " + j);
 		float x1, x2, y1, y2;
 		float[][] corners = new float[4][3];
 
@@ -199,7 +200,9 @@ class Hill implements LiftSource, CameraSubject {
 		/*
 		 * soaring circuit - treat x0,y0 as origin
 		 */
-		Circuit circuit = new Circuit(2);
+		if (circuit != null)
+			return circuit;
+		circuit = new Circuit(2);
 
 		float frontFace;
 		if (face == FACE_CURVY)
@@ -260,9 +263,8 @@ class Hill implements LiftSource, CameraSubject {
 		/*
 		 * return h at point i along spine and j away from spine
 		 * 
-		 * slice perp to spine gives f1... f1 = 1+j, j < 0 backface f1 = (1-j) *
-		 * (1-j), j > 0 and spiky f1 = sin , j > 0 and curvy then, scale f1 by
-		 * f2, h at this point on spine
+		 * slice perp to spine gives f1... f1 = 1+j, j < 0 backface f1 = (1-j) * (1-j), j > 0 and spiky f1 = sin , j > 0 and curvy then, scale f1 by f2, h at
+		 * this point on spine
 		 */
 
 		float frontFace;
@@ -353,8 +355,7 @@ class Hill implements LiftSource, CameraSubject {
 
 	public float getLift(float[] p) {
 		/*
-		 * lift twice sink rate close to hill, falling to zero as we get further
-		 * away
+		 * lift twice sink rate close to hill, falling to zero as we get further away
 		 */
 		float lmax = 3 * Cloud.LIFT_UNIT;
 		float dh = (float) 0.2;
