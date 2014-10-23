@@ -35,10 +35,11 @@ public class GliderAI extends GliderTask {
 	CameraSubject cutSubject = null;
 
 	// search in a sector this far either side of being on track
-	final double narrowSearchSector = Math.PI / 8;
-	final double searchSector = Math.PI / 4;
+	final double narrowSearchSector = Math.PI / 5;
+	final double searchSector = Math.PI / 3;
 	final double desperateSearchSector = Math.PI;
 	boolean narrowSearch = true;
+	boolean desperate = false;
 	boolean easyGlideToTP = false;
 
 	// if a search for lift fails then try again after this much time
@@ -78,7 +79,7 @@ public class GliderAI extends GliderTask {
 
 		if (finalGlide && t > t_ + T_THINK) {
 			t_ = t;
-			int iP = withinGlide(nextTP.x, nextTP.y, true);
+			int iP = withinGlide(nextTP.x, nextTP.y, true, 0);
 			if (iP != -1)
 				setPolar(iP);
 			return;
@@ -86,7 +87,7 @@ public class GliderAI extends GliderTask {
 
 		// final glide
 		if (nextTP.nextTP == null && !finalGlide) {
-			int iP = withinGlide(nextTP.x, nextTP.y, true);
+			int iP = withinGlide(nextTP.x, nextTP.y, true, 0);
 			if (iP != -1) {
 				Log.i("FC GLIDERAI", "final glide!!");
 				this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
@@ -158,17 +159,18 @@ public class GliderAI extends GliderTask {
 			tryLater = true;
 			return;
 		}
-		easyGlideToTP = false;
 		narrowSearch = true;
+		desperate = false;
+		easyGlideToTP = false;
 		LiftSourceGlide lsg = searchNodes(narrowSearchSector);
 		if (lsg == null) {
 			lsg = searchNodes(searchSector);
 			narrowSearch = false;
 		}
-		// if (lsg == null) {
-		// desperate = true;
-		// lsg = searchNodes(desperateSearchSector);
-		// }
+		if (lsg == null) {
+			desperate = true;
+			lsg = searchNodes(desperateSearchSector);
+		}
 		if (lsg == null) { // glide torwards next turn point
 			this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
 			setPolar(bestGlide(nextTP.x_, nextTP.y, true));
@@ -200,7 +202,7 @@ public class GliderAI extends GliderTask {
 			Hill hill = (Hill) lsg.ls;
 			if (moveManager.getCircuit() != hill.getCircuit()) {
 				setPolar(lsg.glideIndex);
-				Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.x0);
+				Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.myID);
 				this.moveManager.setCircuit(hill.getCircuit());
 			}
 		} catch (Exception e) {
@@ -217,27 +219,26 @@ public class GliderAI extends GliderTask {
 		t_ = t; // note time of search
 
 		if (lsg == null || lsg.ls == currentLS) {
-			// stick to last decision
 			return;
 		} else if (currentLS != null) {
 			float distCurrentLS = Tools3d.length(new float[] { currentLS.getP()[0] - nextTP.x_, currentLS.getP()[1] - nextTP.y_, 0 });
 			float distNewLS = Tools3d.length(new float[] { lsg.ls.getP()[0] - nextTP.x_, lsg.ls.getP()[1] - nextTP.y_, 0 });
-			if (distNewLS > distCurrentLS)
+			// if not in desperate mode or found LS has weaker lift or lifts are equal but new distance from next tp is greater then ignore
+			if (lsg.ls.getLift() < currentLS.getLift() || (lsg.ls.getLift() == currentLS.getLift() && distNewLS > distCurrentLS))
 				return;
 		}
+
 		currentLS = lsg.ls;
 		// glide to cloud if it is *stronger* or if I was in desperate mode
 		try {
 			Cloud cloud = (Cloud) lsg.ls;
-			if (moveManager.cloud == null || cloud.getLift() > moveManager.cloud.getLift() || narrowSearch) {
-				Log.i("FC GLIDERAI", "review found better LS with " + lsg.glideIndex + " LS: " + cloud.myID);
-				setPolar(lsg.glideIndex);
-				this.moveManager.setCloud(cloud);
-				if (filmID == myID) {
-					cutPending = true;
-					cutWhen = t + whenArrive(cloud.x, cloud.y) - 2;
-					cutSubject = (CameraSubject) cloud;
-				}
+			Log.i("FC GLIDERAI", "review found better LS with " + lsg.glideIndex + " LS: " + cloud.myID);
+			setPolar(lsg.glideIndex);
+			this.moveManager.setCloud(cloud);
+			if (filmID == myID) {
+				cutPending = true;
+				cutWhen = t + whenArrive(cloud.x, cloud.y) - 2;
+				cutSubject = (CameraSubject) cloud;
 			}
 			return;
 		} catch (Exception e) {
@@ -246,11 +247,9 @@ public class GliderAI extends GliderTask {
 
 		try {
 			Hill hill = (Hill) lsg.ls;
-			if (moveManager.getCircuit() != hill.getCircuit()) {
-				setPolar(lsg.glideIndex);
-				Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.x0);
-				this.moveManager.setCircuit(hill.getCircuit());
-			}
+			setPolar(lsg.glideIndex);
+			Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.myID);
+			this.moveManager.setCircuit(hill.getCircuit());
 		} catch (Exception e) {
 			;
 		}
@@ -274,7 +273,7 @@ public class GliderAI extends GliderTask {
 	/**
 	 * Returns true if (x, y) is within glide. Adding wind makes this a bit fiddly. The glide angle will be reduced by any head wind etc.
 	 */
-	public int withinGlide(float x, float y, boolean grounded) {
+	public int withinGlide(float x, float y, boolean grounded, float reserveHeight) {
 		for (int j = polar.size() - 1; j >= 0; j--) {
 			float[] u = this.onTrack();
 			float s = this.getSpeed(j);
@@ -290,7 +289,7 @@ public class GliderAI extends GliderTask {
 			float[] r = new float[3];
 			Tools3d.subtract(new float[] { x, y, p[2] }, p, r);
 			float d = Tools3d.length(r);
-			if (d * 1.05f <= p[2] * glideAngle_) // 1.05 - allow some margin
+			if (d * 1.05f <= (p[2] - reserveHeight) * glideAngle_) // 1.05 - allow some margin
 				return j;
 		}
 		return -1;

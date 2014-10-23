@@ -95,7 +95,7 @@ public class Glider extends MovingBody {
 
 	public void setPolar(int iP) {
 		if (this.iP != iP) {
-			Log.i("FC Glider", "setIP" + iP);
+			Log.i("FC Glider", "setIP:" + iP);
 			this.iP = iP;
 			setPolar();
 		}
@@ -238,8 +238,9 @@ public class Glider extends MovingBody {
 	float _t = 0;
 
 	boolean hitGround() {
-		if (p[2] <= ground)
+		if (p[2] <= ground) {
 			return true;
+		}
 		if (xcModelViewer.xcModel.task.hills == null)
 			return false;
 		for (Hill hill : xcModelViewer.xcModel.task.hills) {
@@ -275,6 +276,7 @@ public class Glider extends MovingBody {
 
 		// motion due to velocity (and roll)
 		super.tick(t, dt);
+
 
 		if (valuesFromNet != null) {
 			// Log.i("FC Glider", "t-tn: " + (t - valuesFromNet[7]) + " dt:" +

@@ -76,7 +76,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	// decent climb
 	static final float LIFT_UNIT = 0.08f;
 	// or a fn of site ?
-	public static final int MAX_SIZE = 3;
+	public static final int MAX_SIZE = 5;
 
 	/**
 	 * Creates a cloud. The cloud will grow from nothing, drift along for a

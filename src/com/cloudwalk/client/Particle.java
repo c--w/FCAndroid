@@ -9,15 +9,19 @@
  */
 package com.cloudwalk.client;
 
-import android.graphics.Color;
+import java.util.Arrays;
 
-import com.cloudwalk.framework3d.*;
+import android.graphics.Color;
+import android.util.Log;
+
+import com.cloudwalk.framework3d.CameraSubject;
+import com.cloudwalk.framework3d.ClockObserver;
+import com.cloudwalk.framework3d.ModelViewer;
+import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * This class implements a particle with a position and velocity. The particle
- * travels in the direction given by the unit vector v at a specified speed. We
- * have a factory method for giving the particle a tail. The particle may be
- * made to follow a curved trajectory by calling makeTurn().
+ * This class implements a particle with a position and velocity. The particle travels in the direction given by the unit vector v at a specified speed. We have
+ * a factory method for giving the particle a tail. The particle may be made to follow a curved trajectory by calling makeTurn().
  */
 class Particle implements ClockObserver, CameraSubject {
 	protected ModelViewer modelViewer;
@@ -29,10 +33,8 @@ class Particle implements ClockObserver, CameraSubject {
 	protected Tail tail = null;
 
 	/**
-	 * Creates a particle that is at p travelling in direction v. Note that the
-	 * speed and turn radius are both 1 until you set the values of speed and
-	 * turnRadius. These two properties are protected so you must be a subclass
-	 * to change their values.
+	 * Creates a particle that is at p travelling in direction v. Note that the speed and turn radius are both 1 until you set the values of speed and
+	 * turnRadius. These two properties are protected so you must be a subclass to change their values.
 	 * 
 	 * @see Glider
 	 */
@@ -61,8 +63,7 @@ class Particle implements ClockObserver, CameraSubject {
 	 * Sets the particles position.
 	 * 
 	 * <p>
-	 * This method is only used by the GliderNetworked which gets p and v from
-	 * the game server.
+	 * This method is only used by the GliderNetworked which gets p and v from the game server.
 	 * 
 	 * @see GliderNetworked
 	 */
@@ -73,13 +74,11 @@ class Particle implements ClockObserver, CameraSubject {
 	}
 
 	/**
-	 * Sets the velocity vector. Well, we set its direction. The length is set
-	 * to 1 because the variable *speed* determines how far the particle travels
-	 * per unit time.
+	 * Sets the velocity vector. Well, we set its direction. The length is set to 1 because the variable *speed* determines how far the particle travels per
+	 * unit time.
 	 * 
 	 * <p>
-	 * This method is only used by the GliderNetworked which gets p and v from
-	 * the game server.
+	 * This method is only used by the GliderNetworked which gets p and v from the game server.
 	 * 
 	 * @see GliderNetworked
 	 */
@@ -99,8 +98,7 @@ class Particle implements ClockObserver, CameraSubject {
 	}
 
 	/**
-	 * Updates the particle's position, velocity and tail. The only change to v
-	 * (if any) will be a rotation of v about the z axis.
+	 * Updates the particle's position, velocity and tail. The only change to v (if any) will be a rotation of v about the z axis.
 	 */
 	public void tick(float t, float dt) {
 
@@ -121,21 +119,20 @@ class Particle implements ClockObserver, CameraSubject {
 		if (tail != null) {
 			tail.tick(t, dt);
 		}
+		if (p[2] == Float.NaN || Math.abs(p[2]) > 100) {
+			Log.i("FC Particle", "Problem: " + Arrays.toString(p));
+		}
 	}
 
 	/**
-	 * Makes me turn to left (-ve) or right (+ve). We ignore the vertical
-	 * component of the motion and simply work in the xy plane. This seperation
-	 * of xy from z works pretty well for Flight Club where we use Particle to
-	 * build, for example, gliders, jets, roads, balloons...
+	 * Makes me turn to left (-ve) or right (+ve). We ignore the vertical component of the motion and simply work in the xy plane. This seperation of xy from z
+	 * works pretty well for Flight Club where we use Particle to build, for example, gliders, jets, roads, balloons...
 	 * 
 	 * <p>
-	 * The argument <dir> works as follows. The further from zero the tighter
-	 * the turn. > 0 turn right, < 0 turn left, 1 - my turn radius 2 - halve my
-	 * turn radius etc...
+	 * The argument <dir> works as follows. The further from zero the tighter the turn. > 0 turn right, < 0 turn left, 1 - my turn radius 2 - halve my turn
+	 * radius etc...
 	 * 
-	 * All the work is actually done in another private method, makeTurn, which
-	 * gets called each tick.
+	 * All the work is actually done in another private method, makeTurn, which gets called each tick.
 	 */
 	public void setTurn(float dir) {
 		nextTurn = dir;
@@ -148,8 +145,7 @@ class Particle implements ClockObserver, CameraSubject {
 	private float _angle;
 
 	/**
-	 * Rotates v about the z axis. This routine is called from <code>tick</code>
-	 * if <code>nextTurn</code> has a non zero value.
+	 * Rotates v about the z axis. This routine is called from <code>tick</code> if <code>nextTurn</code> has a non zero value.
 	 */
 	private void makeTurn(float dt) {
 		if (v[0] != _vx || v[1] != _vy) {

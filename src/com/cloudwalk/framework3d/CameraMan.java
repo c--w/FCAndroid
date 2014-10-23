@@ -13,18 +13,13 @@ import android.graphics.Color;
 import android.util.Log;
 
 /**
- * This class implements camera functionality such as cutting smoothly between
- * different camera subjects and mapping (x, y, z) onto the screen (y_, z_)).
- * The projection from (x, y, z) onto the screen (y_, z_) is determined by two
- * vectors, <code>eye</code> and <code>focus</code>.
+ * This class implements camera functionality such as cutting smoothly between different camera subjects and mapping (x, y, z) onto the screen (y_, z_)). The
+ * projection from (x, y, z) onto the screen (y_, z_) is determined by two vectors, <code>eye</code> and <code>focus</code>.
  * 
  * <p>
- * Using these two vectors we calculate the rotation and translation needed to
- * position the eye on the (+ve) x_ axis looking towards the focus at origin_.
- * Given a point (x, y, z) we translate it and apply the rotation to get (x_,
- * y_, z_). We then scale the y_ and z_ by 1/x_ to complete the perspective
- * projection by forshortening y_ and z_ according to their distance from the
- * camera.
+ * Using these two vectors we calculate the rotation and translation needed to position the eye on the (+ve) x_ axis looking towards the focus at origin_. Given
+ * a point (x, y, z) we translate it and apply the rotation to get (x_, y_, z_). We then scale the y_ and z_ by 1/x_ to complete the perspective projection by
+ * forshortening y_ and z_ according to their distance from the camera.
  * 
  * @author Dan Burton
  * @version 3.02, 27-jul-2002
@@ -62,9 +57,8 @@ public class CameraMan {
 											// between camera subjects
 
 	/**
-	 * This field tells us how far away from a 1 unit tall object must the
-	 * camera be in order for it to fill the height of the screen. Of course, we
-	 * measure the lens angle in radians.
+	 * This field tells us how far away from a 1 unit tall object must the camera be in order for it to fill the height of the screen. Of course, we measure the
+	 * lens angle in radians.
 	 */
 	protected float LENS_ANGLE_INVERSE = (float) 1.1;
 	protected static final float ZOOM_STEP = (float) 0.25;
@@ -84,8 +78,7 @@ public class CameraMan {
 	}
 
 	/**
-	 * Sets the scale according to the canvas height. Do not call this method
-	 * until the ModelCanvas knows how big it is.
+	 * Sets the scale according to the canvas height. Do not call this method until the ModelCanvas knows how big it is.
 	 */
 	public void init() {
 		width = modelViewer.modelView.getWidth();
@@ -97,8 +90,7 @@ public class CameraMan {
 	 * Calcs how much light falls on a surface with this normal.
 	 * 
 	 * <p>
-	 * Return 0 if no light falls on surface and 1 if surface faces directly
-	 * into the light. Usually we are somewhere in between.
+	 * Return 0 if no light falls on surface and 1 if surface faces directly into the light. Usually we are somewhere in between.
 	 * 
 	 * @param normal
 	 *            the unit normal vector.
@@ -125,8 +117,7 @@ public class CameraMan {
 	}
 
 	/**
-	 * Allow for a moving subject - calc how much the subject has moved since
-	 * last call and add that amount to eye and focus.
+	 * Allow for a moving subject - calc how much the subject has moved since last call and add that amount to eye and focus.
 	 */
 	private void followSubject() {
 		float[] eNew = cameraSubject.getEye();
@@ -146,8 +137,7 @@ public class CameraMan {
 	}
 
 	/**
-	 * Sets the camera subject. The camera will gradually move to its new
-	 * position over CUT_LEN ticks.
+	 * Sets the camera subject. The camera will gradually move to its new position over CUT_LEN ticks.
 	 * 
 	 * @param cameraSubject
 	 *            the subject to film.
@@ -173,17 +163,14 @@ public class CameraMan {
 		Tools3d.subtract(focusGoto, focus, dfocus);
 
 		/*
-		 * The eye accelerates from 0 upto velocity deye over cutRamp steps,
-		 * tracks at deye then slows to zero over cutRamp steps. Similarly for
-		 * focus.
+		 * The eye accelerates from 0 upto velocity deye over cutRamp steps, tracks at deye then slows to zero over cutRamp steps. Similarly for focus.
 		 */
 		Tools3d.scaleBy(deye, (float) 1.0 / (cutCount - CUT_RAMP));
 		Tools3d.scaleBy(dfocus, (float) 1.0 / (cutCount - CUT_RAMP));
 	}
 
 	/**
-	 * Sets the camera subject. The camera moves immediately to the new position
-	 * defined by the subject.
+	 * Sets the camera subject. The camera moves immediately to the new position defined by the subject.
 	 */
 	public void setSubjectNow(CameraSubject cameraSubject, boolean track) {
 		this.cameraSubject = cameraSubject;
@@ -251,14 +238,12 @@ public class CameraMan {
 	}
 
 	/**
-	 * Rotates the eye about the focus by dtheta (L/R) and moves the eye up or
-	 * down by dz.
+	 * Rotates the eye about the focus by dtheta (L/R) and moves the eye up or down by dz.
 	 */
 	public void rotate(float dtheta, float dz) {
 
 		/**
-		 * Transform ray. TODO: optimize - dtheta only takes one of two vales -
-		 * see ModelCanvas
+		 * Transform ray. TODO: optimize - dtheta only takes one of two vales - see ModelCanvas
 		 */
 		if (dtheta != 0) {
 			Tools3d.subtract(eye, focus, ray);
@@ -278,8 +263,7 @@ public class CameraMan {
 	}
 
 	/**
-	 * Move focus whilst maintaining the position of the eye relative to the
-	 * focus
+	 * Move focus whilst maintaining the position of the eye relative to the focus
 	 */
 	private void moveFocus(float[] f) {
 		Tools3d.subtract(eye, focus, ray);
@@ -290,10 +274,8 @@ public class CameraMan {
 	}
 
 	/**
-	 * Creates a rotation matrix such that eye is looking down +ve x axis
-	 * towards the origin. Has the side effect of setting the var distance to
-	 * how far the eye is from the focus. Call this method every time you move
-	 * the eye or focus.
+	 * Creates a rotation matrix such that eye is looking down +ve x axis towards the origin. Has the side effect of setting the var distance to how far the eye
+	 * is from the focus. Call this method every time you move the eye or focus.
 	 * 
 	 * @see Tools3d
 	 */
@@ -304,8 +286,7 @@ public class CameraMan {
 	}
 
 	/**
-	 * Scales the y_ and z_ co-ords so a 1 unit tall tree fills the screen
-	 * height when viewed from a distance of LENS_ANGLE_INVERSE away.
+	 * Scales the y_ and z_ co-ords so a 1 unit tall tree fills the screen height when viewed from a distance of LENS_ANGLE_INVERSE away.
 	 * 
 	 * <p>
 	 * Also translates y_ and z_ so that (x_, 0, 0) appears center screen.
@@ -323,9 +304,7 @@ public class CameraMan {
 	 * Mutes distant colors.
 	 * 
 	 * <p>
-	 * Remember x_ gives ~ distance of surface from camera (we are using the
-	 * transformed coord x_); the camera is on the +ve x axis looking towards
-	 * the origin.
+	 * Remember x_ gives ~ distance of surface from camera (we are using the transformed coord x_); the camera is on the +ve x axis looking towards the origin.
 	 */
 	int foggyColor(float x_, int c) {
 

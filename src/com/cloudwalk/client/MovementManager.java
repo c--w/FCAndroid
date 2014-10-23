@@ -9,9 +9,9 @@
  */
 package com.cloudwalk.client;
 
-import com.cloudwalk.framework3d.*;
-import java.awt.*;
-import java.util.*;
+import android.util.Log;
+
+import com.cloudwalk.framework3d.Tools3d;
 
 /**
  * This class manages the motion of particles - thermalling, ridge soaring etc.
@@ -219,11 +219,15 @@ class MovementManager {
 		float[] v = new float[] { particle.v[0], particle.v[1], 0 };
 		float d = Tools3d.length(u);
 
+
 		if (d < r / 4) {
 			// we are there
 			targetPoint = null;
 			if (circuit != null)
 				reachedCircuitPoint();
+			if (particle instanceof Glider) {
+				((Glider) particle).setPolar(0);
+			}
 			return 0;
 		}
 
@@ -282,7 +286,6 @@ class MovementManager {
 		joinedCircuit = true;
 		circuitPoint = circuit.next();
 		if (circuitPoint == null) {
-			// completed circuit - stop !
 			circuit = null;
 			finishedCircuit = true;
 			// xcModelViewer.clock.removeObserver(this.particle);

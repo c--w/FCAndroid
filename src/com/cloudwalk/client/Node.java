@@ -83,7 +83,7 @@ class Node implements CameraSubject {
 	 * triggers. Why ? An overlapping* node may have sent one of the triggers to sleep.
 	 */
 	void wakeUp(float t) {
-		//Log.i("FC Node", "Wakeup:" + myID);
+		// Log.i("FC Node", "Wakeup:" + myID);
 		for (int i = 0; i < next; i++) {
 			triggers[i].wakeUp(t);
 		}
@@ -195,7 +195,11 @@ class Node implements CameraSubject {
 					r[2] = 0; // work in a horizontal plane
 					float d = Tools3d.length(r);
 					boolean grounded = (ls instanceof Hill ? true : false);
-					int iP = glider.withinGlide(ls.getP()[0], ls.getP()[1], grounded);
+					float reserveHeight = 0;
+					if (grounded) {
+						reserveHeight = ((Hill) ls).h0 * (0.5f + glider.typeID * 0.25f);
+					}
+					int iP = glider.withinGlide(ls.getP()[0], ls.getP()[1], grounded, reserveHeight);
 					if (iP != -1) { // within glide
 						float speed = glider.getSpeed(iP);
 						Tools3d.makeUnit(r);
@@ -206,7 +210,6 @@ class Node implements CameraSubject {
 									bestLS = ls;
 									liftMax = lift;
 									bestIP = iP;
-									break;
 									// other searches...
 									// dmin = d;
 									// cosMax = cos;

@@ -28,6 +28,8 @@ import com.cloudwalk.framework3d.Obj3d;
  */
 
 class Hill implements LiftSource, CameraSubject {
+	static int nextID = 0;
+	int myID;
 	float x0, y0; // spine start point
 	int orientation = 0;
 	int spineLength;
@@ -54,6 +56,7 @@ class Hill implements LiftSource, CameraSubject {
 
 	public Hill(Task theApp, StreamTokenizer st) {
 		app = theApp;
+		myID = nextID++; // unique id (for debugging)
 		try {
 			st.nextToken();
 			x0 = (float) st.nval;
@@ -255,7 +258,7 @@ class Hill implements LiftSource, CameraSubject {
 	}
 
 	float get01Value(float i, float j) {
-		float a = (float) Math.sqrt((x0 + 1 + i) / (y0 + 1 + j));
+		float a = (float) Math.sqrt((x0 + 1 + Math.abs(i)) / (y0 + 1 + Math.abs(j)));
 		return (float) ((a * 1000) - Math.floor(a * 1000));
 	}
 
@@ -282,7 +285,8 @@ class Hill implements LiftSource, CameraSubject {
 		}
 
 		float h = f1 * f2;
-		if (Math.abs(h) < 0.001) {
+		h = Math.abs(h);
+		if (h < 0.001) {
 			h = 0;
 		} else {
 			h += 0.1 * get01Value(i, j);
