@@ -45,16 +45,17 @@ public class Task implements CameraSubject {
 	public Task(XCModelViewer xcModelViewer, String taskID) throws IOException {
 		this.xcModelViewer = xcModelViewer;
 		this.taskID = taskID;
-		parseFile(taskID);
+		if (taskID.equals("default")) {
+			generateT2Task();
+		} else if (taskID.equals("default1")) {
+			generateT2Task();
+		} else {
+			parseFile(taskID);
+		}
 		nodeManager = new NodeManager(xcModelViewer, this);
 	}
 
-	/**
-	 * No file to parse. Create a simple default task.
-	 */
-	public Task(XCModelViewer xcModelViewer) {
-		this.xcModelViewer = xcModelViewer;
-		this.taskID = "default";
+	private void generateT1Task() {
 		desc = "Simple closed circuit 50km task with 2 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase at 1500m.";
 		CLOUDBASE = 3;
 		HEXAGON = CLOUDBASE * 7;
@@ -81,6 +82,41 @@ public class Task implements CameraSubject {
 		// roads - specify start and end points
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x, 0 }, { x, 2 * x, 0 }, { 2 * x, 4 * x, 0 } };
 		float[][] r2 = new float[][] { { 0, x, 0 }, { x, 1.4f * x, 0 }, { 2 * x, 1.2f * x, 0 }, { 3 * x, 2 * x, 0 }, { 4 * x, 2 * x, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+
+		// hills = new Hill[1];
+		// Hill hill = new Hill(this, x, 1.5f * x);
+		// hills[0] = hill;
+		nodeManager = new NodeManager(xcModelViewer, this);
+	}
+
+	private void generateT2Task() {
+		desc = "Simple closed circuit 50km task with 2 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase at 1500m.";
+		CLOUDBASE = 3;
+		HEXAGON = CLOUDBASE * 7;
+		// turn points
+		float x = CLOUDBASE * 10;
+		// x /= 5; // tmp - small course for testing gliding around the turn
+		// points
+		float[] xs = { x, x * 2, x * 3, x * 4, x * 5, x * 6, x * 7 };
+		float[] ys = { x, x * 0.9f, x * 1.5f, x * 0.8f, x * 1.4f, x * 0.7f, x };
+		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
+
+		// wind
+		wind_x = 0.05f;
+		wind_y = 0.05f;
+
+		// triggers
+		triggers = new Trigger[8 * 2 * 6];
+		for (int i = 1; i < 9; i++) {
+			for (int j = 0; j < 2; j++) {
+				flatLand(i * HEXAGON, j * HEXAGON);
+			}
+		}
+
+		// roads - specify start and end points
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.9f*x, 0 }, { 4 * x, x*1.1f, 0 }, { 7 * x, 0.95f * x, 0 } };
+		float[][] r2 = new float[][] { { 0, x, 0 }, { 4 * x, x*1.1f, 0 }, { 7 * x, 1.95f * x, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
 
 		// hills = new Hill[1];
@@ -142,7 +178,7 @@ public class Task implements CameraSubject {
 		st.nextToken();
 		int numTriggers = (int) st.nval;
 		Log.i("FC Task", "Triggers:" + numTriggers);
-		
+
 		triggers = new Trigger[numTriggers];
 		st.nextToken();
 
@@ -206,8 +242,7 @@ public class Task implements CameraSubject {
 	}
 
 	/**
-	 * Returns the 'near' corner of the bounding box but with the z component
-	 * set to either the width or the height of the box, whichever is greater.
+	 * Returns the 'near' corner of the bounding box but with the z component set to either the width or the height of the box, whichever is greater.
 	 * 
 	 * Changed to mid point. ?
 	 */

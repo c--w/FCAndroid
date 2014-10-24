@@ -30,9 +30,8 @@ public class XCModel extends Model {
 	public DataSlider slider = null;
 
 	/**
-	 * An intermediate var gives us a casted reference to the camera man. I'm
-	 * not sure if this is good style. What if the camera man object changes ?
-	 * Then this link points to the wrong object !
+	 * An intermediate var gives us a casted reference to the camera man. I'm not sure if this is good style. What if the camera man object changes ? Then this
+	 * link points to the wrong object !
 	 */
 	public XCCameraMan xcCameraMan;
 	public int mode;
@@ -52,29 +51,21 @@ public class XCModel extends Model {
 	}
 
 	/**
-	 * Loads the task. This involves downloading a file so may take a while over
-	 * the net. Being unable to load the task is a *fatal* error. Well it would
-	 * be, but we create a dummy task in this case. This means the applet does
-	 * *something* when the task file has gone belly up !
+	 * Loads the task. This involves downloading a file so may take a while over the net. Being unable to load the task is a *fatal* error. Well it would be,
+	 * but we create a dummy task in this case. This means the applet does *something* when the task file has gone belly up !
 	 */
 	public void loadTask(String id, int pilotType, int[] typeNums) {
 		String msg;
 
-		if (id == null || id.equals("") || id.equals("default")) {
-			msg = "Loading default task...";
-			Log.i("FC", msg);
-			task = new Task(xcModelViewer); // default task
-		} else {
-			// xcModelViewer.modelView.setText("Loading task: " + id + "...",
-			// PROMPT_LINE);
-			try {
-				task = new Task(xcModelViewer, id);
-			} catch (Exception e) {
-				msg = "Error loading task: " + id + "<br/>" + e;
-				xcModelViewer.modelView.setText(msg, PROMPT_LINE);
-				Log.e("FC", msg, e);
-				System.exit(1); // ?
-			}
+		if (id == null || id.equals(""))
+			id = "default";
+		try {
+			task = new Task(xcModelViewer, id);
+		} catch (Exception e) {
+			msg = "Error loading task: " + id + "<br/>" + e;
+			xcModelViewer.modelView.setText(msg, PROMPT_LINE);
+			Log.e("FC", msg, e);
+			System.exit(1); // ?
 		}
 
 		if (!xcModelViewer.netFlag) {
@@ -95,8 +86,7 @@ public class XCModel extends Model {
 	private boolean userPlay_ = false; // flag true *after* calling startPlay
 
 	/**
-	 * Starts game play. The first call to this fn puts game into demo mode.
-	 * Subsequent calls (when user presses <y>) launch the user glider.
+	 * Starts game play. The first call to this fn puts game into demo mode. Subsequent calls (when user presses <y>) launch the user glider.
 	 */
 	void startPlay() {
 		xcCameraMan.gotoTaskStart();
@@ -139,8 +129,7 @@ public class XCModel extends Model {
 	}
 
 	/**
-	 * How much model time passes each second of game play ? Either 1 second
-	 * (normal) or 10 seconds (speedy). Speedy time is handy for cloud watching.
+	 * How much model time passes each second of game play ? Either 1 second (normal) or 10 seconds (speedy). Speedy time is handy for cloud watching.
 	 */
 	public void toggleFastForward() {
 		modelViewer.clock.speedy = !modelViewer.clock.speedy;
@@ -173,8 +162,7 @@ public class XCModel extends Model {
 	static final int PROMPT_LINE = 0; // 0 is bottom line
 
 	/**
-	 * If we are in user mode then update the instruments and the status
-	 * messages.
+	 * If we are in user mode then update the instruments and the status messages.
 	 */
 	public void tick(float t, float dt) {
 		if (t < t_ + T_INTERVAL) {

@@ -123,11 +123,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 
 		// use a gaussian distribution for area (= size * size) with mean=4 and
 		// sd=2
-		float a = 4.0f + (float) ge01Value2() * 2.0f;
-		if (a < 0.5f) {
-			a = 0.5f;
-		}
-		thermalStrength = (float) Math.sqrt(a);
+		float a = 1.0f + (float) ge01Value2() * 4.0f;
+		thermalStrength = Math.round(a);
 		cycleLength = Cloud.getLifeSpan(thermalStrength) * 1.0f;
 		duration = 1.0f;
 		phase = ge01Value() * cycleLength;
