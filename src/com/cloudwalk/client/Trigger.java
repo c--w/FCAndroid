@@ -21,15 +21,12 @@ import com.cloudwalk.framework3d.Obj3d;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * This class implements a thermal trigger. Every cycle the trigger releases a
- * bubble of warm air that floats up to produce a cloud. Well, that is the
+ * This class implements a thermal trigger. Every cycle the trigger releases a bubble of warm air that floats up to produce a cloud. Well, that is the
  * impression we hopefully evoke.
  * 
- * The trigger model contains lots of dubious assumptions and gross
- * simplifacations. Good !
+ * The trigger model contains lots of dubious assumptions and gross simplifacations. Good !
  * 
- * We add a veneer of noise to the otherwise clockwork like behaviour of the
- * trigger without departing from the deterministic model.
+ * We add a veneer of noise to the otherwise clockwork like behaviour of the trigger without departing from the deterministic model.
  */
 public class Trigger implements ClockObserver, CameraSubject {
 	XCModelViewer xcModelViewer;
@@ -56,11 +53,9 @@ public class Trigger implements ClockObserver, CameraSubject {
 	static final int AWAKE = 1;
 
 	/**
-	 * Creates a trigger at (x, y). t is the current time and t0 is the time
-	 * that the trigger creates its first bubble.
+	 * Creates a trigger at (x, y). t is the current time and t0 is the time that the trigger creates its first bubble.
 	 * 
-	 * We may have t > t0. In this case we need to look back in time to see what
-	 * clouds this trigger has already produced (which have yet to evaporate) !
+	 * We may have t > t0. In this case we need to look back in time to see what clouds this trigger has already produced (which have yet to evaporate) !
 	 */
 	public Trigger(XCModelViewer xcModelViewer, StreamTokenizer st) throws IOException {
 		this.xcModelViewer = xcModelViewer;
@@ -104,48 +99,76 @@ public class Trigger implements ClockObserver, CameraSubject {
 		// random = new Random((long) (x * 10 + y));
 
 		/**
-		 * ~Random phase. We ensure that all clients get same phase for a
-		 * trigger. Note that *all* triggers get created from the task file
-		 * before the model comes alive - so using the pseudo rnd generator is
-		 * ok.
+		 * ~Random phase. We ensure that all clients get same phase for a trigger. Note that *all* triggers get created from the task file before the model
+		 * comes alive - so using the pseudo rnd generator is ok.
 		 */
-		phase = ge01Value() * cycleLength;
-		//Log.w("FC Trigger", "" + phase);
+		phase = get01Value() * cycleLength;
+		// Log.w("FC Trigger", "" + phase);
 		// nextCloudStartTime = phase - cycleLength;
 		myID = nextID++; // unique id (for debugging)
 	}
 
 	/** Creates a 'default' trigger at (x, y). */
-	public Trigger(XCModelViewer xcModelViewer, float x, float y) {
+	public Trigger(XCModelViewer xcModelViewer, float x, float y, int version) {
 		this.xcModelViewer = xcModelViewer;
 		this.x = x;
 		this.y = y;
-
-		// use a gaussian distribution for area (= size * size) with mean=4 and
-		// sd=2
-		float a = 1.0f + (float) ge01Value2() * 4.0f;
-		thermalStrength = Math.round(a);
-		cycleLength = Cloud.getLifeSpan(thermalStrength) * 1.0f;
-		duration = 1.0f;
-		phase = ge01Value() * cycleLength;
+		if (version == 1)
+			setParamsV1();
+		else if (version == 2)
+			setParamsV2();
 		myID = nextID++;
 		// Log.w("FC Trigger", "id+phase" + myID + " " + phase + " " +
 		// cycleLength + " " + x + " " + y);
 	}
 
-	float ge01Value() {
+	// original used in task1
+	void setParamsV1() {
+		// use a gaussian distribution for area (= size * size) with mean=4 and
+		// sd=2
+		float a = 4.0f + (float) get01Value2() * 2.0f;
+		thermalStrength = (float) Math.sqrt(a);
+		cycleLength = Cloud.getLifeSpan(thermalStrength) * 1.0f;
+		duration = 1.0f;
+		phase = get01Value() * cycleLength;
+
+	}
+
+	void setParamsV2() {
+		// quasi random between -2 and 2
+		float qrandom = (float) (Math.sqrt(get01Value3() * 16f) - 2f);
+		float a = 3.0f + qrandom;
+		thermalStrength = a;
+		cycleLength = (thermalStrength / 10f + 0.5f * get01Value2()) * 120; // 50% comes from strength and 50% is random
+		duration = 0.5f + thermalStrength / 20f + get01Value4() * 0.25f; // duration at least half the cycle + 25% from strength + 25% random
+		phase = get01Value() * cycleLength;
+		show = get01Value4() > 0.1f; // one of 10 triggers is not visible
+	}
+
+	float get01Value() {
 		float a = (float) Math.sqrt((x + 1) / (y + 1));
 		return (float) ((a * 10) - Math.floor(a * 10));
 	}
 
-	float ge01Value2() {
+	float get01Value2() {
 		float a = (float) Math.sqrt((x + 2) / (y + 2));
 		return (float) ((a * 10) - Math.floor(a * 10));
 	}
 
+	float get01Value3() {
+		float a = (float) Math.sqrt((x + 11) / (y + 11));
+		// some deep enough decimals
+		return (float) ((a * 1000) - Math.floor(a * 1000));
+	}
+
+	float get01Value4() {
+		float a = (float) Math.sqrt((x + 17) / (y + 17));
+		// some deep enough decimals
+		return (float) ((a * 1000) - Math.floor(a * 1000));
+	}
+
 	/**
-	 * Create any clouds that bubbled up before I was created (but have yet to
-	 * evaporate). We loop back thru' the cycles from nextCloudStartTime.
+	 * Create any clouds that bubbled up before I was created (but have yet to evaporate). We loop back thru' the cycles from nextCloudStartTime.
 	 */
 	private void existingClouds(float t) {
 		// Log.i("FC Trigger",
@@ -188,8 +211,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	private float sleepT = -1;
 
 	/**
-	 * Makes the trigger sleep. When asleep the trigger will not be rendered and
-	 * does not produce any clouds.
+	 * Makes the trigger sleep. When asleep the trigger will not be rendered and does not produce any clouds.
 	 */
 	void sleep(float t) {
 		if (mode == SLEEPING) {
@@ -203,10 +225,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 	}
 
 	/**
-	 * Wakes up this trigger. One fiddly bit - if the wake up comes immediately
-	 * after sleep was called then we do not need to create existing clouds.
-	 * Triggers on overlapping nodes get a sleep call from one node followed by
-	 * a wake call from another.
+	 * Wakes up this trigger. One fiddly bit - if the wake up comes immediately after sleep was called then we do not need to create existing clouds. Triggers
+	 * on overlapping nodes get a sleep call from one node followed by a wake call from another.
 	 */
 	void wakeUp(float t) {
 		if (mode == AWAKE) {
@@ -224,9 +244,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 	}
 
 	/**
-	 * Utility fn to set nextCloudStartTime, the time when the next cloud will
-	 * be released. <code>phase</code> is time of first bubble and bubbles occur
-	 * every <code>cycleLength</code>.
+	 * Utility fn to set nextCloudStartTime, the time when the next cloud will be released. <code>phase</code> is time of first bubble and bubbles occur every
+	 * <code>cycleLength</code>.
 	 */
 	private void initNextCycle(float t) {
 		nextCloudStartTime = phase;
@@ -247,8 +266,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	/**
 	 * Add a visual representation of this trigger to the model.
 	 * 
-	 * We draw a square on the ground whose shade varys from white to black as a
-	 * fn of thermalStrength.
+	 * We draw a square on the ground whose shade varys from white to black as a fn of thermalStrength.
 	 */
 	private Obj3d obj3d;
 	private static final int NUM_POINTS = 7;

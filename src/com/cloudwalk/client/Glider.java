@@ -20,13 +20,13 @@ import com.cloudwalk.framework3d.Tools3d;
  * This class implements a glider. The class is abstract because any actual glider must have a controller. The possible controllers are AI, Network and User.
  */
 public class Glider extends MovingBody {
+	static float[] air = new float[] { 0, 0, 0 }; // air movement - common to all gliders
 	XCModelViewer xcModelViewer;
 	private String typeName;
 	protected int typeID; // 0 - para, 1 - hang, 2 -sail
 	public List<float[]> polar;
 	private int iP; // the current point on the polar
 	protected boolean landed = true;
-	float[] air = new float[] { 0, 0, 0 }; // air movement
 	private float ground = 0; // ground level
 	protected float timeFlying = 0;
 	protected float maxSink = 0;
@@ -69,8 +69,6 @@ public class Glider extends MovingBody {
 		 * 
 		 * TODO: 1. Make wind an observable that may change thru the day. 2. Introduce wind shear - task designer may divide air vertically into *two* layers.
 		 */
-		this.air[0] = xcModelViewer.xcModel.task.wind_x;
-		this.air[1] = xcModelViewer.xcModel.task.wind_y;
 		calcMaxSInk();
 		takeOff2(false);
 	}

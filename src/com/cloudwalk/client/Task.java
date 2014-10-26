@@ -46,13 +46,16 @@ public class Task implements CameraSubject {
 		this.xcModelViewer = xcModelViewer;
 		this.taskID = taskID;
 		if (taskID.equals("default")) {
-			generateT2Task();
-		} else if (taskID.equals("default1")) {
-			generateT2Task();
+			generateT1Task();
+		} else if (taskID.equals("default5")) {
+			generateT5Task();
 		} else {
 			parseFile(taskID);
 		}
 		nodeManager = new NodeManager(xcModelViewer, this);
+		Glider.air[0] = wind_x;
+		Glider.air[1] = wind_y;
+
 	}
 
 	private void generateT1Task() {
@@ -75,7 +78,7 @@ public class Task implements CameraSubject {
 		triggers = new Trigger[4 * 4 * 6];
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
-				flatLand(i * HEXAGON, j * HEXAGON);
+				flatLand(i * HEXAGON, j * HEXAGON, 1);
 			}
 		}
 
@@ -87,19 +90,18 @@ public class Task implements CameraSubject {
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
 		// hills[0] = hill;
-		nodeManager = new NodeManager(xcModelViewer, this);
 	}
 
-	private void generateT2Task() {
-		desc = "Simple closed circuit 50km task with 2 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase at 1500m.";
+	private void generateT5Task() {
+		desc = "Massive 150km task with lots of clouds and 6TP.\nWind: weak SW.\nCloudbase at 1500m.";
 		CLOUDBASE = 3;
 		HEXAGON = CLOUDBASE * 7;
 		// turn points
 		float x = CLOUDBASE * 10;
 		// x /= 5; // tmp - small course for testing gliding around the turn
 		// points
-		float[] xs = { x, x * 2, x * 3, x * 4, x * 5, x * 6, x * 7 };
-		float[] ys = { x, x * 0.9f, x * 1.5f, x * 0.8f, x * 1.4f, x * 0.7f, x };
+		float[] xs = { x, x * 2, x * 3, x * 4, x * 5, x * 6, x * 7, x * 7.5f };
+		float[] ys = { x * 0.5f, x * 0.2f, x * 1.5f, x * 0.3f, x * 1.4f, 0, x * 1.3f, x * 0.5f };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// wind
@@ -107,22 +109,20 @@ public class Task implements CameraSubject {
 		wind_y = 0.05f;
 
 		// triggers
-		triggers = new Trigger[8 * 2 * 6];
-		for (int i = 1; i < 9; i++) {
+		triggers = new Trigger[9 * 2 * 6];
+		for (int i = 1; i < 10; i++) {
 			for (int j = 0; j < 2; j++) {
-				flatLand(i * HEXAGON, j * HEXAGON);
+				flatLand(i * HEXAGON, j * HEXAGON, 2);
 			}
 		}
 
 		// roads - specify start and end points
-		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.9f*x, 0 }, { 4 * x, x*1.1f, 0 }, { 7 * x, 0.95f * x, 0 } };
-		float[][] r2 = new float[][] { { 0, x, 0 }, { 4 * x, x*1.1f, 0 }, { 7 * x, 1.95f * x, 0 } };
-		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.9f * x, 0 }, { 4 * x, x * 1.1f, 0 }, { 8 * x, 0.5f * x, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1 });
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
 		// hills[0] = hill;
-		nodeManager = new NodeManager(xcModelViewer, this);
 	}
 
 	private void parseFile(String taskID) throws IOException {
@@ -285,7 +285,7 @@ public class Task implements CameraSubject {
 	 *                 .
 	 * </pre>
 	 */
-	void flatLand(float x0, float y0) {
+	void flatLand(float x0, float y0, int version) {
 		Trigger trigger;
 		float y1, x1;
 
@@ -293,22 +293,22 @@ public class Task implements CameraSubject {
 		x1 = x0 + HEXAGON;
 		float dh = HEXAGON / 6;
 
-		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y0 + dh);
+		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y0 + dh, version);
 		triggers[next++] = trigger;
 
-		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y1 - dh);
+		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y1 - dh, version);
 		triggers[next++] = trigger;
 
-		trigger = new Trigger(xcModelViewer, x0 + dh, y0 + 2 * dh);
+		trigger = new Trigger(xcModelViewer, x0 + dh, y0 + 2 * dh, version);
 		triggers[next++] = trigger;
 
-		trigger = new Trigger(xcModelViewer, x0 + dh, y1 - 2 * dh);
+		trigger = new Trigger(xcModelViewer, x0 + dh, y1 - 2 * dh, version);
 		triggers[next++] = trigger;
 
-		trigger = new Trigger(xcModelViewer, x1 - dh, y0 + 2 * dh);
+		trigger = new Trigger(xcModelViewer, x1 - dh, y0 + 2 * dh, version);
 		triggers[next++] = trigger;
 
-		trigger = new Trigger(xcModelViewer, x1 - dh, y1 - 2 * dh);
+		trigger = new Trigger(xcModelViewer, x1 - dh, y1 - 2 * dh, version);
 		triggers[next++] = trigger;
 	}
 

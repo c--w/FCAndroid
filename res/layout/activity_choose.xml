@@ -1,15 +1,17 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="${relativePackage}.${activityClass}" >
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_gravity="center_horizontal"
         android:gravity="center_vertical"
-        android:orientation="horizontal" >
+        android:orientation="horizontal" 
+        android:layout_weight="1">
 
         <RadioGroup
             android:id="@+id/radioGlider"
@@ -38,7 +40,7 @@
             android:id="@+id/radioTask"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/controls_width" >
+            android:layout_marginRight="@dimen/controls_width" >
 
             <RadioButton
                 android:id="@+id/radio00"
@@ -58,6 +60,10 @@
                 android:id="@+id/radio33"
                 style="@style/radio_button_text"
                 android:text="Task 4 - 120km, 4TP" />
+            <RadioButton
+                android:id="@+id/radio44"
+                style="@style/radio_button_text"
+                android:text="Task 5 - 150km, 6TP" />
             </RadioGroup>
     </LinearLayout>
 
@@ -75,4 +81,4 @@
             android:text="Game >>" />
     </LinearLayout>
 
-</FrameLayout>
+</LinearLayout>

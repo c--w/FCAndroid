@@ -47,6 +47,7 @@ class NodeManager {
 	 */
 	private void carveUpTask() {
 		float dTotal = task.getTotalDistance();
+		Log.i("FC NM", "Total distance: "+dTotal);
 		int numNodes = (int) Math.floor(dTotal / nodeSpacing) + 1;
 		if (dTotal % nodeSpacing != 0) {
 			numNodes++;

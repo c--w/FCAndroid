@@ -41,6 +41,8 @@ public class ChooseActivity extends Activity {
 					task = "t002";
 				else if (id == R.id.radio33)
 					task = "t003";
+				else if (id == R.id.radio44)
+					task = "default5";
 				Intent intent = new Intent(ChooseActivity.this, StartFlightClub.class);
 				intent.putExtra("glider", glider);
 				intent.putExtra("task", task);
