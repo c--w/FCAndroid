@@ -25,22 +25,17 @@ import android.graphics.Path;
 import android.util.Log;
 
 /**
- * This class implements a 3d object made up of polygons. We have a list of
- * points (x, y, z) in model space and a second list of the those points after
- * they have been mapped into screen space (x_, y_, z_). The x_ coord is handy
- * for fogging and sorting; it represents the 'depth' of the projected point.
- * (y_, z_) is the location of the point in screen space.
+ * This class implements a 3d object made up of polygons. We have a list of points (x, y, z) in model space and a second list of the those points after they
+ * have been mapped into screen space (x_, y_, z_). The x_ coord is handy for fogging and sorting; it represents the 'depth' of the projected point. (y_, z_) is
+ * the location of the point in screen space.
  * 
  * <p>
  * The mapping from model space to screen space is as follows:
  * 
- * 1. A translation such that the camera focus becomes the origin. 2. A rotation
- * such that the camera eye is on the +ve x_ axis. 3. Forshorten y_ and z_ by
- * one over x_, the depth of the point. 4. Scale y_ and z_ according to the
- * height of the display area in pixels.
+ * 1. A translation such that the camera focus becomes the origin. 2. A rotation such that the camera eye is on the +ve x_ axis. 3. Forshorten y_ and z_ by one
+ * over x_, the depth of the point. 4. Scale y_ and z_ according to the height of the display area in pixels.
  * 
- * We use a flat array to store the coords as follows: (x0, y0, z0, x1, y1, z1,
- * x2, ...). If npoints * 3 exceeds the array size then we double the array size
+ * We use a flat array to store the coords as follows: (x0, y0, z0, x1, y1, z1, x2, ...). If npoints * 3 exceeds the array size then we double the array size
  * and do a System.copyarray().
  * 
  * I got the flat array idea from the WireFrame demo applet.
@@ -81,11 +76,9 @@ public class Obj3d implements CameraSubject {
 	int numShadows = 0;
 
 	/**
-	 * Creates an Obj3d that may or may not be registed with the 3d object
-	 * manager. Only registered objects are drawn on the screen. This
-	 * constructor is private because it is only used by the parser. Everyone
-	 * else should call the public constructor below which specifies the number
-	 * of polygons that are used to model this object.
+	 * Creates an Obj3d that may or may not be registed with the 3d object manager. Only registered objects are drawn on the screen. This constructor is private
+	 * because it is only used by the parser. Everyone else should call the public constructor below which specifies the number of polygons that are used to
+	 * model this object.
 	 */
 	private Obj3d(ModelViewer modelViewer, boolean register) {
 		this.modelViewer = modelViewer;
@@ -165,10 +158,8 @@ public class Obj3d implements CameraSubject {
 	 * 	t t 336699 9.7 0 3.5, 2.2 2.2 3.5, 3.2 5 7.3,
 	 * </pre>
 	 * 
-	 * The above represents an Obj3d with two polygons, the second of which is
-	 * double sided; each is a differnt color; each is made up of 3 points. Both
-	 * cast shadows. The first flag indicates if the polygon casts a shadow. The
-	 * second flag indicates if the polygon is double sided.
+	 * The above represents an Obj3d with two polygons, the second of which is double sided; each is a differnt color; each is made up of 3 points. Both cast
+	 * shadows. The first flag indicates if the polygon casts a shadow. The second flag indicates if the polygon is double sided.
 	 */
 	public Obj3d(StreamTokenizer st, ModelViewer modelViewer, boolean register) throws IOException, FileFormatException {
 
@@ -288,27 +279,31 @@ public class Obj3d implements CameraSubject {
 		if (!visible) {
 			return;
 		}
-		drawShadow(g);
-		final float[] eye = modelViewer.cameraMan.getEye();
+		try {
 
-		for (int i = 0; i < polygons.length; i++) {
-			// if (polygons[i] == null) {
-			// Log.i("FC", "Warning: polygon is null");
-			// break;
-			// }
-			if (!polygons[i].isBackFace(eye))
-				polygons[i].draw(g);
-		}
+			drawShadow(g);
+			final float[] eye = modelViewer.cameraMan.getEye();
 
-		for (int i = 0; i < polywires.length; i++) {
-			polywires[i].draw(g);
+			for (int i = 0; i < polygons.length; i++) {
+				// if (polygons[i] == null) {
+				// Log.i("FC", "Warning: polygon is null");
+				// break;
+				// }
+				if (!polygons[i].isBackFace(eye))
+					polygons[i].draw(g);
+			}
+
+			for (int i = 0; i < polywires.length; i++) {
+				polywires[i].draw(g);
+			}
+		} catch (Exception e) {
+			Log.e("FC OBJ3D draw", e.getMessage(), e);
 		}
 	}
 
 	/**
-	 * Uses the camera to map all points from model space, (x, y, z) to screen
-	 * space (x_, y_, z_). Remember that x_ represents the depth of the point
-	 * and (y_, z_) maps to the screen (x, y) co-ords of the point.
+	 * Uses the camera to map all points from model space, (x, y, z) to screen space (x_, y_, z_). Remember that x_ represents the depth of the point and (y_,
+	 * z_) maps to the screen (x, y) co-ords of the point.
 	 * 
 	 * @see CameraMan
 	 */
@@ -378,14 +373,13 @@ public class Obj3d implements CameraSubject {
 	/** Gives the specifed color to poligons depending on doublesidednes. */
 	public void setColor(int c, boolean doubleSided) {
 		for (int i = 0; i < polygons.length; i++) {
-			if(polygons[i].doubleSided == doubleSided)
+			if (polygons[i].doubleSided == doubleSided)
 				polygons[i].c = c;
 		}
 	}
 
 	/**
-	 * Adds a point to the list. First scan thru' the list to see if we already
-	 * have a point with identical coords. If so, return index of that point.
+	 * Adds a point to the list. First scan thru' the list to see if we already have a point with identical coords. If so, return index of that point.
 	 */
 	int addPoint(float x, float y, float z) {
 		int index = -1;
@@ -423,13 +417,11 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * Adds a polygon. Note that the vertices of the polygon are passed using a
-	 * float[][] and NOT a float[]. Eg.
+	 * Adds a polygon. Note that the vertices of the polygon are passed using a float[][] and NOT a float[]. Eg.
 	 * 
 	 * {{x0, y0, z0}, {x1, y1, z1}, ...}
 	 * 
-	 * We *flatten* the data once it is encapsulated inside this class; outside
-	 * this class we want clarity; inside this class we want speed !
+	 * We *flatten* the data once it is encapsulated inside this class; outside this class we want clarity; inside this class we want speed !
 	 */
 	public int addPolygon(float[][] vs, int c, boolean doubleSided) {
 		Polygon polygon = new Polygon(vs.length, c, doubleSided);
@@ -447,9 +439,8 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * Adds a polygon with one side visible. Which of the two sides is visible
-	 * is determined by the order of the points. If as you look at the polygon
-	 * the points go clockwise then the normal points away from you.
+	 * Adds a polygon with one side visible. Which of the two sides is visible is determined by the order of the points. If as you look at the polygon the
+	 * points go clockwise then the normal points away from you.
 	 */
 	public int addPolygon(float[][] vs, int c) {
 		return addPolygon(vs, c, false);
@@ -471,8 +462,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * Adds a bent polygon (made out of two triangles). We are passed four
-	 * points that do NOT lie in a plane.
+	 * Adds a bent polygon (made out of two triangles). We are passed four points that do NOT lie in a plane.
 	 * 
 	 * <pre>
 	 * 
@@ -501,8 +491,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * Adds a series of polygons by rotating the points list (ps) steps times,
-	 * and colouring them as defined by the color array (stripes!).
+	 * Adds a series of polygons by rotating the points list (ps) steps times, and colouring them as defined by the color array (stripes!).
 	 */
 	public void lathePolygons(float[][] ps, int[] color, int steps) {
 		float _ps[][] = new float[ps.length][3];
@@ -563,8 +552,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * Reverses the ordering of the polygons that make up this object. This may
-	 * be useful for fudging the z order before drawing the object.
+	 * Reverses the ordering of the polygons that make up this object. This may be useful for fudging the z order before drawing the object.
 	 */
 	void reverse() {
 		for (int i = 0; i < polygons.length / 2 - 1; i++) {
@@ -583,8 +571,7 @@ public class Obj3d implements CameraSubject {
 		Obj3d o = new Obj3d(modelViewer, 6);
 
 		/**
-		 * Two steps. First we create a cube whose corner is at the origin and
-		 * then we translate it so that its center is at the origin.
+		 * Two steps. First we create a cube whose corner is at the origin and then we translate it so that its center is at the origin.
 		 */
 
 		// front (x=1) then back (x=0)
@@ -647,29 +634,22 @@ public class Obj3d implements CameraSubject {
 	 * 
 	 * // number of polygons sb.append(polygons.length + "\n");
 	 * 
-	 * // loop - one line per polygon for (int i = 0; i < polygons.length; i++)
-	 * { Polygon po = polygons[i];
+	 * // loop - one line per polygon for (int i = 0; i < polygons.length; i++) { Polygon po = polygons[i];
 	 * 
-	 * // todo: tidy up shadows - what a mess ! boolean shadow = false; for (int
-	 * j = 0; j < MAX_SHADOWS; j++) { if (shadowCasters[j] == i) { shadow =
-	 * true; break; } } sb.append(shadow ? "t " : "f ");
+	 * // todo: tidy up shadows - what a mess ! boolean shadow = false; for (int j = 0; j < MAX_SHADOWS; j++) { if (shadowCasters[j] == i) { shadow = true;
+	 * break; } } sb.append(shadow ? "t " : "f ");
 	 * 
 	 * sb.append(po.doubleSided ? "t " : "f ");
 	 * 
-	 * int rgb = po.c; sb.append("\"" + Integer.toHexString(rgb & 0xFFFFFF) +
-	 * "\" ");
+	 * int rgb = po.c; sb.append("\"" + Integer.toHexString(rgb & 0xFFFFFF) + "\" ");
 	 * 
-	 * // loop - points in this polygon for (int j = 0; j < po.n; j++) { int
-	 * index = po.points[j]; sb.append(Tools3d.round(ps[index]) + " " +
-	 * Tools3d.round(ps[index + 1]) + " " + Tools3d.round(ps[index + 2]) +
-	 * ", "); }
+	 * // loop - points in this polygon for (int j = 0; j < po.n; j++) { int index = po.points[j]; sb.append(Tools3d.round(ps[index]) + " " +
+	 * Tools3d.round(ps[index + 1]) + " " + Tools3d.round(ps[index + 2]) + ", "); }
 	 * 
-	 * // finished this polygon so end line sb.append("\n"); } return new
-	 * String(sb); }
+	 * // finished this polygon so end line sb.append("\n"); } return new String(sb); }
 	 */
 	/**
-	 * Loops thru' surfaces setting their dirtyNormal flags so that the surface
-	 * normals will be computed again.
+	 * Loops thru' surfaces setting their dirtyNormal flags so that the surface normals will be computed again.
 	 * 
 	 * @see Obj3dDir.updateRotated
 	 */
@@ -680,8 +660,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * Adds a polygon. And then add a second polygon - the shadow - using the
-	 * same points with z ~ 0
+	 * Adds a polygon. And then add a second polygon - the shadow - using the same points with z ~ 0
 	 */
 	public int addPolygonWithShadow(float[][] vs, int c, boolean doubleSided) {
 		shadowCasters[numShadows] = this.addPolygon(vs, c, doubleSided);
@@ -708,7 +687,7 @@ public class Obj3d implements CameraSubject {
 			int pointIndex = this.addPoint(vs_[i][0], vs_[i][1], vs_[i][2]);
 			shadows[numShadows].addPoint(pointIndex);
 		}
-		//Log.i("FC obj3d", shadows[numShadows].toString());
+		// Log.i("FC obj3d", shadows[numShadows].toString());
 		numShadows++;
 		return shadowCasters[numShadows - 1];
 	}
@@ -720,8 +699,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * Keeps the shadow under its object. The owner/creator of this object
-	 * should call this method each time they move the object.
+	 * Keeps the shadow under its object. The owner/creator of this object should call this method each time they move the object.
 	 */
 	public void updateShadow() {
 		for (int i = 0; i < MAX_SHADOWS; i++) {
@@ -739,11 +717,8 @@ public class Obj3d implements CameraSubject {
 
 				// old
 				/*
-				 * float[] p = (Vector3d) points.elementAt(surface.points[j]);
-				 * float[] q = (Vector3d)
-				 * points.elementAt(shadows[i].points[surface.numPoints - 1 -
-				 * j]);//?? Tools3d.clone(p, q); if (app.landscape != null) q.z
-				 * = app.landscape.getHeight(q.x, q.y); else q.z = 0;
+				 * float[] p = (Vector3d) points.elementAt(surface.points[j]); float[] q = (Vector3d) points.elementAt(shadows[i].points[surface.numPoints - 1 -
+				 * j]);//?? Tools3d.clone(p, q); if (app.landscape != null) q.z = app.landscape.getHeight(q.x, q.y); else q.z = 0;
 				 */
 			}
 		}
@@ -760,9 +735,8 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * This inner class represents a polygon. The polygon is made from N points
-	 * (or vertices). It is either only visible from one side or it is visible
-	 * from both sides.
+	 * This inner class represents a polygon. The polygon is made from N points (or vertices). It is either only visible from one side or it is visible from
+	 * both sides.
 	 */
 	class Polygon {
 		int n; // number of points eg. 4 for a square
@@ -801,12 +775,9 @@ public class Obj3d implements CameraSubject {
 		private float[] ray = new float[3];
 
 		/**
-		 * Decides if this polygon is a 'back face'. A back face is a polygon
-		 * that is facing away from the camera and therefore should not be
-		 * drawn. If this polygon is double sided then it can not be a back
-		 * face. In such a case this routine has the side effect of ensuring
-		 * that the normal points towards the camera eye rather than away from
-		 * it.
+		 * Decides if this polygon is a 'back face'. A back face is a polygon that is facing away from the camera and therefore should not be drawn. If this
+		 * polygon is double sided then it can not be a back face. In such a case this routine has the side effect of ensuring that the normal points towards
+		 * the camera eye rather than away from it.
 		 * 
 		 * @see Obj3d#draw(Graphics)
 		 */
@@ -834,9 +805,8 @@ public class Obj3d implements CameraSubject {
 		}
 
 		/**
-		 * Creates the unit normal to the polygon by taking the cross product of
-		 * the first two edges. Call with 'nsides' set to two if the polygon is
-		 * visible from both sides.
+		 * Creates the unit normal to the polygon by taking the cross product of the first two edges. Call with 'nsides' set to two if the polygon is visible
+		 * from both sides.
 		 */
 		void setNormal() {
 			/** We need three points to define two edges. */
@@ -862,9 +832,8 @@ public class Obj3d implements CameraSubject {
 		}
 
 		/**
-		 * Calculates the apparent color of this polygon. We ask the camera how
-		 * much light falls on a surface wiith this normal and then darken the
-		 * color accordingly.
+		 * Calculates the apparent color of this polygon. We ask the camera how much light falls on a surface wiith this normal and then darken the color
+		 * accordingly.
 		 */
 		private int calcLight() {
 			if (noShade) {
@@ -890,9 +859,7 @@ public class Obj3d implements CameraSubject {
 		}
 
 		/**
-		 * Draws this polygon on the screen. If any of the points are not
-		 * visible (ie. behind the camera) then do not attempt to draw this
-		 * polygon.
+		 * Draws this polygon on the screen. If any of the points are not visible (ie. behind the camera) then do not attempt to draw this polygon.
 		 */
 		void draw(Canvas g) {
 			if (n <= 1)
@@ -923,8 +890,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * This inner class represents a wire. The wire is made from N points (or
-	 * vertices).
+	 * This inner class represents a wire. The wire is made from N points (or vertices).
 	 */
 	class Polywire {
 		int n; // number of points eg. 4 for a square
@@ -958,9 +924,7 @@ public class Obj3d implements CameraSubject {
 		}
 
 		/**
-		 * Draws this polywire on the screen. If a point is not visible (ie.
-		 * behind the camera) then do not attempt to draw the line connecting
-		 * that point.
+		 * Draws this polywire on the screen. If a point is not visible (ie. behind the camera) then do not attempt to draw the line connecting that point.
 		 * 
 		 * Loop thru the list and draw a line connecting each point to the next.
 		 */
@@ -992,8 +956,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/**
-	 * This class implements a bounding box in model space that contains the
-	 * parent Obj3d instance.
+	 * This class implements a bounding box in model space that contains the parent Obj3d instance.
 	 */
 	class BB {
 		float xmin, xmax, ymin, ymax, zmin, zmax;
@@ -1004,8 +967,7 @@ public class Obj3d implements CameraSubject {
 
 		void setBB() {
 			/**
-			 * Loop thru' all points and find the min and max for each
-			 * dimension.
+			 * Loop thru' all points and find the min and max for each dimension.
 			 */
 			for (int i = 0; i < npoints * 3; i += 3) {
 				if (i == 0) {

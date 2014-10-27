@@ -137,7 +137,7 @@ public class Task implements CameraSubject {
 		desc = "Free distance task.\nWind: weak W.\nCloudbase at 1500m.";
 		type = DISTANCE;
 		CLOUDBASE = 3;
-		NODE_SPACING = CLOUDBASE * 80f;
+		NODE_SPACING = CLOUDBASE * 120f;
 		HEXAGON = CLOUDBASE * 7;
 
 		// wind
@@ -145,19 +145,19 @@ public class Task implements CameraSubject {
 		wind_y = 0.00f;
 
 		// triggers
-		triggers = new Trigger[19 * 1 * 6];
+		triggers = new Trigger[19 * 1 * 7];
 		float x_ = 0, y_ = 0;
 		for (int i = 1; i < 20; i++) {
-			HEXAGON = CLOUDBASE * (7 + 2 * i);
-			flatLand(x_ += HEXAGON, y_ += HEXAGON / 4, 2);
+			HEXAGON = (float) (CLOUDBASE * (7 + Math.pow(i, 1.6f)));
+			flatLand2(x_ += HEXAGON * 0.833f, y_, 2);
 		}
 
-		float[] xs = { CLOUDBASE * 7, x_ };
-		float[] ys = { CLOUDBASE * 7, y_ };
+		float[] xs = { CLOUDBASE * 7, x_ + HEXAGON };
+		float[] ys = { CLOUDBASE * 7 / 4, y_ + HEXAGON };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// roads - specify start and end points
-		float[][] r1 = new float[][] { { 0, 0, 0 }, { x_, y_, 0 } };
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { x_ + HEXAGON, y_ + HEXAGON, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1 });
 
 		// hills = new Hill[1];
@@ -353,4 +353,10 @@ public class Task implements CameraSubject {
 		triggers[next++] = trigger;
 	}
 
+	void flatLand2(float x0, float y0, int version) {
+		Trigger trigger;
+		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y0 + HEXAGON / 2, version);
+		triggers[next++] = trigger;
+		flatLand(x0, y0, version);
+	}
 }

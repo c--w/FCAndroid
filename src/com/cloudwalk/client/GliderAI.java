@@ -342,32 +342,6 @@ public class GliderAI extends GliderTask {
 	}
 
 	/**
-	 * Returns a unit vector pointing in the direction we want to fly. Note we glide to (x_, y_), a point inside the turn point sector rather than (x, y)
-	 * itself.
-	 * 
-	 * Todo: take into account the wind exactly (need to solve a quadratic eq). I have an approx solution which is ok for light winds.
-	 */
-	float[] onTrack() {
-		return onTrack(p);
-	}
-
-	float[] onTrack(float[] from) {
-		float[] r = new float[3];
-		Tools3d.subtract(new float[] { nextTP.x_, nextTP.y_, from[2] }, from, r);
-
-		// time to get to next turn point assuming nil wind
-		float t = Tools3d.length(r) / this.getSpeed();
-
-		// drift due to wind during this amount of time
-		float[] drift = new float[] { air[0] * t, air[1] * t, 0 };
-
-		// offset turn point by - drift to get ~desired heading
-		Tools3d.subtract(new float[] { nextTP.x_ - drift[0], nextTP.y_ - drift[1], from[2] }, from, r);
-		Tools3d.makeUnit(r);
-		return r;
-	}
-
-	/**
 	 * How long to get to a cloud. Note we may ignore the wind as both the cloud and the glider experience the same drift.
 	 */
 	float whenArrive(float x, float y) {

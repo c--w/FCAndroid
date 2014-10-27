@@ -9,20 +9,20 @@
  */
 package com.cloudwalk.client;
 
+import java.util.Arrays;
+
 import android.graphics.Color;
 import android.util.Log;
 
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * Adds next turn point to glider state. This class contains stuff common to
- * GliderUser and GliderAI.
+ * Adds next turn point to glider state. This class contains stuff common to GliderUser and GliderAI.
  */
 public class GliderTask extends Glider {
 	protected TurnPoint nextTP = null; // the next turn point
 	float groundSpeed;
 	float groundGlideRatio;
-	float lastx, lasty, lastz;
 	String playerName = "";
 
 	public GliderTask(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
@@ -78,9 +78,8 @@ public class GliderTask extends Glider {
 	}
 
 	/**
-	 * Returns distance flown around the task. We take the distance of the last
-	 * turn point, A, from the task start and add the distance that we are away
-	 * from A in the direction of the next turn point, B.
+	 * Returns distance flown around the task. We take the distance of the last turn point, A, from the task start and add the distance that we are away from A
+	 * in the direction of the next turn point, B.
 	 */
 	public float distanceFlown() {
 		TurnPoint tp = nextTP.prevTP;
@@ -91,15 +90,25 @@ public class GliderTask extends Glider {
 		return distanceFlown;
 	}
 
+	public void currentGlideSpeed() {
+		float[] u = this.unitSpeed();
+		float s = this.getSpeed();
+		u[0] *= s;
+		u[1] *= s;
+		u[0] += air[0];
+		u[1] += air[1];
+		groundSpeed = (float) Math.sqrt(u[0] * u[0] + u[1] * u[1]);
+		groundGlideRatio = groundSpeed / -this.getSink();
+	}
+
 	/**
-	 * Returns a text message giving current state of glider. Note the
-	 * formatting of model units for human consumption...
+	 * Returns a text message giving current state of glider. Note the formatting of model units for human consumption...
 	 * 
 	 * time: divide by 2 gives minutes distance: divide by 2 gives kilometers
 	 */
 	public String getStatusMsg() {
 		String taskTime = "<br/>Task time: " + (int) timeFlying;
-		String currentFlightValues = "<br/>Gear: " + (getiP() + 1) + "  Speed: " + (int) (groundSpeed * 100) + "  L/D: " + (int) groundGlideRatio;
+		String currentFlightValues = "<br/>Gear: " + (getiP() + 1) + "  Speed: " + (int) (groundSpeed * 100) + "  L/D: " + groundGlideRatio;
 		String height = "<br/>Height: " + (int) ((p[2] / 3) * 1500) + "m  ";
 
 		if (finished) {
@@ -112,7 +121,7 @@ public class GliderTask extends Glider {
 	}
 
 	public String getShortStatus() {
-		String currentFlightValues = "G: " + (getiP() + 1) + " S: " + (int) (groundSpeed * 100) + " L/D: " + (int) groundGlideRatio;
+		String currentFlightValues = "G: " + (getiP() + 1) + " S: " + (int) (groundSpeed * 100) + " L/D: " + groundGlideRatio;
 		String height = " H: " + (int) ((p[2] / 3) * 1500) + "m";
 		String distance = " D: " + (round1(distanceFlown() / 2f)) + "km";
 		String hexColor = String.format("#%06X", (0xFFFFFF & color));
@@ -130,8 +139,7 @@ public class GliderTask extends Glider {
 	static final float FOCUS_D = 1.0f;
 
 	/**
-	 * Sets the camera focus and eye. The glider should not sit at the center of
-	 * the screen. Rather...
+	 * Sets the camera focus and eye. The glider should not sit at the center of the screen. Rather...
 	 * 
 	 * glider -> screen
 	 * 
@@ -169,4 +177,36 @@ public class GliderTask extends Glider {
 		this.playerName = playerName;
 	}
 
+	/**
+	 * Returns a unit vector pointing in the direction we want to fly. Note we glide to (x_, y_), a point inside the turn point sector rather than (x, y)
+	 * itself.
+	 * 
+	 * Todo: take into account the wind exactly (need to solve a quadratic eq). I have an approx solution which is ok for light winds.
+	 */
+	float[] onTrack() {
+		return onTrack(p);
+	}
+
+	float[] onTrack(float[] from) {
+		float[] r = new float[3];
+		Tools3d.subtract(new float[] { nextTP.x_, nextTP.y_, from[2] }, from, r);
+
+		// time to get to next turn point assuming nil wind
+		float t = Tools3d.length(r) / this.getSpeed();
+
+		// drift due to wind during this amount of time
+		float[] drift = new float[] { air[0] * t, air[1] * t, 0 };
+
+		// offset turn point by - drift to get ~desired heading
+		Tools3d.subtract(new float[] { nextTP.x_ - drift[0], nextTP.y_ - drift[1], from[2] }, from, r);
+		Tools3d.makeUnit(r);
+		return r;
+	}
+
+	float[] unitSpeed() {
+		float[] uspeed = new float[] { v[0], v[1], 0 };
+		Tools3d.makeUnit(uspeed);
+		Log.i("FC", Arrays.toString(uspeed));
+		return uspeed;
+	}
 }

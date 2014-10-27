@@ -51,11 +51,8 @@ public class GliderUser extends GliderTask {
 
 	public void tick(float t, float dt) {
 		super.tick(t, dt);
-		groundSpeed = (float) (Math.sqrt(Math.pow(p[0] - lastx, 2) + Math.pow(p[1] - lasty, 2)) / dt);
-		groundGlideRatio = -groundSpeed / (p[2] - lastz) / dt / 1000 * 1.8f;
-		lastx = p[0];
-		lasty = p[1];
-		lastz = p[2];
+		currentGlideSpeed();
+		groundGlideRatio = ((int) (groundGlideRatio * 10)) / 10f;
 
 		if (!landed) {
 			vario.tick(t);
@@ -79,9 +76,8 @@ public class GliderUser extends GliderTask {
 	private int _iP = 0;
 
 	/**
-	 * Send to server the values of p, vx, vy, iP and the next move. We only do
-	 * this if either nextTurn has changed or iP has changed since this fn was
-	 * last called.
+	 * Send to server the values of p, vx, vy, iP and the next move. We only do this if either nextTurn has changed or iP has changed since this fn was last
+	 * called.
 	 */
 	float lastSend = 0;
 
@@ -139,8 +135,7 @@ public class GliderUser extends GliderTask {
 	}
 
 	/**
-	 * Allows camera man to either follow the glider from behind or look from
-	 * the point of view of the pilot.
+	 * Allows camera man to either follow the glider from behind or look from the point of view of the pilot.
 	 */
 	void setCameraMode(int mode) {
 		cameraMode = mode;

@@ -117,6 +117,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 			setParamsV1();
 		else if (version == 2)
 			setParamsV2();
+		else if (version == 3)
+			setParamsV3();
 		myID = nextID++;
 		// Log.w("FC Trigger", "id+phase" + myID + " " + phase + " " +
 		// cycleLength + " " + x + " " + y);
@@ -135,9 +137,21 @@ public class Trigger implements ClockObserver, CameraSubject {
 	}
 
 	void setParamsV2() {
-		// quasi random between -2 and 2
+		// quasi random between -2 and 2 but leaning towards 2
 		float qrandom = (float) (Math.sqrt(get01Value3() * 16f) - 2f);
 		float a = 3.0f + qrandom;
+		thermalStrength = a;
+		cycleLength = (thermalStrength / 10f + 0.5f * get01Value2()) * 120; // 50% comes from strength and 50% is random
+		duration = 0.5f + thermalStrength / 20f + get01Value4() * 0.25f; // duration at least half the cycle + 25% from strength + 25% random
+		phase = get01Value() * cycleLength;
+		show = get01Value4() > 0.1f; // one of 10 triggers is not visible
+	}
+
+	void setParamsV3() {
+		// quasi random between -2 and 2 leaning to 0
+		float qrandom = get01Value3();
+		qrandom *= qrandom;
+		float a = 3.0f + qrandom * 2;
 		thermalStrength = a;
 		cycleLength = (thermalStrength / 10f + 0.5f * get01Value2()) * 120; // 50% comes from strength and 50% is random
 		duration = 0.5f + thermalStrength / 20f + get01Value4() * 0.25f; // duration at least half the cycle + 25% from strength + 25% random
