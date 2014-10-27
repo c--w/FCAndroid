@@ -9,6 +9,8 @@
  */
 package com.cloudwalk.framework3d;
 
+import java.util.Arrays;
+
 import com.cloudwalk.client.XCModel;
 
 import android.content.Context;
@@ -30,8 +32,7 @@ import android.view.SurfaceView;
 import android.view.View;
 
 /**
- * This class is responsible for displaying a 3d model on the screen. Dragging
- * on the canvas rotates the camera.
+ * This class is responsible for displaying a 3d model on the screen. Dragging on the canvas rotates the camera.
  * 
  * @see ModelViewer
  * @see CameraMan
@@ -111,8 +112,8 @@ public class ModelView extends SurfaceView {
 
 			@Override
 			public void surfaceCreated(SurfaceHolder holder) {
-//				Canvas canvas = holder.lockCanvas();
-//				holder.unlockCanvasAndPost(canvas);
+				// Canvas canvas = holder.lockCanvas();
+				// holder.unlockCanvasAndPost(canvas);
 			}
 
 			@Override
@@ -129,8 +130,7 @@ public class ModelView extends SurfaceView {
 
 	void tick() {
 		/*
-		 * Change camera angle if dragging mouse and moused has moved more than
-		 * the minimum amount
+		 * Change camera angle if dragging mouse and moused has moved more than the minimum amount
 		 */
 		float dtheta = 0, dz = 0;
 		float zStep;
@@ -139,9 +139,8 @@ public class ModelView extends SurfaceView {
 			return;
 
 		/*
-		 * Q. How much do we change camera height by ? A. Depends how far camera
-		 * is from the focus. Take 3 seconds to move up or down by the same
-		 * distance that the camera is from the focus.
+		 * Q. How much do we change camera height by ? A. Depends how far camera is from the focus. Take 3 seconds to move up or down by the same distance that
+		 * the camera is from the focus.
 		 */
 		zStep = modelViewer.cameraMan.getDistance() / (25 * 3);
 
@@ -167,8 +166,7 @@ public class ModelView extends SurfaceView {
 	}
 
 	/**
-	 * Paints the model to the image buffer. We have three steps. First
-	 * transform the objects. Then sort them. Finally draw them.
+	 * Paints the model to the image buffer. We have three steps. First transform the objects. Then sort them. Finally draw them.
 	 */
 	protected void paintModel() {
 
@@ -190,6 +188,9 @@ public class ModelView extends SurfaceView {
 		// draw
 		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
 			Obj3d o = modelViewer.obj3dManager.obj(i);
+			if (modelViewer.cameraMan.mode != CameraMan.TASK && o.getDepthMax() < -100) {
+				continue;
+			}
 			o.draw(bufferCanvas);
 		}
 
@@ -230,8 +231,7 @@ public class ModelView extends SurfaceView {
 	public void handleTouch(View v, MotionEvent event) {
 		// Log.w("FC",""+event.getActionMasked());
 		/*
-		 * float x = event.getX(); if (x < v.getWidth() / 4 || x > v.getWidth()
-		 * / 4 * 3) { return; }
+		 * float x = event.getX(); if (x < v.getWidth() / 4 || x > v.getWidth() / 4 * 3) { return; }
 		 */
 		if (event.getAction() == MotionEvent.ACTION_DOWN) {
 			x0 = (int) event.getX();

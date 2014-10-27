@@ -89,7 +89,7 @@ public class GliderAI extends GliderTask {
 		if (nextTP.nextTP == null && !finalGlide) {
 			int iP = withinGlide(nextTP.x, nextTP.y, true, 0);
 			if (iP != -1) {
-				Log.i("FC GLIDERAI", "final glide!!");
+				//Log.i("FC GLIDERAI", "final glide!!");
 				this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
 				setPolar(iP);
 				finalGlide = true;
@@ -151,7 +151,7 @@ public class GliderAI extends GliderTask {
 		int iP = withinEasyGlide(nextTP.x_, nextTP.y_, true);
 		if (iP != -1) {
 			if (!easyGlideToTP) {
-				Log.i("FC GLIDERAI", "easyglide to TP: " + nextTP.myID);
+				//Log.i("FC GLIDERAI", "easyglide to TP: " + nextTP.myID);
 				this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
 				easyGlideToTP = true;
 			}
@@ -174,7 +174,7 @@ public class GliderAI extends GliderTask {
 		if (lsg == null) { // glide torwards next turn point
 			this.moveManager.setTargetPoint(new float[] { nextTP.x_, nextTP.y_, 0 }, true);
 			setPolar(bestGlide(nextTP.x_, nextTP.y, true));
-			Log.i("FC GLIDERAI", "glide to TP: " + nextTP.myID + " with IP: " + bestGlide(nextTP.x_, nextTP.y, true));
+			//Log.i("FC GLIDERAI", "glide to TP: " + nextTP.myID + " with IP: " + bestGlide(nextTP.x_, nextTP.y, true));
 			tryLater = true;
 			return;
 		}
@@ -185,7 +185,7 @@ public class GliderAI extends GliderTask {
 			Cloud cloud = (Cloud) lsg.ls;
 			if (moveManager.getCloud() != cloud) {
 				setPolar(lsg.glideIndex);
-				Log.i("FC GLIDERAI", "glide to cloud with" + lsg.glideIndex + " LS:" + cloud.myID);
+				//Log.i("FC GLIDERAI", "glide to cloud with" + lsg.glideIndex + " LS:" + cloud.myID);
 				this.moveManager.setCloud(cloud);
 				if (filmID == myID) {
 					cutPending = true;
@@ -202,7 +202,7 @@ public class GliderAI extends GliderTask {
 			Hill hill = (Hill) lsg.ls;
 			if (moveManager.getCircuit() != hill.getCircuit()) {
 				setPolar(lsg.glideIndex);
-				Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.myID);
+				//Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.myID);
 				this.moveManager.setCircuit(hill.getCircuit());
 			}
 		} catch (Exception e) {
@@ -232,7 +232,7 @@ public class GliderAI extends GliderTask {
 		// glide to cloud if it is *stronger* or if I was in desperate mode
 		try {
 			Cloud cloud = (Cloud) lsg.ls;
-			Log.i("FC GLIDERAI", "review found better LS with " + lsg.glideIndex + " LS: " + cloud.myID);
+			//Log.i("FC GLIDERAI", "review found better LS with " + lsg.glideIndex + " LS: " + cloud.myID);
 			setPolar(lsg.glideIndex);
 			this.moveManager.setCloud(cloud);
 			if (filmID == myID) {
@@ -248,7 +248,7 @@ public class GliderAI extends GliderTask {
 		try {
 			Hill hill = (Hill) lsg.ls;
 			setPolar(lsg.glideIndex);
-			Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.myID);
+			//Log.i("FC GLIDERAI", "glide to hill with: " + lsg.glideIndex + " LS: " + hill.myID);
 			this.moveManager.setCircuit(hill.getCircuit());
 		} catch (Exception e) {
 			;

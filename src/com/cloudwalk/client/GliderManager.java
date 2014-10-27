@@ -129,7 +129,7 @@ public class GliderManager implements ClockObserver {
 		}
 
 		// pass message to glider
-		glider.air[2] = lift;
+		glider.airv = lift;
 	}
 
 	private int nextGaggle = 0;

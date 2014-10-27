@@ -31,7 +31,7 @@ class NodeManager {
 	public NodeManager(XCModelViewer xcModelViewer, Task task) {
 		this.xcModelViewer = xcModelViewer;
 		this.task = task;
-		nodeSpacing = task.CLOUDBASE * 12;
+		nodeSpacing = task.NODE_SPACING;
 		nodeRadius = nodeSpacing * 0.6f; // was 0.75
 
 		carveUpTask();

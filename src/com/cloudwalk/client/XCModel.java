@@ -174,7 +174,7 @@ public class XCModel extends Model {
 		if (mode == USER) {
 			Glider g = gliderManager.gliderUser;
 			compass.setArrow(g.v[0], g.v[1]);
-			slider.setValue(g.getSink() + g.air[2]);
+			slider.setValue(g.getSink() + g.airv);
 			if (xcModelViewer.netFlag == true) {
 				GliderTask[] gliders = new GliderTask[gliderManager.numNet + 1];
 				int i = 0;

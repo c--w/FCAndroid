@@ -225,7 +225,7 @@ public class TurnPoint {
 	static final float ARROW_SPACING = 5;
 	static final float ARROW_LEN = ARROW_SPACING * 0.3f;
 	static final float ARROW_HEAD = ARROW_LEN * 0.2f;
-	static final int ARROWS_MAX = 100; // just used to dim an array
+	static final int ARROWS_MAX = 300; // just used to dim an array
 	static final int COLOR_ARROW = Color.rgb(255, 200, 0);// ORANGE
 
 	/**
@@ -252,8 +252,9 @@ public class TurnPoint {
 
 		float dx_ = dx * ARROW_SPACING;
 		float dy_ = dy * ARROW_SPACING;
-		float[][][] pss = new float[ARROWS_MAX][2][3]; // tails
-		float[][][] qss = new float[ARROWS_MAX][3][3]; // heads
+		int num = (int) (distanceToNext/ARROW_SPACING+1);
+		float[][][] pss = new float[num][2][3]; // tails
+		float[][][] qss = new float[num][3][3]; // heads
 		NodeManager nodeManager = xcModelViewer.xcModel.task.nodeManager;
 
 		// start afresh

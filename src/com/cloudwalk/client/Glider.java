@@ -20,7 +20,8 @@ import com.cloudwalk.framework3d.Tools3d;
  * This class implements a glider. The class is abstract because any actual glider must have a controller. The possible controllers are AI, Network and User.
  */
 public class Glider extends MovingBody {
-	static float[] air = new float[] { 0, 0, 0 }; // air movement - common to all gliders
+	static float[] air = new float[] { 0, 0 }; // air movement - common to all gliders
+	float airv = 0;
 	XCModelViewer xcModelViewer;
 	private String typeName;
 	protected int typeID; // 0 - para, 1 - hang, 2 -sail
@@ -36,6 +37,7 @@ public class Glider extends MovingBody {
 	boolean launched = false;
 	public float last_tic = 0;
 	public float[] valuesFromNet;
+	public float distanceFlown;
 
 	// unique id for each instance of this class
 	int myID;
@@ -115,6 +117,7 @@ public class Glider extends MovingBody {
 		this.tail.reset();
 		nextTurn = 0;
 		timeFlying = 0;
+		distanceFlown = 0;
 	}
 
 	private static final float TO_DIST = 0.4f; // seperate gliders at launch
@@ -258,7 +261,7 @@ public class Glider extends MovingBody {
 			p[0] += air[0] * dt;
 			p[1] += air[1] * dt;
 			if (!drone) {
-				p[2] += air[2] * dt;
+				p[2] += airv * dt;
 			}
 
 			// hit the spuds ?

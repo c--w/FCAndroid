@@ -12,15 +12,6 @@ import com.cloudwalk.framework3d.CameraSubjectSimple;
  * This class adds some xc fns to the cameraman (eg. camera modes).
  */
 public class XCCameraMan extends CameraMan {
-	int mode = NODE;
-
-	public static final int USER = 0;
-	public static final int GAGGLE = 1;
-	public static final int PLAN = 2;
-	public static final int NODE = 3;
-	public static final int TASK = 4;
-	public static final int PILOT = 5;
-	public static final int STAY_THERE = 6;
 
 	static final String[] descriptions = new String[] { "Me", "Other", "Plan", "Far out", "Task map", "Eagle eyes", "Stay there" };
 

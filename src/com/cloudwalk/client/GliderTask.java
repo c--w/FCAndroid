@@ -23,7 +23,6 @@ public class GliderTask extends Glider {
 	float groundSpeed;
 	float groundGlideRatio;
 	float lastx, lasty, lastz;
-	float distanceFlown;
 	String playerName = "";
 
 	public GliderTask(XCModelViewer xcModelViewer, GliderType gliderType, int id) {

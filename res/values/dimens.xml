@@ -7,7 +7,7 @@
     <dimen name="controls_font_size">16dp</dimen>
     <dimen name="start_font_size">20dp</dimen>
     <dimen name="radio_font_size">16dp</dimen>
-    <dimen name="rb_height">36dp</dimen>
+    <dimen name="rb_height">30dp</dimen>
     <dimen name="info_font_size">12dp</dimen>
     <dimen name="controls_padding">10dp</dimen>
     <dimen name="controls_width">36dp</dimen>

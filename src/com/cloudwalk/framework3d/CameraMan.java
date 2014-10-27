@@ -27,6 +27,16 @@ import android.util.Log;
  * @see ModelCanvas#paintModel
  */
 public class CameraMan {
+	public int mode = NODE;
+
+	public static final int USER = 0;
+	public static final int GAGGLE = 1;
+	public static final int PLAN = 2;
+	public static final int NODE = 3;
+	public static final int TASK = 4;
+	public static final int PILOT = 5;
+	public static final int STAY_THERE = 6;
+
 	protected ModelViewer modelViewer;
 	protected float depthOfVision = 100;
 

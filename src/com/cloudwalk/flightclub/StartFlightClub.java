@@ -36,6 +36,7 @@ import android.view.ViewTreeObserver;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cloudwalk.client.Task;
 import com.cloudwalk.client.XCCameraMan;
 import com.cloudwalk.client.XCModelViewer;
 import com.cloudwalk.framework3d.ClockObserver;
@@ -72,7 +73,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		public void handleMessage(Message msg) {
 			try {
 
-				if (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.finished && !finished) {
+				if (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.finished && !finished && ((XCModelViewer) modelViewerThin).xcModel.task.type == Task.TIME) {
 					try {
 						int best_time = prefs.getInt("best_time0" + task + pilotType, 100000);
 						int current_time = (int) ((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.timeFinished;
@@ -84,6 +85,18 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						Log.e("FC", e.getMessage(), e);
 					}
 					finished = true;
+				} else if (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.distanceFlown != 0 && ((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.getLanded() && !landed && ((XCModelViewer) modelViewerThin).xcModel.task.type == Task.DISTANCE) {
+					try {
+						int best_distance = prefs.getInt("best_distance0" + task + pilotType, 0);
+						int current_distance = (int) (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.distanceFlown()/2 * 100);
+						Log.i("FC StartFlightClub", "current_distance " + current_distance + " " + best_distance);
+						if (current_distance > best_distance) {
+							submitScore(pilotType, current_distance);
+						}
+					} catch (Exception e) {
+						Log.e("FC", e.getMessage(), e);
+					}
+					landed = true;
 				}
 				View v = findViewById(R.id.startbuttons);
 				if (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.getLanded()) {

@@ -64,6 +64,10 @@
                 android:id="@+id/radio44"
                 style="@style/radio_button_text"
                 android:text="Task 5 - 150km, 6TP" />
+            <RadioButton
+                android:id="@+id/radio55"
+                style="@style/radio_button_text"
+                android:text="Task 6 - free distance" />
             </RadioGroup>
     </LinearLayout>
 

@@ -67,7 +67,7 @@ public class ScoreActivity extends BaseGameActivity {
 			default:
 				break;
 			}
-			
+
 		} else if ("t003".equals(task)) {
 			switch (pilot_type) {
 			case 0:
@@ -83,7 +83,39 @@ public class ScoreActivity extends BaseGameActivity {
 			default:
 				break;
 			}
-			
+
+		} else if ("default5".equals(task)) {
+			switch (pilot_type) {
+			case 0:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_5__pg);
+				break;
+			case 1:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_5__hg);
+				break;
+			case 2:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_5__sailplane);
+				break;
+
+			default:
+				break;
+			}
+
+		} else if ("default6".equals(task)) {
+			switch (pilot_type) {
+			case 0:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_6__pg);
+				break;
+			case 1:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_6__hg);
+				break;
+			case 2:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_6__sailplane);
+				break;
+
+			default:
+				break;
+			}
+
 		}
 	}
 

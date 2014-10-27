@@ -51,7 +51,7 @@ public class Variometer {
 	 * Beeps if we are going up. Which beep depends on how strong the lift is.
 	 */
 	private void beep() {
-		float lift = glider.getSink() + glider.air[2];
+		float lift = glider.getSink() + glider.airv;
 		if (lift > 0) {
 			xcModelViewer.modelEnv.play(whichStep(lift));
 		}

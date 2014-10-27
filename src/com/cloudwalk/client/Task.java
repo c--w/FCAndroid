@@ -25,6 +25,8 @@ import com.cloudwalk.framework3d.Tools3d;
  * This class implements a task.
  */
 public class Task implements CameraSubject {
+	public static int TIME = 0;
+	public static int DISTANCE = 1;
 	public XCModelViewer xcModelViewer;
 	String taskID;
 	NodeManager nodeManager;
@@ -35,6 +37,8 @@ public class Task implements CameraSubject {
 	float wind_x, wind_y;
 	float CLOUDBASE;
 	public String desc = "";
+	public float NODE_SPACING;
+	public int type = TIME;
 
 	// for the default course
 	static float HEXAGON; // 8;
@@ -49,6 +53,8 @@ public class Task implements CameraSubject {
 			generateT1Task();
 		} else if (taskID.equals("default5")) {
 			generateT5Task();
+		} else if (taskID.equals("default6")) {
+			generateT6Task();
 		} else {
 			parseFile(taskID);
 		}
@@ -61,6 +67,7 @@ public class Task implements CameraSubject {
 	private void generateT1Task() {
 		desc = "Simple closed circuit 50km task with 2 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase at 1500m.";
 		CLOUDBASE = 3;
+		NODE_SPACING = CLOUDBASE * 12f;
 		HEXAGON = CLOUDBASE * 7;
 		// turn points
 		float x = CLOUDBASE * 10;
@@ -95,6 +102,7 @@ public class Task implements CameraSubject {
 	private void generateT5Task() {
 		desc = "Massive 150km task with lots of clouds and 6TP.\nWind: weak SW.\nCloudbase at 1500m.";
 		CLOUDBASE = 3;
+		NODE_SPACING = CLOUDBASE * 12f;
 		HEXAGON = CLOUDBASE * 7;
 		// turn points
 		float x = CLOUDBASE * 10;
@@ -118,6 +126,38 @@ public class Task implements CameraSubject {
 
 		// roads - specify start and end points
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.9f * x, 0 }, { 4 * x, x * 1.1f, 0 }, { 8 * x, 0.5f * x, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1 });
+
+		// hills = new Hill[1];
+		// Hill hill = new Hill(this, x, 1.5f * x);
+		// hills[0] = hill;
+	}
+
+	private void generateT6Task() {
+		desc = "Free distance task.\nWind: weak W.\nCloudbase at 1500m.";
+		type = DISTANCE;
+		CLOUDBASE = 3;
+		NODE_SPACING = CLOUDBASE * 80f;
+		HEXAGON = CLOUDBASE * 7;
+
+		// wind
+		wind_x = 0.05f;
+		wind_y = 0.00f;
+
+		// triggers
+		triggers = new Trigger[19 * 1 * 6];
+		float x_ = 0, y_ = 0;
+		for (int i = 1; i < 20; i++) {
+			HEXAGON = CLOUDBASE * (7 + 2 * i);
+			flatLand(x_ += HEXAGON, y_ += HEXAGON / 4, 2);
+		}
+
+		float[] xs = { CLOUDBASE * 7, x_ };
+		float[] ys = { CLOUDBASE * 7, y_ };
+		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
+
+		// roads - specify start and end points
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { x_, y_, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1 });
 
 		// hills = new Hill[1];
@@ -155,6 +195,7 @@ public class Task implements CameraSubject {
 			st.nextToken(); // new line
 			st.nextToken(); // new line
 		}
+		NODE_SPACING = CLOUDBASE * 12f;
 		Log.i("FC Task", "Cloudbase:" + CLOUDBASE);
 		if (st.ttype == StreamTokenizer.TT_EOL)
 			st.nextToken();
@@ -292,7 +333,7 @@ public class Task implements CameraSubject {
 		y1 = y0 + HEXAGON;
 		x1 = x0 + HEXAGON;
 		float dh = HEXAGON / 6;
-
+		// Log.i("FC TASK", "X:" + x1 + " Y:" + y1 + " dH:" + dh);
 		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y0 + dh, version);
 		triggers[next++] = trigger;
 
