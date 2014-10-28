@@ -20,8 +20,7 @@ import com.cloudwalk.framework3d.ClockObserver;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * This class manages all the gliders (user, networked and AI). Ths user's
- * glider is the first in the list.
+ * This class manages all the gliders (user, networked and AI). Ths user's glider is the first in the list.
  */
 public class GliderManager implements ClockObserver {
 	XCModelViewer xcModelViewer;
@@ -108,8 +107,7 @@ public class GliderManager implements ClockObserver {
 	}
 
 	/**
-	 * Sets the vertical air movement for a glider. We search the loaded nodes
-	 * for lift sources (rather than searching the entire model.)
+	 * Sets the vertical air movement for a glider. We search the loaded nodes for lift sources (rather than searching the entire model.)
 	 */
 	private void setLift(Glider glider, Node[] nodes) {
 		if (glider == null)
@@ -135,8 +133,7 @@ public class GliderManager implements ClockObserver {
 	private int nextGaggle = 0;
 
 	/**
-	 * Returns the glider to watch in camera view #2. As this fn is called we
-	 * cycle round the gaggle gliders.
+	 * Returns the glider to watch in camera view #2. As this fn is called we cycle round the gaggle gliders.
 	 */
 	Glider gaggleGlider() {
 		if (xcModelViewer.xcNet != null) {
@@ -151,7 +148,9 @@ public class GliderManager implements ClockObserver {
 			}
 			return null;
 		} else if (gliderAIs.length > 0) {
-			return gliderAIs[nextGaggle++ % gliderAIs.length];
+			nextGaggle++;
+			nextGaggle%=gliderAIs.length;
+			return gliderAIs[nextGaggle];
 		} else {
 			return null;
 		}
@@ -160,7 +159,7 @@ public class GliderManager implements ClockObserver {
 	/** Returns either user or demo glider. */
 	Glider theGlider() {
 		if (xcModelViewer.xcModel.mode == XCModel.DEMO) {
-			return gaggleGlider();
+			return gliderAIs[nextGaggle];
 		} else {
 			return gliderUser;
 		}
@@ -170,15 +169,15 @@ public class GliderManager implements ClockObserver {
 	static final float T_INTERVAL = 1.19f; // time between calls to loadNodes()
 
 	/**
-	 * Sets the lift for each glider. Also, every T, load the nodes around 'the'
-	 * glider. If networked then we don't do anything until we know from the
-	 * server what the model time is.
+	 * Sets the lift for each glider. Also, every T, load the nodes around 'the' glider. If networked then we don't do anything until we know from the server
+	 * what the model time is.
 	 */
 	public void tick(float t, float dt) {
 		if (xcModelViewer.xcNet != null && !xcModelViewer.netTimeFlag) {
 			return;
 		}
-		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.nodes; // check all nodes, not just loaded nodes - because AIgliders on unloaded nodes never finish
+		Node[] nodes = xcModelViewer.xcModel.task.nodeManager.nodes; // check all nodes, not just loaded nodes - because AIgliders on unloaded nodes never
+																		// finish
 
 		// User
 		setLift(gliderUser, nodes);
@@ -206,9 +205,8 @@ public class GliderManager implements ClockObserver {
 	/**
 	 * Loads the node(s) that *the* glider is 'nearest' to.
 	 * 
-	 * Constraint: Load nodes in task seq. Algorithm: pNode = n changes to pNode
-	 * = n + 1 when glider is nearer to node n + 1 than node n. We need this
-	 * logic for turnpoints where several nodes may overlap.
+	 * Constraint: Load nodes in task seq. Algorithm: pNode = n changes to pNode = n + 1 when glider is nearer to node n + 1 than node n. We need this logic for
+	 * turnpoints where several nodes may overlap.
 	 */
 	private void loadNodes(float t) {
 		Glider g = theGlider();
@@ -277,8 +275,7 @@ public class GliderManager implements ClockObserver {
 	}
 
 	/**
-	 * Take off - puts gliders near start point and heading towards next turn
-	 * point.
+	 * Take off - puts gliders near start point and heading towards next turn point.
 	 */
 	void launchUser() {
 		if (!xcModelViewer.netFlag) {

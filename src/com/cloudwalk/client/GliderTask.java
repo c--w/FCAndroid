@@ -57,14 +57,13 @@ public class GliderTask extends Glider {
 			} else {
 				finishedTask();
 			}
-			if (Glider.filmID == myID) {
-				modelViewer.cameraMan.setSubject(this, true);
-			}
 		}
 	}
 
 	protected void reachedTurnPoint() {
-		;
+		if (Glider.filmID == myID) {
+			modelViewer.cameraMan.setSubject(this, true);
+		}
 	}
 
 	public boolean finished = false;
@@ -206,7 +205,6 @@ public class GliderTask extends Glider {
 	float[] unitSpeed() {
 		float[] uspeed = new float[] { v[0], v[1], 0 };
 		Tools3d.makeUnit(uspeed);
-		Log.i("FC", Arrays.toString(uspeed));
 		return uspeed;
 	}
 }

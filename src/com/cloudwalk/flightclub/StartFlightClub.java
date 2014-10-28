@@ -316,6 +316,13 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				wasPaused = true;
 			}
 		});
+		findViewById(R.id.speedy).setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				((XCModelViewer) modelViewerThin).xcModel.toggleFastForward();
+			}
+		});
 		if (!prefs.getBoolean("show_controls", true)) {
 			findViewById(R.id.controls).setVisibility(View.GONE);
 		} else

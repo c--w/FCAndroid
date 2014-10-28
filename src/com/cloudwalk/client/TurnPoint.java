@@ -19,11 +19,9 @@ import com.cloudwalk.framework3d.Obj3d;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * This class implements a turn point. Each turn point defines a line which runs
- * thru' it and the *next* turn point.
+ * This class implements a turn point. Each turn point defines a line which runs thru' it and the *next* turn point.
  * 
- * Turn points do not have a mode (SLEEPING or AWAKE). Every time different
- * nodes are loaded one should call renderMe(false) followed by renderMe(true).
+ * Turn points do not have a mode (SLEEPING or AWAKE). Every time different nodes are loaded one should call renderMe(false) followed by renderMe(true).
  */
 public class TurnPoint {
 	XCModelViewer xcModelViewer;
@@ -34,9 +32,12 @@ public class TurnPoint {
 	float distanceToNext; // distance to fly to next turn point
 	float distanceFromStart;
 
+	public String toString() {
+		return "" + x + "," + y;
+	}
+
 	/**
-	 * Changes in x and y as you move a unit of distance along the line from
-	 * this turn point to the next.
+	 * Changes in x and y as you move a unit of distance along the line from this turn point to the next.
 	 */
 	float dx, dy;
 
@@ -45,8 +46,7 @@ public class TurnPoint {
 	int myID;
 
 	/**
-	 * Define the sector a glider must enter in order to fly *around* this turn
-	 * point
+	 * Define the sector a glider must enter in order to fly *around* this turn point
 	 */
 	static final double SECTOR_ANGLE = Math.PI / 3;
 	static final float SECTOR_DOT = (float) Math.cos(SECTOR_ANGLE);
@@ -72,10 +72,8 @@ public class TurnPoint {
 		dPerp = (float) Math.sin(SECTOR_ANGLE) * radius;
 	}
 
-
 	/**
-	 * Sets the next turn point along the course. This allows us to define a
-	 * line.
+	 * Sets the next turn point along the course. This allows us to define a line.
 	 */
 	void setNextTP(TurnPoint nextTP) {
 		this.nextTP = nextTP;
@@ -83,8 +81,7 @@ public class TurnPoint {
 	}
 
 	/**
-	 * Sets the previous turn point along the course. This allows us to define
-	 * the sector for this turn point.
+	 * Sets the previous turn point along the course. This allows us to define the sector for this turn point.
 	 */
 	void setPrevTP(TurnPoint prevTP) {
 		this.prevTP = prevTP;
@@ -117,8 +114,7 @@ public class TurnPoint {
 	private float[] bisectPerp = new float[3]; // for rendering
 
 	/**
-	 * We bisect the angle at this turn point to get vector <code>bisect</code>
-	 * which defines the sector.
+	 * We bisect the angle at this turn point to get vector <code>bisect</code> which defines the sector.
 	 */
 	private void calcSector() {
 		if (prevTP == null)
@@ -134,9 +130,8 @@ public class TurnPoint {
 	}
 
 	/**
-	 * Returns true if p is in sector. We take the dot product of the vector r
-	 * pointing from this turn point to p and the vector <code>bisect</code>
-	 * which defines the sector.
+	 * Returns true if p is in sector. We take the dot product of the vector r pointing from this turn point to p and the vector <code>bisect</code> which
+	 * defines the sector.
 	 * 
 	 * Todo: debug
 	 */
@@ -159,9 +154,8 @@ public class TurnPoint {
 	}
 
 	/**
-	 * Adds a visual representation of this turn point to the model. We draw...
-	 * A. a pink sector on the ground and a line of arrows pointing to the next
-	 * turn point. B.
+	 * Adds a visual representation of this turn point to the model. We draw... A. a pink sector on the ground and a line of arrows pointing to the next turn
+	 * point. B.
 	 */
 	void renderMe() {
 		if (prevTP == null) {
@@ -229,8 +223,7 @@ public class TurnPoint {
 	static final int COLOR_ARROW = Color.rgb(255, 200, 0);// ORANGE
 
 	/**
-	 * Draws a line of arrows. Note we only draw arrows that fall within a
-	 * loaded node.
+	 * Draws a line of arrows. Note we only draw arrows that fall within a loaded node.
 	 * 
 	 * <pre>
 	 *               .c
@@ -252,7 +245,7 @@ public class TurnPoint {
 
 		float dx_ = dx * ARROW_SPACING;
 		float dy_ = dy * ARROW_SPACING;
-		int num = (int) (distanceToNext/ARROW_SPACING+1);
+		int num = (int) (distanceToNext / ARROW_SPACING + 1);
 		float[][][] pss = new float[num][2][3]; // tails
 		float[][][] qss = new float[num][3][3]; // heads
 		NodeManager nodeManager = xcModelViewer.xcModel.task.nodeManager;

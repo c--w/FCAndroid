@@ -7,17 +7,17 @@
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_height= "match_parent"
         android:layout_gravity="center_horizontal"
         android:gravity="center_vertical"
-        android:orientation="horizontal" 
-        android:layout_weight="1">
+        android:orientation="horizontal" >
 
         <RadioGroup
             android:id="@+id/radioGlider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/controls_width" >
+            android:layout_margin="@dimen/controls_padding"
+            android:layout_weight="1" >
 
             <RadioButton
                 android:id="@+id/radio0"
@@ -40,7 +40,8 @@
             android:id="@+id/radioTask"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/controls_width" >
+            android:layout_marginRight="@dimen/controls_padding"
+            android:layout_weight="1" >
 
             <RadioButton
                 android:id="@+id/radio00"
@@ -52,36 +53,32 @@
                 android:id="@+id/radio11"
                 style="@style/radio_button_text"
                 android:text="Task 2 - 100km" />
+
             <RadioButton
                 android:id="@+id/radio22"
                 style="@style/radio_button_text"
                 android:text="Task 3 - 70km" />
+
             <RadioButton
                 android:id="@+id/radio33"
                 style="@style/radio_button_text"
                 android:text="Task 4 - 120km, 4TP" />
+
             <RadioButton
                 android:id="@+id/radio44"
                 style="@style/radio_button_text"
                 android:text="Task 5 - 150km, 6TP" />
+
             <RadioButton
                 android:id="@+id/radio55"
                 style="@style/radio_button_text"
                 android:text="Task 6 - free distance" />
-            </RadioGroup>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|bottom"
-        android:gravity="center_vertical"
-        android:layout_margin="@dimen/controls_padding"
-        android:orientation="horizontal" >
+        </RadioGroup>
 
         <Button
             android:id="@+id/choose_continue"
             style="@style/start_button_text"
+            android:layout_weight="1"
             android:text="Game >>" />
     </LinearLayout>
 

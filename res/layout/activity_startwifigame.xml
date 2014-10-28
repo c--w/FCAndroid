@@ -32,10 +32,21 @@
             android:layout_marginRight="20dp"
             android:orientation="vertical" >
 
-            <Button
-                android:id="@+id/zoomin"
-                style="@style/button_text"
-                android:text="+" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <Button
+                    android:id="@+id/zoomin"
+                    style="@style/button_text"
+                    android:text="+" />
+
+                <Button
+                    android:id="@+id/speedy"
+                    style="@style/button_text"
+                    android:text=">" />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/zoomout"
@@ -98,7 +109,6 @@
                 android:id="@+id/start_race"
                 style="@style/start_button_text"
                 android:text="Start race" />
-
         </LinearLayout>
 
         <include layout="@layout/controls" />

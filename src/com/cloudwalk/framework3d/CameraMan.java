@@ -171,7 +171,6 @@ public class CameraMan {
 
 		Tools3d.subtract(eyeGoto, eye, deye);
 		Tools3d.subtract(focusGoto, focus, dfocus);
-
 		/*
 		 * The eye accelerates from 0 upto velocity deye over cutRamp steps, tracks at deye then slows to zero over cutRamp steps. Similarly for focus.
 		 */

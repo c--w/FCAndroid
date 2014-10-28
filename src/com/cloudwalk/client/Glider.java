@@ -95,7 +95,7 @@ public class Glider extends MovingBody {
 
 	public void setPolar(int iP) {
 		if (this.iP != iP) {
-			Log.i("FC Glider", "setIP:" + iP);
+			//Log.i("FC Glider", "setIP:" + iP);
 			this.iP = iP;
 			setPolar();
 		}
