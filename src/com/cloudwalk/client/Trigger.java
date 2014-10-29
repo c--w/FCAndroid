@@ -38,7 +38,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	float phase;
 	float nextCloudStartTime; // when will next cloud be created
 	float lastTick;
-	int mode = SLEEPING;
+	public int mode = SLEEPING;
 	boolean blueThermal = false;
 	boolean show = true;
 
@@ -49,8 +49,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 	static int nextID = 0;
 	int myID;
 
-	static final int SLEEPING = 0;
-	static final int AWAKE = 1;
+	public static final int SLEEPING = 0;
+	public static final int AWAKE = 1;
 
 	/**
 	 * Creates a trigger at (x, y). t is the current time and t0 is the time that the trigger creates its first bubble.
@@ -227,7 +227,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	/**
 	 * Makes the trigger sleep. When asleep the trigger will not be rendered and does not produce any clouds.
 	 */
-	void sleep(float t) {
+	public void sleep(float t) {
 		if (mode == SLEEPING) {
 			return;
 		}
@@ -242,7 +242,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	 * Wakes up this trigger. One fiddly bit - if the wake up comes immediately after sleep was called then we do not need to create existing clouds. Triggers
 	 * on overlapping nodes get a sleep call from one node followed by a wake call from another.
 	 */
-	void wakeUp(float t) {
+	public void wakeUp(float t) {
 		if (mode == AWAKE) {
 			return;
 		}

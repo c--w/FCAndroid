@@ -267,6 +267,7 @@ public class GliderAI extends GliderTask {
 	static final float T_THINK = 1.0f; // don't think too hard (CPU)
 
 	protected void reachedTurnPoint() {
+		super.reachedTurnPoint();
 		makeDecision(xcModelViewer.clock.getTime());
 	}
 

@@ -97,7 +97,7 @@ public class GliderTask extends Glider {
 		u[0] += air[0];
 		u[1] += air[1];
 		groundSpeed = (float) Math.sqrt(u[0] * u[0] + u[1] * u[1]);
-		groundGlideRatio = groundSpeed / -this.getSink();
+		groundGlideRatio = groundSpeed / -(this.getSink() + airv);
 	}
 
 	/**

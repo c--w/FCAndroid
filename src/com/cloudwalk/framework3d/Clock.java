@@ -11,10 +11,11 @@ package com.cloudwalk.framework3d;
 
 import java.util.Vector;
 
-import com.cloudwalk.client.XCModelViewer;
-
 import android.os.SystemClock;
 import android.util.Log;
+
+import com.cloudwalk.client.Trigger;
+import com.cloudwalk.client.XCModelViewer;
 
 /**
  * This class implements the clock that manages model time. The clock runs on
@@ -27,7 +28,7 @@ public class Clock implements Runnable {
 
 	Thread ticker = null;
 	int sleepTime;
-	Vector observers = new Vector();
+	Vector<ClockObserver> observers = new Vector<ClockObserver>();
 
 	private long currentTick = 0;
 	long tickCount = 0;
@@ -81,6 +82,15 @@ public class Clock implements Runnable {
 		}
 		ticker.start();
 		blockStart = currentTick = System.currentTimeMillis();
+		modelTime = getTimeNow();
+		for (int i = 0; i < observers.size(); i++) {
+			ClockObserver observer = (ClockObserver) observers.elementAt(i);
+			if(observer instanceof Trigger) {
+				Trigger t = ((Trigger)observer);
+				if(t.mode == Trigger.SLEEPING)
+					t.wakeUp(modelTime);
+			}
+		}
 	}
 
 	public void stop() {
@@ -88,6 +98,13 @@ public class Clock implements Runnable {
 			ticker.interrupt();
 		}
 		ticker = null;
+		modelTime = getTimeNow();
+		for (int i = 0; i < observers.size(); i++) {
+			ClockObserver observer = (ClockObserver) observers.elementAt(i);
+			if(observer instanceof Trigger) {
+				((Trigger)observer).sleep(modelTime);
+			}
+		}
 	}
 
 	public void run() {

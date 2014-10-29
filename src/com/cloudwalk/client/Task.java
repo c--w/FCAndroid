@@ -17,6 +17,7 @@ import java.io.StreamTokenizer;
 
 import android.util.Log;
 
+import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.CameraSubject;
 import com.cloudwalk.framework3d.FileFormatException;
 import com.cloudwalk.framework3d.Tools3d;
@@ -146,18 +147,20 @@ public class Task implements CameraSubject {
 
 		// triggers
 		triggers = new Trigger[19 * 1 * 7];
+		float[][] r1 = new float[19][3];
 		float x_ = 0, y_ = 0;
 		for (int i = 1; i < 20; i++) {
-			HEXAGON = (float) (CLOUDBASE * (7 + Math.pow(i, 1.6f)));
-			flatLand2(x_ += HEXAGON * 0.833f, y_, 2);
+			HEXAGON = (float) (CLOUDBASE * (7 + Math.pow(i, 1.46f)));
+			flatLand2(x_ += HEXAGON * 0.833f, y_, 3);
+			r1[i - 1] = new float[] { x_ + HEXAGON / 2 + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2,
+					y_ + HEXAGON / 2 + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2, 0 };
 		}
 
 		float[] xs = { CLOUDBASE * 7, x_ + HEXAGON };
-		float[] ys = { CLOUDBASE * 7 / 4, y_ + HEXAGON };
+		float[] ys = { CLOUDBASE * 7 / 4, y_ + HEXAGON * .7f };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// roads - specify start and end points
-		float[][] r1 = new float[][] { { 0, 0, 0 }, { x_ + HEXAGON, y_ + HEXAGON, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1 });
 
 		// hills = new Hill[1];
@@ -355,8 +358,58 @@ public class Task implements CameraSubject {
 
 	void flatLand2(float x0, float y0, int version) {
 		Trigger trigger;
-		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y0 + HEXAGON / 2, version);
+		float y1, x1;
+		y1 = y0 + HEXAGON;
+		x1 = x0 + HEXAGON;
+		float dh = HEXAGON / 6;
+		float x, y, xr, yr;
+		x = x0 + HEXAGON / 2;
+		y = y0 + HEXAGON / 2;
+		xr = x + (Tools.get01Value4(x, y) - 0.5f) * HEXAGON / 10f;
+		yr = y + (Tools.get01Value4(y, x) - 0.5f) * HEXAGON / 10f;
+		trigger = new Trigger(xcModelViewer, xr, yr, version);
 		triggers[next++] = trigger;
-		flatLand(x0, y0, version);
+
+		x = x0 + HEXAGON / 2;
+		y = y0 + dh;
+		xr = x + (Tools.get01Value4(x, y) - 0.5f) * HEXAGON / 10f;
+		yr = y + (Tools.get01Value4(y, x) - 0.5f) * HEXAGON / 10f;
+		trigger = new Trigger(xcModelViewer, xr, yr, version);
+		triggers[next++] = trigger;
+
+		x = x0 + HEXAGON / 2;
+		y = y1 - dh;
+		xr = x + (Tools.get01Value4(x, y) - 0.5f) * HEXAGON / 10f;
+		yr = y + (Tools.get01Value4(y, x) - 0.5f) * HEXAGON / 10f;
+		trigger = new Trigger(xcModelViewer, xr, yr, version);
+		triggers[next++] = trigger;
+
+		x = x0 + dh;
+		y = y0 + 2 * dh;
+		xr = x + (Tools.get01Value4(x, y) - 0.5f) * HEXAGON / 10f;
+		yr = y + (Tools.get01Value4(y, x) - 0.5f) * HEXAGON / 10f;
+		trigger = new Trigger(xcModelViewer, xr, yr, version);
+		triggers[next++] = trigger;
+
+		x = x0 + dh;
+		y = y1 - 2 * dh;
+		xr = x + (Tools.get01Value4(x, y) - 0.5f) * HEXAGON / 10f;
+		yr = y + (Tools.get01Value4(y, x) - 0.5f) * HEXAGON / 10f;
+		trigger = new Trigger(xcModelViewer, xr, yr, version);
+		triggers[next++] = trigger;
+
+		x = x1 - dh;
+		y = y0 + 2 * dh;
+		xr = x + (Tools.get01Value4(x, y) - 0.5f) * HEXAGON / 10f;
+		yr = y + (Tools.get01Value4(y, x) - 0.5f) * HEXAGON / 10f;
+		trigger = new Trigger(xcModelViewer, xr, yr, version);
+		triggers[next++] = trigger;
+
+		x = x1 - dh;
+		y = y1 - 2 * dh;
+		xr = x + (Tools.get01Value4(x, y) - 0.5f) * HEXAGON / 10f;
+		yr = y + (Tools.get01Value4(y, x) - 0.5f) * HEXAGON / 10f;
+		trigger = new Trigger(xcModelViewer, xr, yr, version);
+		triggers[next++] = trigger;
 	}
 }

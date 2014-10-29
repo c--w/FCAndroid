@@ -207,8 +207,8 @@ public class XCModel extends Model {
 		serverStatus();
 
 		// frame rate for when testing etc
-		// String status = "FPS: " + modelViewer.clock.getFrameRate(); // tmp
-		// modelViewer.modelView.setText(status, 0);
+		String status = "FPS: " + modelViewer.clock.getFrameRate(); // tmp
+		modelViewer.modelView.setText(status, 0);
 	}
 
 	/**

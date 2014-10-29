@@ -9,6 +9,8 @@
  */
 package com.cloudwalk.framework3d;
 
+import java.util.Arrays;
+
 import android.graphics.Color;
 import android.util.Log;
 

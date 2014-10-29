@@ -95,4 +95,10 @@ public class Tools {
 		return "";
 	}
 
+	public static float get01Value4(float x, float y) {
+		float a = (float) Math.sqrt((x + 17) / (y + 17));
+		// some deep enough decimals
+		return (float) ((a * 1000) - Math.floor(a * 1000));
+	}
+
 }

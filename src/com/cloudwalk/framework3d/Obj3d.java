@@ -310,6 +310,8 @@ public class Obj3d implements CameraSubject {
 	public void transform() {
 
 		final float[] f = modelViewer.cameraMan.getFocus();
+//		if (ps[0] - f[0] > 100 || ps[1] - f[1] > 100)
+//			return;
 		final float[][] m = modelViewer.cameraMan.getMatrix();
 		final float d = modelViewer.cameraMan.getDistance();
 		float[] a = new float[3];

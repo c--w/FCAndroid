@@ -26,7 +26,7 @@ public class XCCameraMan extends CameraMan {
 		// this.setSubjectNow(((XCModelViewer)
 		// modelViewer).xcModel.task.nodeManager.nodes[0], false);
 		XCModel xcModel = ((XCModelViewer) modelViewer).xcModel;
-		this.depthOfVision = xcModel.task.nodeManager.nodeSpacing * 1.5f;
+		//this.depthOfVision = xcModel.task.nodeManager.nodeSpacing * 1.5f;
 		Node node = xcModel.task.nodeManager.nodes[0];
 		float[] focus = node.getFocus();
 		float[] eye = new float[] { focus[0], focus[1] - 1, 0 };
