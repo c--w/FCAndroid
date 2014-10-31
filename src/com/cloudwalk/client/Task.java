@@ -15,8 +15,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 
+import android.graphics.Color;
 import android.util.Log;
 
+import com.cloudwalk.data.Building;
 import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.CameraSubject;
 import com.cloudwalk.framework3d.FileFormatException;
@@ -131,6 +133,8 @@ public class Task implements CameraSubject {
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.6f * x, 0 }, { 4 * x, x * 1.1f, 0 }, { 8 * x, 0.5f * x, 0 } };
 		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { 0.8f * x, 0.6f * x + 0.1f, 0 }, { 4 * x, x * 1.1f + 0.1f, 0 }, { 8 * x, 0.5f * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+		//Building.createBuilding(xcModelViewer, 5, 5, 10, x, x/2, 0, Color.rgb(240, 240, 240));
+		Building.createTree(xcModelViewer, 5, 5, 10, x, x/2, 0, Color.rgb(200, 240, 200));
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
