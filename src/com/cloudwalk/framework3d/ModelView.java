@@ -100,9 +100,6 @@ public class ModelView extends SurfaceView {
 		height = getHeight();
 		DRAG_MIN = height / 15;
 
-		imgBuffer = Bitmap.createBitmap(width, height, Config.RGB_565);
-		bufferCanvas = new Canvas(imgBuffer);
-
 		holder = getHolder();
 		holder.addCallback(new SurfaceHolder.Callback() {
 
@@ -118,6 +115,8 @@ public class ModelView extends SurfaceView {
 
 			@Override
 			public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+				imgBuffer = Bitmap.createBitmap(width, height, Config.RGB_565);
+				bufferCanvas = new Canvas(imgBuffer);
 				Log.w("FC", "" + width + " " + height);
 			}
 		});

@@ -523,7 +523,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	public boolean onOptionsItemSelected(MenuItem item) {
 		try {
 			if (item.getItemId() == R.id.settings) {
-				Intent launchPreferencesIntent = new Intent().setClass(this, Preferences.class);
+				Intent launchPreferencesIntent = new Intent(this, Preferences.class);
 				startActivity(launchPreferencesIntent);
 				return true;
 			} else if (item.getItemId() == R.id.leaderboards) {

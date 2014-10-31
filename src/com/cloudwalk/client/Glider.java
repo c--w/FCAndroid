@@ -21,7 +21,7 @@ import com.cloudwalk.framework3d.Tools3d;
  */
 public class Glider extends MovingBody {
 	static float[] air = new float[] { 0, 0 }; // air movement - common to all gliders
-	float airv = 0;
+	float airv = 0; // vertical air movement - specific to glider
 	XCModelViewer xcModelViewer;
 	private String typeName;
 	protected int typeID; // 0 - para, 1 - hang, 2 -sail
@@ -67,18 +67,10 @@ public class Glider extends MovingBody {
 		setPolar();
 		this.myID = id; // my unique id
 		/**
-		 * Wind does not change, so set once here for now, but...
-		 * 
 		 * TODO: 1. Make wind an observable that may change thru the day. 2. Introduce wind shear - task designer may divide air vertically into *two* layers.
 		 */
 		calcMaxSInk();
 		takeOff2(false);
-	}
-
-	private float randomizeValue(float v) {
-		if (xcModelViewer.netFlag)
-			return v;
-		return v;// (float) (v + v / 10f * (Math.random() - 0.5));
 	}
 
 	public void goFaster() {
@@ -95,7 +87,7 @@ public class Glider extends MovingBody {
 
 	public void setPolar(int iP) {
 		if (this.iP != iP) {
-			//Log.i("FC Glider", "setIP:" + iP);
+			// Log.i("FC Glider", "setIP:" + iP);
 			this.iP = iP;
 			setPolar();
 		}
@@ -128,7 +120,7 @@ public class Glider extends MovingBody {
 	 */
 
 	public void takeOff2(boolean really) {
-		Log.w("FC takeOff2", "myID:" + myID);
+		// Log.w("FC takeOff2", "myID:" + myID);
 		TurnPoint tp = xcModelViewer.xcModel.task.turnPointManager.turnPoints[0];
 		float[] v = new float[] { tp.dx, tp.dy, 0 };
 
@@ -278,7 +270,6 @@ public class Glider extends MovingBody {
 		// motion due to velocity (and roll)
 		super.tick(t, dt);
 
-
 		if (valuesFromNet != null) {
 			// Log.i("FC Glider", "t-tn: " + (t - valuesFromNet[7]) + " dt:" +
 			// dt);
@@ -311,22 +302,22 @@ public class Glider extends MovingBody {
 	 * Returns the sink rate for a given point on the polar, or the current point.
 	 */
 	public float getSink(int i) {
-		return randomizeValue(polar.get(i)[SINK]);
+		return polar.get(i)[SINK];
 	}
 
 	public float getSink() {
-		return randomizeValue(polar.get(iP)[SINK]);
+		return polar.get(iP)[SINK];
 	}
 
 	/**
 	 * Returns the speed for a given point on the polar, or the current point.
 	 */
 	public float getSpeed(int i) {
-		return randomizeValue(polar.get(i)[SPEED]);
+		return polar.get(i)[SPEED];
 	}
 
 	public float getSpeed() {
-		return randomizeValue(polar.get(iP)[SPEED]);
+		return polar.get(iP)[SPEED];
 	}
 
 	/**

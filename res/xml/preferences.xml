@@ -2,7 +2,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:picker="http://schemas.android.com/apk/res/afzkl.development.colorpickerview.demo" >
 
-    <PreferenceCategory android:title="Game settings" >
+    <PreferenceCategory
+        android:key="gamesettings"
+        android:title="Game settings" >
         <ListPreference
             android:defaultValue="3"
             android:entries="@array/glider_number"
@@ -25,7 +27,9 @@
             android:summary="Number of sailplane AIs in solo game"
             android:title="Sailplanes" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="UI settings" >
+    <PreferenceCategory
+        android:key="uisettings"
+        android:title="UI settings" >
         <EditTextPreference
             android:key="playerName"
             android:summary="Your handle to appear in multiplayer games"
@@ -51,6 +55,11 @@
             android:defaultValue="true"
             android:key="show_task_info"
             android:title="Show task info" >
+        </CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="fps"
+            android:title="Show FPS" >
         </CheckBoxPreference>
     </PreferenceCategory>
 

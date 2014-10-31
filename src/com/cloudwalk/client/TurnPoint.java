@@ -216,9 +216,6 @@ public class TurnPoint {
 	}
 
 	private Obj3d objB = null; // arrows
-	static final float ARROW_SPACING = 5;
-	static final float ARROW_LEN = ARROW_SPACING * 0.3f;
-	static final float ARROW_HEAD = ARROW_LEN * 0.2f;
 	static final int ARROWS_MAX = 300; // just used to dim an array
 	static final int COLOR_ARROW = Color.rgb(255, 200, 0);// ORANGE
 
@@ -234,6 +231,11 @@ public class TurnPoint {
 	 * </pre>
 	 */
 	private void renderArrows() {
+		if(xcModelViewer.xcModel.task.type == Task.DISTANCE)
+			return;
+		float ARROW_SPACING = distanceToNext / 20f;
+		float ARROW_LEN = ARROW_SPACING * 0.3f;
+		float ARROW_HEAD = ARROW_LEN * 0.2f;
 		float[] a = new float[] { x, y, 0 };
 		float[] b = new float[] { a[0] + ARROW_LEN * dx, a[1] + ARROW_LEN * dy, 0 };
 		float[] c = new float[] { a[0] + (ARROW_LEN - ARROW_HEAD) * dx, a[1] + (ARROW_LEN - ARROW_HEAD) * dy, 0 };
@@ -292,8 +294,8 @@ public class TurnPoint {
 		objB.setNumPolywires(n * 2); // each arrow has two wires (head and tail)
 
 		for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
-			objB.addPolywire(pss[i], COLOR_ARROW);
-			objB.addPolywire(qss[i], COLOR_ARROW);
+			objB.addPolywire(pss[i], COLOR_ARROW, 2);
+			objB.addPolywire(qss[i], COLOR_ARROW, 2);
 		}
 	}
 

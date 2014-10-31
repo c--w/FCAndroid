@@ -92,8 +92,11 @@ public class Task implements CameraSubject {
 
 		// roads - specify start and end points
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x, 0 }, { x, 2 * x, 0 }, { 2 * x, 4 * x, 0 } };
-		float[][] r2 = new float[][] { { 0, x, 0 }, { x, 1.4f * x, 0 }, { 2 * x, 1.2f * x, 0 }, { 3 * x, 2 * x, 0 }, { 4 * x, 2 * x, 0 } };
-		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 2 * x, 4 * x + 0.1f, 0 } };
+		float[][] r3 = new float[][] { { 0, x, 0 }, { x, 1.4f * x, 0 }, { 2 * x, 1.2f * x, 0 }, { 3 * x, 2 * x, 0 }, { 4 * x, 2 * x, 0 } };
+		float[][] r4 = new float[][] { { 0, x, 0 }, { x, 1.4f * x + 0.1f, 0 }, { 2 * x, 1.2f * x + 0.1f, 0 }, { 3 * x, 2 * x + 0.1f, 0 },
+				{ 4 * x, 2 * x + 0.1f, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2, r3, r4 });
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
@@ -105,10 +108,9 @@ public class Task implements CameraSubject {
 		CLOUDBASE = 3;
 		NODE_SPACING = CLOUDBASE * 12f;
 		HEXAGON = CLOUDBASE * 7;
-		// turn points
 		float x = CLOUDBASE * 10;
-		// x /= 5; // tmp - small course for testing gliding around the turn
-		// points
+
+		// turn points
 		float[] xs = { x, x * 2, x * 3, x * 4, x * 5, x * 6, x * 7, x * 7.5f };
 		float[] ys = { x * 0.5f, x * 0.2f, x * 1.5f, x * 0.3f, x * 1.4f, 0, x * 1.3f, x * 0.5f };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
@@ -126,8 +128,9 @@ public class Task implements CameraSubject {
 		}
 
 		// roads - specify start and end points
-		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.9f * x, 0 }, { 4 * x, x * 1.1f, 0 }, { 8 * x, 0.5f * x, 0 } };
-		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1 });
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.6f * x, 0 }, { 4 * x, x * 1.1f, 0 }, { 8 * x, 0.5f * x, 0 } };
+		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { 0.8f * x, 0.6f * x + 0.1f, 0 }, { 4 * x, x * 1.1f + 0.1f, 0 }, { 8 * x, 0.5f * x + 0.1f, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
@@ -147,13 +150,12 @@ public class Task implements CameraSubject {
 
 		// triggers
 		triggers = new Trigger[19 * 1 * 7];
-		float[][] r1 = new float[19][3];
 		float x_ = 0, y_ = 0;
 		for (int i = 1; i < 20; i++) {
 			HEXAGON = (float) (CLOUDBASE * (7 + Math.pow(i, 1.46f)));
 			flatLand2(x_ += HEXAGON * 0.833f, y_, 3);
-			r1[i - 1] = new float[] { x_ + HEXAGON / 2 + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2,
-					y_ + HEXAGON / 2 + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2, 0 };
+			// r1[i - 1] = new float[] { x_ + HEXAGON / 2 + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2,
+			// y_ + HEXAGON / 2 + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2, 0 };
 		}
 
 		float[] xs = { CLOUDBASE * 7, x_ + HEXAGON };
@@ -161,7 +163,11 @@ public class Task implements CameraSubject {
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// roads - specify start and end points
-		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1 });
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { x_ / 3, y_ + HEXAGON * .3f, 0 }, { x_ / 1.5f, y_ + HEXAGON * .4f, 0 },
+				{ x_ + HEXAGON, y_ + HEXAGON * .3f, 0 } };
+		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { x_ / 3, y_ + HEXAGON * .3f + 0.1f, 0 }, { x_ / 1.5f, y_ + HEXAGON * .4f + 0.1f, 0 },
+				{ x_ + HEXAGON, y_ + HEXAGON * .3f + 0.1f, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 }, 60f, 25f);
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);

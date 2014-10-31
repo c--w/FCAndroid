@@ -310,8 +310,8 @@ public class Obj3d implements CameraSubject {
 	public void transform() {
 
 		final float[] f = modelViewer.cameraMan.getFocus();
-//		if (ps[0] - f[0] > 100 || ps[1] - f[1] > 100)
-//			return;
+		// if (ps[0] - f[0] > 100 || ps[1] - f[1] > 100)
+		// return;
 		final float[][] m = modelViewer.cameraMan.getMatrix();
 		final float d = modelViewer.cameraMan.getDistance();
 		float[] a = new float[3];
@@ -527,6 +527,17 @@ public class Obj3d implements CameraSubject {
 			if (currColor == color.length)
 				currColor = 0;
 		}
+	}
+
+	/** Adds a wire (eg. glider tails) */
+	public int addPolywire(float[][] vs, int c, int thickness) {
+		Polywire wire = new Polywire(vs.length, c, thickness);
+		for (int i = 0; i < vs.length; i++) {
+			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
+		}
+		// Log.i("FC", "" + this + " " + wirenext);
+		polywires[wirenext] = wire;
+		return wirenext++;
 	}
 
 	/** Adds a wire (eg. glider tails) */
@@ -900,6 +911,7 @@ public class Obj3d implements CameraSubject {
 						// Polygon
 		int next = 0;
 		int c; // true color
+		int thickness;
 		Paint paint = new Paint();
 
 		// for drawing
@@ -907,12 +919,17 @@ public class Obj3d implements CameraSubject {
 		int[] ys;
 
 		public Polywire(int n, int color) {
+			this(n, color, 0);
+		}
+
+		public Polywire(int n, int color, int thickness) {
 			this.n = n;
 			points = new int[n];
+			this.thickness = thickness;
 			c = color;
 			xs = new int[n];
 			ys = new int[n];
-			// paint.setStrokeWidth(2);
+			paint.setStrokeWidth(thickness);
 			paint.setAntiAlias(false);
 		}
 

@@ -20,14 +20,17 @@ import com.cloudwalk.framework3d.Obj3d;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
- * Creates the roads. Gets data by parsing the stream of tokens. Or gets passed
- * default data array.
+ * Creates the roads. Gets data by parsing the stream of tokens. Or gets passed default data array.
  */
 public class RoadManager {
 	XCModelViewer xcModelViewer;
 	Road[] roads;
 
 	public RoadManager(XCModelViewer xcModelViewer, StreamTokenizer st) throws IOException {
+		this(xcModelViewer, st, 10f, 2f);
+	}
+
+	public RoadManager(XCModelViewer xcModelViewer, StreamTokenizer st, float turnRadius, float speed) throws IOException {
 		this.xcModelViewer = xcModelViewer;
 		// Tools3d.debugTokens(st);
 		st.nextToken();
@@ -42,16 +45,21 @@ public class RoadManager {
 
 		// create roads
 		for (int i = 0; i < roads.length; i++) {
-			roads[i] = new Road(xcModelViewer, st);
+			roads[i] = new Road(xcModelViewer, st, turnRadius, speed);
 		}
 	}
 
 	public RoadManager(XCModelViewer xcModelViewer, float[][][] pss) {
+		this(xcModelViewer, pss, 10f, 2f);
+	}
+
+	public RoadManager(XCModelViewer xcModelViewer, float[][][] pss, float turnRadius, float speed) {
 		this.xcModelViewer = xcModelViewer;
 		roads = new Road[pss.length];
 		for (int i = 0; i < pss.length; i++) {
-			roads[i] = new Road(xcModelViewer, pss[i]);
+			roads[i] = new Road(xcModelViewer, pss[i], turnRadius, speed);
 		}
+
 	}
 
 	void renderMe() {
@@ -80,15 +88,16 @@ class Road {
 	float speed = 1; // distance between wires
 
 	/**
-	 * Parse the file to read the circuit - a list of points (x, y). The file
-	 * format is the number of points followed by comma seperated pairs of x and
-	 * y co-ords...
+	 * Parse the file to read the circuit - a list of points (x, y). The file format is the number of points followed by comma seperated pairs of x and y
+	 * co-ords...
 	 * 
 	 * 3 2.1 1.1, 3.2 1.0, 4.3 7,
 	 */
-	Road(XCModelViewer xcModelViewer, StreamTokenizer st) throws IOException {
+	Road(XCModelViewer xcModelViewer, StreamTokenizer st, float turnRadius, float speed) throws IOException {
 		this.xcModelViewer = xcModelViewer;
 
+		this.turnRadius = turnRadius;
+		this.speed = speed;
 		st.nextToken();
 		int n = (int) st.nval;
 		circuit = new float[n][3];
@@ -106,22 +115,23 @@ class Road {
 	/**
 	 * A constructor where the circuit is passed in. Used for the deafult task.
 	 */
-	Road(XCModelViewer xcModelViewer, float[][] circuit) {
+	Road(XCModelViewer xcModelViewer, float[][] circuit, float turnRadius, float speed) {
 		this.xcModelViewer = xcModelViewer;
+		this.turnRadius = turnRadius;
+		this.speed = speed;
 		this.circuit = circuit;
 		createSnail();
 	}
 
 	/**
-	 * We send a particle along the circuit and record the list of points it
-	 * travels thru'. This list of points will be joined up to create a curvy
-	 * road.
+	 * We send a particle along the circuit and record the list of points it travels thru'. This list of points will be joined up to create a curvy road.
 	 */
 	void createSnail() {
 		PathBuilder pb = new PathBuilder(xcModelViewer, circuit, turnRadius, speed);
 		while (!pb.moveManager.finishedCircuit) {
 			pb.tick(0, 1);
 		}
+		Log.i("FC RM", "Num road point:" + numPoints);
 	}
 
 	private Obj3d obj3d = null;
@@ -160,8 +170,7 @@ class Road {
 	}
 
 	/**
-	 * This inner class implements a particle which follows a circuit. The path
-	 * taken is stored in ps.
+	 * This inner class implements a particle which follows a circuit. The path taken is stored in ps.
 	 */
 	class PathBuilder extends Particle {
 		MovementManager moveManager;

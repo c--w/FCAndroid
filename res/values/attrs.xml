@@ -5,7 +5,7 @@
         <attr name="color_wheel_radius" format="dimension" />
         <attr name="color_wheel_thickness" format="dimension" />
         <attr name="color_center_radius" format="dimension" />
-        <attr name="color_center_halo_radius" format="dimension"/>
+        <attr name="color_center_halo_radius" format="dimension" />
         <attr name="color_pointer_radius" format="dimension" />
         <attr name="color_pointer_halo_radius" format="dimension" />
     </declare-styleable>
@@ -15,6 +15,10 @@
         <attr name="bar_pointer_radius" format="dimension" />
         <attr name="bar_pointer_halo_radius" format="dimension" />
         <attr name="bar_orientation_horizontal" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="ButtonBarContainerTheme">
+        <attr name="buttonBarStyle" format="reference" />
+        <attr name="buttonBarButtonStyle" format="reference" />
     </declare-styleable>
 
 </resources>
