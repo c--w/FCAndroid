@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
+import java.util.Arrays;
 
 import android.graphics.Color;
 import android.util.Log;
@@ -133,8 +134,8 @@ public class Task implements CameraSubject {
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.6f * x, 0 }, { 4 * x, x * 1.1f, 0 }, { 8 * x, 0.5f * x, 0 } };
 		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { 0.8f * x, 0.6f * x + 0.1f, 0 }, { 4 * x, x * 1.1f + 0.1f, 0 }, { 8 * x, 0.5f * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
-		//Building.createBuilding(xcModelViewer, 5, 5, 10, x, x/2, 0, Color.rgb(240, 240, 240));
-		Building.createTree(xcModelViewer, 5, 5, 10, x, x/2, 0, Color.rgb(200, 240, 200));
+		// Building.createBuilding(xcModelViewer, 5, 5, 10, x, x/2, 0, Color.rgb(240, 240, 240));
+		// Building.createTree(xcModelViewer, 5, 5, 10, x, x/2, 0, Color.rgb(200, 240, 200));
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
@@ -165,6 +166,7 @@ public class Task implements CameraSubject {
 		float[] xs = { CLOUDBASE * 7, x_ + HEXAGON };
 		float[] ys = { CLOUDBASE * 7 / 4, y_ + HEXAGON * .7f };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
+//		Log.i("FC Task", Arrays.toString(xs) + " " + Arrays.toString(ys));
 
 		// roads - specify start and end points
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { x_ / 3, y_ + HEXAGON * .3f, 0 }, { x_ / 1.5f, y_ + HEXAGON * .4f, 0 },
