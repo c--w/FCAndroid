@@ -185,7 +185,7 @@ class Hill implements LiftSource, CameraSubject {
 			corners[3] = new float[] { x1, y2, getZ(i + tileWidth, j - tileWidth) };
 		}
 		int pol_color = getTileColor(corners);
-		obj3d.addPolygonBent(corners, pol_color, 0);
+		obj3d.addPolygon(corners, pol_color);
 		// object3d.addTile(corners, color, false, false);
 	}
 

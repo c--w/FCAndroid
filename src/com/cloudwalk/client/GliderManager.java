@@ -263,7 +263,7 @@ public class GliderManager implements ClockObserver {
 		}
 		netGliders[index] = new GliderTask(xcModelViewer, types[pilotType], index);
 		netGliders[index].color = color;
-		netGliders[index].obj.setColor(color, true);
+		netGliders[index].obj.setColor(color);
 		netType[index] = pilotType;
 	}
 

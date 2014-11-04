@@ -9,10 +9,6 @@
  */
 package com.cloudwalk.framework3d;
 
-import java.util.Arrays;
-
-import com.cloudwalk.client.XCModel;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -22,14 +18,16 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Typeface;
+import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
+
+import com.cloudwalk.client.XCModel;
 
 /**
  * This class is responsible for displaying a 3d model on the screen. Dragging on the canvas rotates the camera.
@@ -37,29 +35,12 @@ import android.view.View;
  * @see ModelViewer
  * @see CameraMan
  */
-public class ModelView extends SurfaceView {
-	public SurfaceHolder holder;
+public class ModelView extends GLSurfaceView {
 
-	Handler h = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			try {
-				Canvas canvas = holder.lockCanvas();
-				synchronized (holder) {
-					mydraw(canvas);
-				}
-				holder.unlockCanvasAndPost(canvas);
-			} catch (Exception e) {
-				Log.e("FC", e.getMessage(), e);
-			}
-		}
-	};
 
 	public ModelViewer modelViewer;
 	protected int backColor = Color.WHITE;
 	Paint textPaint = new Paint();
-	protected Canvas bufferCanvas;
-	private Bitmap imgBuffer;
 	public boolean dragging = false;
 	private int width, height;
 	private int x0 = 0, y0 = 0;
@@ -78,15 +59,6 @@ public class ModelView extends SurfaceView {
 		super(context);
 	}
 
-	public void myInvalidate() {
-		h.sendEmptyMessage(0);
-	}
-
-	public ModelView(Context context, AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
-		// TODO Auto-generated constructor stub
-	}
-
 	public ModelView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		// TODO Auto-generated constructor stub
@@ -100,26 +72,6 @@ public class ModelView extends SurfaceView {
 		height = getHeight();
 		DRAG_MIN = height / 15;
 
-		holder = getHolder();
-		holder.addCallback(new SurfaceHolder.Callback() {
-
-			@Override
-			public void surfaceDestroyed(SurfaceHolder holder) {
-			}
-
-			@Override
-			public void surfaceCreated(SurfaceHolder holder) {
-				// Canvas canvas = holder.lockCanvas();
-				// holder.unlockCanvasAndPost(canvas);
-			}
-
-			@Override
-			public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-				imgBuffer = Bitmap.createBitmap(width, height, Config.RGB_565);
-				bufferCanvas = new Canvas(imgBuffer);
-				Log.w("FC", "" + width + " " + height);
-			}
-		});
 		textPaint.setColor(Color.DKGRAY);
 		textPaint.setTextSize(30);
 		textPaint.setTypeface(Typeface.DEFAULT);
@@ -158,49 +110,6 @@ public class ModelView extends SurfaceView {
 		}
 	}
 
-	public void mydraw(Canvas canvas) {
-		if (imgBuffer == null || canvas == null)
-			return;
-		canvas.drawBitmap(imgBuffer, matrix, null);
-	}
-
-	/**
-	 * Paints the model to the image buffer. We have three steps. First transform the objects. Then sort them. Finally draw them.
-	 */
-	protected void paintModel() {
-
-		// clear buffer
-		bufferCanvas.drawColor(backColor);
-
-		// transform to screen co-ords
-		// Log.i("FC", "" + this + " " + modelViewer);
-		synchronized (modelViewer.obj3dManager) {
-			for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
-				Obj3d o = modelViewer.obj3dManager.obj(i);
-				o.transform();
-			}
-		}
-
-		// sort
-		modelViewer.obj3dManager.sortObjects();
-
-		// draw
-		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
-			Obj3d o = modelViewer.obj3dManager.obj(i);
-			if (modelViewer.cameraMan.mode != CameraMan.TASK && o.getDepthMax() < -100) {
-				continue;
-			}
-			o.draw(bufferCanvas);
-		}
-
-		// any text ?
-		XCModel m = (XCModel) modelViewer.model;
-		if (m.mode == XCModel.USER) {
-			m.compass.draw(bufferCanvas);
-			m.slider.draw(bufferCanvas);
-		}
-
-	}
 
 	/** Displays some text at the bottom of the screen. */
 	public void setText(String s, int line) {

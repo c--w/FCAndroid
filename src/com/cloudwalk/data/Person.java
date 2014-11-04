@@ -131,7 +131,7 @@ public class Person {
 	int color = Color.rgb(255, 255, 0); //yellow
 	//Color color = new Color(210, 150, 150); // pink
 	
-	//now add the five polygons...
+	//now add the five triangles...
 
 	//front, bottom and back
 	o.addPolygon(new float[][] {psR[0], psR[1], psL[1], psL[0]}, color);

@@ -396,7 +396,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	/**
 	 * This inner class implements a 3d shape for the cloud.
 	 * 
-	 * The cloud is represented using a cube like shape made from 6 polygons.
+	 * The cloud is represented using a cube like shape made from 6 triangles.
 	 * The 'cube' is distorted - the points to lie on the surface of a
 	 * hemi-sphere.
 	 * 
@@ -529,8 +529,6 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 				obj3d.setPoint(vertMap[i], p[0], p[1], p[2]);
 			}
 			obj3d.setBB();
-			if (lifeCycle.isDecaying())
-				obj3d.setNormals();
 		}
 
 		/**
@@ -588,7 +586,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			}
 
 			/*
-			 * Add the 6 polygons. See the class comments above for an
+			 * Add the 6 triangles. See the class comments above for an
 			 * explanation of the vertex labelling.
 			 */
 
@@ -604,7 +602,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			 * bottom is a lighter color (because the cloud lets light thru'
 			 * from above).
 			 */
-			obj3d.addPolygonBent(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color, Obj3d.CONVEX);
+			obj3d.addPolygon(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color);
 			obj3d.addPolygonWithShadow(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color_, false);
 
 			/*

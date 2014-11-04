@@ -7,11 +7,13 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ConfigurationInfo;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
@@ -41,6 +43,7 @@ import com.cloudwalk.client.XCCameraMan;
 import com.cloudwalk.client.XCModelViewer;
 import com.cloudwalk.framework3d.ClockObserver;
 import com.cloudwalk.framework3d.ModelView;
+import com.cloudwalk.framework3d.ModelViewRenderer;
 import com.cloudwalk.server.XCGameServer;
 import com.cloudwalk.startup.ModelEnv;
 import com.cloudwalk.startup.ModelViewerThin;
@@ -52,6 +55,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	String hostPort = null;
 	int[] typeNums = new int[4];
 	ModelViewerThin modelViewerThin = null;
+	ModelViewRenderer renderer;
 	MediaPlayer mp = new MediaPlayer();
 	AudioManager audioManager;
 	private SoundPool soundPool;
@@ -227,10 +231,33 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		 * int[] {2, 5, 2}; } } }
 		 */
 		final ModelView modelView = (ModelView) findViewById(R.id.xcmodelview);
+		// Check if the system supports OpenGL ES 2.0.
+		final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
+		final boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x20000;
+
+		if (supportsEs2) 
+		{
+			// Request an OpenGL ES 2.0 compatible context.
+			modelView.setEGLContextClientVersion(2);
+
+			// Set the renderer to our demo renderer, defined below.
+			renderer = new ModelViewRenderer();
+			modelView.setRenderer(renderer);
+		} 
+		else 
+		{
+			// This is where you could create an OpenGL ES 1.x compatible
+			// renderer if you wanted to support both ES 1 and ES 2.
+			return;
+		}
+		
+		
 		surfaceView = modelView;
 		modelViewerThin = new XCModelViewer(modelView);
 		modelView.modelViewer = (XCModelViewer) modelViewerThin;
 		modelView.setOnTouchListener(StartFlightClub.this);
+		renderer.modelViewer = (XCModelViewer) modelViewerThin;
 
 		modelView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
