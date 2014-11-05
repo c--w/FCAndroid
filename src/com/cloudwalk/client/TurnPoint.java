@@ -210,8 +210,7 @@ public class TurnPoint {
 			ps[i][1] += y;
 		}
 
-		objA = new Obj3d(xcModelViewer, 0, true);
-		objA.setNumPolywires(1);
+		objA = new Obj3d(xcModelViewer);
 		objA.addPolywireClosed(ps, COLOR_SECTOR);
 	}
 
@@ -290,8 +289,7 @@ public class TurnPoint {
 			d[1] += dy_;
 		}
 
-		objB = new Obj3d(xcModelViewer, 0, true);
-		objB.setNumPolywires(n * 2); // each arrow has two wires (head and tail)
+		objB = new Obj3d(xcModelViewer);
 
 		for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
 			objB.addPolywire(pss[i], COLOR_ARROW, 2);
@@ -315,8 +313,7 @@ public class TurnPoint {
 		ps[1][0] = x + dPerp * dy;
 		ps[1][1] = y - dPerp * dx;
 
-		objA = new Obj3d(xcModelViewer, 0, true);
-		objA.setNumPolywires(1);
+		objA = new Obj3d(xcModelViewer);
 		objA.addPolywireClosed(ps, COLOR_SECTOR);
 	}
 
@@ -336,8 +333,7 @@ public class TurnPoint {
 		ps[1][0] = x + dPerp * prevTP.dy;
 		ps[1][1] = y - dPerp * prevTP.dx;
 
-		objA = new Obj3d(xcModelViewer, 0, true);
-		objA.setNumPolywires(1);
+		objA = new Obj3d(xcModelViewer);
 		objA.addPolywireClosed(ps, COLOR_SECTOR);
 	}
 

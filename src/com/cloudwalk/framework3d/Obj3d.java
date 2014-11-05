@@ -17,14 +17,12 @@ import java.io.StreamTokenizer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Paint.Style;
-import android.graphics.Path;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -50,12 +48,11 @@ public class Obj3d implements CameraSubject {
 	float[] ps;
 
 	int npoints = 0;
-	int maxpoints;
-	Triangle[] triangles;
-	Triangle[] shadows;
+	int maxpoints = 30;
+	List<Triangle> triangles = new ArrayList<Obj3d.Triangle>();
 	private int polynext = 0;
 	private int shadownext = 0;
-	Polywire[] polywires = new Polywire[0]; // hhm, tagged these on
+	List<Polywire> polywires = new ArrayList<Polywire>();
 	private int wirenext = 0;
 	boolean noShade = false; // hack for sky
 
@@ -66,13 +63,13 @@ public class Obj3d implements CameraSubject {
 	// I *like* gray
 	public static final int COLOR_DEFAULT = Color.GRAY;
 
-
 	/**
 	 * Creates an Obj3d that may or may not be registed with the 3d object manager. Only registered objects are drawn on the screen. This constructor is private
 	 * because it is only used by the parser. Everyone else should call the public constructor below which specifies the number of triangles that are used to
 	 * model this object.
 	 */
-	private Obj3d(ModelViewer modelViewer, boolean register) {
+
+	public Obj3d(ModelViewer modelViewer, boolean register) {
 		this.modelViewer = modelViewer;
 		if (register) {
 			registerObject3d();
@@ -80,32 +77,18 @@ public class Obj3d implements CameraSubject {
 
 		// maxpoints is not a real limit because if we hit it we
 		// double it
-		maxpoints = 20;
+		maxpoints = 30;
 		ps = new float[maxpoints * 3];
 	}
 
-	public Obj3d(ModelViewer modelViewer, int npolygons, boolean register) {
-		this(modelViewer, register);
-		setNumPolygons(npolygons);
-	}
-
-	private void setNumPolygons(int n) {
-		triangles = new Triangle[n];
-	}
-
-	// hack for glider tails !
-	public void setNumPolywires(int n) {
-		polywires = new Polywire[n];
-	}
-
 	/** Creates an Obj3d and registers it with the 3d object manager. */
-	public Obj3d(ModelViewer modelViewer, int npolygons) {
-		this(modelViewer, npolygons, true);
+	public Obj3d(ModelViewer modelViewer) {
+		this(modelViewer, true);
 	}
 
 	/** Creates a copy of <code>from</code>. */
 	public Obj3d(Obj3d from, boolean register) {
-		this(from.modelViewer, from.triangles.length, register);
+		this(from.modelViewer, register);
 
 		// make our storage same size as from's
 		maxpoints = from.maxpoints;
@@ -117,10 +100,13 @@ public class Obj3d implements CameraSubject {
 		System.arraycopy(from.ps, 0, ps, 0, npoints * 3);
 
 		// copy triangles
-		for (int i = 0; i < from.triangles.length; i++) {
-			Triangle fromPoly = from.triangles[i];
-			triangles[i] = new Triangle(fromPoly.c);
-			System.arraycopy(fromPoly.points, 0, triangles[i].points, 0, fromPoly.points.length);
+		for (int i = 0; i < from.triangles.size(); i++) {
+			Triangle fromPoly = from.triangles.get(i);
+			Triangle triangle = new Triangle(fromPoly.c);
+			System.arraycopy(fromPoly.points, 0, triangle.points, 0, fromPoly.points.length);
+			triangle.updateVertices();
+			addTriangle(triangle, true);
+			triangle.logVerticesData();
 		}
 	}
 
@@ -150,11 +136,8 @@ public class Obj3d implements CameraSubject {
 			;
 		}
 
-		// how many triangles
+		// how many polygons
 		int num = (int) st.nval;
-
-		// set num triangles
-		this.setNumPolygons(num);
 
 		// gobble up new line
 		st.nextToken();
@@ -213,11 +196,7 @@ public class Obj3d implements CameraSubject {
 			}
 
 			// finally, add the polygon
-			if (!shadow) {
-				this.addPolygon(vs, color, doubleSided);
-			} else {
-				this.addPolygonWithShadow(vs, color, doubleSided);
-			}
+			this.addPolygon(vs, color, doubleSided, shadow);
 		}
 	}
 
@@ -253,17 +232,15 @@ public class Obj3d implements CameraSubject {
 	 * 
 	 * @see ModelCanvas#paintModel
 	 */
-	public void draw(float[] mMVPMatrix, float[] mViewMatrix, float[] mModelMatrix, float[] mProjectionMatrix, int mMVPMatrixHandle) {
+	public void draw(float[] mMVPMatrix, float[] mViewMatrix, float[] mModelMatrix, float[] mProjectionMatrix, int mMVPMatrixHandle, int mPositionHandle,
+			int mColorHandle) {
 		try {
-
-			//drawShadow(g);
-
-			for (int i = 0; i < triangles.length; i++) {
-				triangles[i].drawTriangle(mMVPMatrix, mViewMatrix, mModelMatrix, mProjectionMatrix, mMVPMatrixHandle);
+			for (int i = 0; i < triangles.size(); i++) {
+				triangles.get(i).drawTriangle(mMVPMatrix, mViewMatrix, mModelMatrix, mProjectionMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle);
 			}
 
-			for (int i = 0; i < polywires.length; i++) {
-				polywires[i].drawLines(mMVPMatrix, mViewMatrix, mModelMatrix, mProjectionMatrix, mMVPMatrixHandle);
+			for (int i = 0; i < polywires.size(); i++) {
+				polywires.get(i).drawLines(mMVPMatrix, mViewMatrix, mModelMatrix, mProjectionMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle);
 			}
 		} catch (Exception e) {
 			Log.e("FC OBJ3D draw", e.getMessage(), e);
@@ -278,6 +255,16 @@ public class Obj3d implements CameraSubject {
 		}
 		// reset bounding box
 		this.box.translateBy(dx, dy, dz);
+		updateVerticesData();
+	}
+
+	void updateVerticesData() {
+		for (Triangle triangle : triangles) {
+			triangle.updateVertices();
+		}
+		for (Polywire polywire : polywires) {
+			polywire.updateVertices();
+		}
 	}
 
 	public void scaleBy(float s) {
@@ -288,13 +275,15 @@ public class Obj3d implements CameraSubject {
 		}
 		// reset bounding box
 		this.box.scaleBy(s);
+		updateVerticesData();
 	}
 
 	/** Gives all triangles the specifed color. */
 	public void setColor(int c) {
-		for (int i = 0; i < triangles.length; i++) {
-			triangles[i].c = c;
+		for (int i = 0; i < triangles.size(); i++) {
+			triangles.get(i).c = c;
 		}
+		updateVerticesData();
 	}
 
 	/**
@@ -339,19 +328,50 @@ public class Obj3d implements CameraSubject {
 	 * 
 	 * We *flatten* the data once it is encapsulated inside this class; outside this class we want clarity; inside this class we want speed !
 	 */
-	public int addPolygon(float[][] vs, int c, boolean doubleSided) {
+	public int addPolygon(float[][] vs, int c, boolean doubleSided, boolean shadow) {
 		Triangle polygon = new Triangle(c);
+		int j = 0;
 		for (int i = 0; i < vs.length; i++) {
-			polygon.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2])); // TODO split to triangles
+			if (j % 3 == 0 && j != 0) {
+				addTriangle(polygon, shadow);
+				polygon = new Triangle(c);
+				polygon.addPoint(this.addPoint(vs[0][0], vs[0][1], vs[0][2]));
+				i -= 2;
+				j = 0;
+			} else {
+				polygon.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
+			}
+			j++;
 		}
-		triangles[polynext] = polygon;
+		addTriangle(polygon, shadow);
 
 		// if this was the last polygon then we may now set the
 		// bounding box
-		if (polynext == triangles.length - 1) {
-			this.box.setBB();
-		}
+		this.box.setBB();
 		return polynext++;
+	}
+
+	private void addTriangle(Triangle triangle, boolean shadow) {
+		triangles.add(triangle);
+		if (shadow)
+			addShadow(triangle);
+	}
+
+	public int addShadow(Triangle triangle) {
+		int color = Color.rgb(200, 200, 200);
+		Triangle shadow = new Triangle(color);
+
+		// reverse point order so shadow faces
+		// up ?? assumes shadow caster faces down always ??
+		for (int i = triangle.points.length - 1; i >= 0; i--) {
+			float px = ps[triangle.points[i]];
+			float py = ps[triangle.points[i] + 1];
+			int index = this.addPoint(px, py, 0.00013f);
+			shadow.addPoint(index);
+		}
+		triangles.add(shadow);
+		shadownext++;
+		return shadownext;
 	}
 
 	/**
@@ -359,24 +379,23 @@ public class Obj3d implements CameraSubject {
 	 * points go clockwise then the normal points away from you.
 	 */
 	public int addPolygon(float[][] vs, int c) {
-		return addPolygon(vs, c, false);
+		return addPolygon(vs, c, false, false);
 	}
 
 	/** Adds a single sided gray polygon. */
 	public int addPolygon(float[][] vs) {
-		return addPolygon(vs, COLOR_DEFAULT, false);
+		return addPolygon(vs, COLOR_DEFAULT, false, false);
 	}
 
 	/** Adds a polygon that is visible from both sides. */
 	public int addPolygon2(float[][] vs, int c) {
-		return addPolygon(vs, c, true);
+		return addPolygon(vs, c, true, false);
 	}
 
 	/** Adds a gray polygon that is visible from both sides. */
 	public int addPolygon2(float[][] vs) {
-		return addPolygon(vs, COLOR_DEFAULT, true);
+		return addPolygon(vs, COLOR_DEFAULT, true, false);
 	}
-
 
 	/**
 	 * Adds a series of triangles by rotating the points list (ps) steps times, and colouring them as defined by the color array (stripes!).
@@ -422,7 +441,7 @@ public class Obj3d implements CameraSubject {
 			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
 		}
 		// Log.i("FC", "" + this + " " + wirenext);
-		polywires[wirenext] = wire;
+		polywires.add(wire);
 		return wirenext++;
 	}
 
@@ -433,7 +452,7 @@ public class Obj3d implements CameraSubject {
 			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
 		}
 		// Log.i("FC", "" + this + " " + wirenext);
-		polywires[wirenext] = wire;
+		polywires.add(wire);
 		return wirenext++;
 	}
 
@@ -446,20 +465,8 @@ public class Obj3d implements CameraSubject {
 		// close the wire by adding the first point onto its end
 		wire.addPoint(this.addPoint(vs[0][0], vs[0][1], vs[0][2]));
 		// Log.i("FC", "" + this + " " + wirenext);
-		polywires[wirenext] = wire;
+		polywires.add(wire);
 		return wirenext++;
-	}
-
-	/**
-	 * Reverses the ordering of the triangles that make up this object. This may be useful for fudging the z order before drawing the object.
-	 */
-	void reverse() {
-		for (int i = 0; i < triangles.length / 2 - 1; i++) {
-			int j = triangles.length - 1 - i;
-			Triangle p = triangles[i];
-			triangles[i] = triangles[j];
-			triangles[j] = p;
-		}
 	}
 
 	/**
@@ -467,7 +474,7 @@ public class Obj3d implements CameraSubject {
 	 */
 	public static Obj3d makeCube(ModelViewer modelViewer) {
 
-		Obj3d o = new Obj3d(modelViewer, 6);
+		Obj3d o = new Obj3d(modelViewer);
 
 		/**
 		 * Two steps. First we create a cube whose corner is at the origin and then we translate it so that its center is at the origin.
@@ -503,12 +510,12 @@ public class Obj3d implements CameraSubject {
 
 	/** Gets the index of a point on a polygon. */
 	public int getPointIndex(int poly, int vertex) {
-		return triangles[poly].points[vertex];
+		return triangles.get(poly).points[vertex];
 	}
 
 	/** Gets the index of a point on a polywire. (See Tail.java) */
 	public int getPointIndex2(int poly, int vertex) {
-		return polywires[poly].points[vertex];
+		return polywires.get(poly).points[vertex];
 	}
 
 	/** Sets the co-ords of a point. */
@@ -531,9 +538,9 @@ public class Obj3d implements CameraSubject {
 	 * 
 	 * StringBuffer sb = new StringBuffer();
 	 * 
-	 * // number of triangles sb.append(triangles.length + "\n");
+	 * // number of triangles sb.append(triangles.size() + "\n");
 	 * 
-	 * // loop - one line per polygon for (int i = 0; i < triangles.length; i++) { Polygon po = triangles[i];
+	 * // loop - one line per polygon for (int i = 0; i < triangles.size(); i++) { Polygon po = triangles.get(i);
 	 * 
 	 * // todo: tidy up shadows - what a mess ! boolean shadow = false; for (int j = 0; j < MAX_SHADOWS; j++) { if (shadowCasters[j] == i) { shadow = true;
 	 * break; } } sb.append(shadow ? "t " : "f ");
@@ -548,74 +555,16 @@ public class Obj3d implements CameraSubject {
 	 * // finished this polygon so end line sb.append("\n"); } return new String(sb); }
 	 */
 
-	
 	/**
 	 * Adds a polygon. And then add a second polygon - the shadow - using the same points with z ~ 0
 	 */
-	public int addPolygonWithShadow(float[][] vs, int c, boolean doubleSided) {
-		// create shadow
-		float[][] vs_ = new float[vs.length][3];
-
-		// reverse point order so shadow faces
-		// up ?? assumes shadow caster faces down always ??
-		int j = 0;
-		for (int i = vs.length - 1; i >= 0; i--) {
-			float[] p = vs[i];
-			float[] q = new float[] { p[0], p[1], 0.00013f }; // change z so we
-																// get unique
-																// points
-			vs_[j++] = q;
-		}
-
-		int color = Color.rgb(200, 200, 200);
-		// Color color = new Color(80, 170, 80);
-		shadows[shadownext] = new Triangle(color);
-
-		for (int i = 0; i < vs_.length; i++) {
-			int pointIndex = this.addPoint(vs_[i][0], vs_[i][1], vs_[i][2]);
-			shadows[shadownext].addPoint(pointIndex);
-		}
-		// Log.i("FC obj3d", shadows[numShadows].toString());
-		shadownext++;
-		return shadownext;
-	}
-
-	/**
-	 * Keeps the shadow under its object. The owner/creator of this object should call this method each time they move the object.
-	 */
-	public void updateShadow() {
-		for (int i = 0; i < triangles.length; i++) {
-			Triangle polygon = triangles[i];
-
-			for (int j = 2; j >= 0; j--) {
-				float x = ps[polygon.points[j]];
-				float y = ps[polygon.points[j] + 1];
-				int index = shadows[i].points[2 - j];
-				ps[index] = x;
-				ps[index + 1] = y;
-				ps[index + 2] = 0.00012f;
-
-				// old
-				/*
-				 * float[] p = (Vector3d) points.elementAt(surface.points[j]); float[] q = (Vector3d) points.elementAt(shadows[i].points[surface.numPoints - 1 -
-				 * j]);//?? Tools3d.clone(p, q); if (app.landscape != null) q.z = app.landscape.getHeight(q.x, q.y); else q.z = 0;
-				 */
-			}
-		}
-	}
 
 	/**
 	 * This inner class represents a polygon. The polygon is made from N points (or vertices). It is either only visible from one side or it is visible from
 	 * both sides.
 	 */
 	class Triangle {
-		private FloatBuffer vertices=null;
-
-		/** This will be used to pass in model position information. */
-		private int mPositionHandle;
-
-		/** This will be used to pass in model color information. */
-		private int mColorHandle;
+		private FloatBuffer vertices = null;
 
 		/** How many bytes per float. */
 		private final int mBytesPerFloat = 4;
@@ -635,8 +584,8 @@ public class Obj3d implements CameraSubject {
 		/** Size of the color data in elements. */
 		private final int mColorDataSize = 4;
 
-		float[] verticesData = null;		
-		
+		float[] verticesData = null;
+
 		int[] points; // list of indexes for the points that make up this
 						// Polygon
 		int next = 0;
@@ -644,35 +593,55 @@ public class Obj3d implements CameraSubject {
 
 		public Triangle(int color) {
 			points = new int[3];
-			verticesData = new float[3*mStrideBytes];
+			verticesData = new float[3 * 7];
 			c = color;
 		}
 
 		public void addPoint(int i) {
 			points[next] = i;
-			verticesData[next*7+0] = ps[points[i]+0];
-			verticesData[next*7+1] = ps[points[i]+1];
-			verticesData[next*7+2] = ps[points[i]+2];
-			verticesData[next*7+3] = Color.red(c)/255f;
-			verticesData[next*7+4] = Color.green(c)/255f;
-			verticesData[next*7+5] = Color.blue(c)/255f;
-			verticesData[next*7+6] = 1f;
+			verticesData[next * 7 + 0] = ps[i + 1];
+			verticesData[next * 7 + 1] = ps[i + 2];
+			verticesData[next * 7 + 2] = -ps[i + 0];
+			verticesData[next * 7 + 3] = Color.red(c) / 255f;
+			verticesData[next * 7 + 4] = Color.green(c) / 255f;
+			verticesData[next * 7 + 5] = Color.blue(c) / 255f;
+			verticesData[next * 7 + 6] = 1f;
 			next++;
-			if(next==3) {
+			if (next == 3) {
 				fillVerticesData();
 			}
 		}
 
+		private void updateVertices() {
+			int i = 0;
+			for (int next = 0; next < 3; next++) {
+				i = points[next];
+				verticesData[next * 7 + 0] = ps[i + 1];
+				verticesData[next * 7 + 1] = ps[i + 2];
+				verticesData[next * 7 + 2] = -ps[i + 0];
+				verticesData[next * 7 + 3] = Color.red(c) / 255f;
+				verticesData[next * 7 + 4] = Color.green(c) / 255f;
+				verticesData[next * 7 + 5] = Color.blue(c) / 255f;
+				verticesData[next * 7 + 6] = 1f;
+
+			}
+			fillVerticesData();
+		}
+
 		private void fillVerticesData() {
+			// Log.i("FC", Arrays.toString(verticesData));
 			vertices = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 			vertices.put(verticesData).position(0);
 		}
 		
-
+		public void logVerticesData(){
+			Log.i("FC OBJ3D", Arrays.toString(verticesData));
+		}
 		/**
 		 * Draws this triangle on the screen.
 		 */
-		void drawTriangle(float[] mMVPMatrix, float[] mViewMatrix, float[] mModelMatrix, float[] mProjectionMatrix, int mMVPMatrixHandle) {
+		void drawTriangle(float[] mMVPMatrix, float[] mViewMatrix, float[] mModelMatrix, float[] mProjectionMatrix, int mMVPMatrixHandle, int mPositionHandle,
+				int mColorHandle) {
 			// Pass in the position information
 			vertices.position(mPositionOffset);
 			GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
@@ -684,10 +653,7 @@ public class Obj3d implements CameraSubject {
 			GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
 
 			GLES20.glEnableVertexAttribArray(mColorHandle);
-			if(mModelMatrix == null) {
-				mModelMatrix = new float[16];
-				Matrix.setIdentityM(mModelMatrix, 0);
-			}
+
 			// This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
 			// (which currently contains model * view).
 			Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
@@ -710,13 +676,7 @@ public class Obj3d implements CameraSubject {
 	 * This inner class represents a wire. The wire is made from N points (or vertices).
 	 */
 	class Polywire {
-		private FloatBuffer vertices=null;
-
-		/** This will be used to pass in model position information. */
-		private int mPositionHandle;
-
-		/** This will be used to pass in model color information. */
-		private int mColorHandle;
+		private FloatBuffer vertices = null;
 
 		/** How many bytes per float. */
 		private final int mBytesPerFloat = 4;
@@ -736,7 +696,7 @@ public class Obj3d implements CameraSubject {
 		/** Size of the color data in elements. */
 		private final int mColorDataSize = 4;
 
-		float[] verticesData = null;		
+		float[] verticesData = null;
 
 		int n; // number of points eg. 4 for a square
 		int[] points; // list of indexes for the points that make up this
@@ -752,31 +712,46 @@ public class Obj3d implements CameraSubject {
 		public Polywire(int n, int color, int thickness) {
 			this.n = n;
 			points = new int[n];
-			verticesData = new float[n*mStrideBytes];
+			verticesData = new float[n * 7];
 			this.thickness = thickness;
 			c = color;
 		}
 
 		public void addPoint(int i) {
 			points[next] = i;
-			verticesData[next*7+0] = ps[points[i]+0];
-			verticesData[next*7+1] = ps[points[i]+1];
-			verticesData[next*7+2] = ps[points[i]+2];
-			verticesData[next*7+3] = Color.red(c)/255f;
-			verticesData[next*7+4] = Color.green(c)/255f;
-			verticesData[next*7+5] = Color.blue(c)/255f;
-			verticesData[next*7+6] = 1f;
+			verticesData[next * 7 + 0] = ps[i + 1];
+			verticesData[next * 7 + 1] = ps[i + 2];
+			verticesData[next * 7 + 2] = -ps[i + 0];
+			verticesData[next * 7 + 3] = Color.red(c) / 255f;
+			verticesData[next * 7 + 4] = Color.green(c) / 255f;
+			verticesData[next * 7 + 5] = Color.blue(c) / 255f;
+			verticesData[next * 7 + 6] = 1f;
 			next++;
-			if(next==n) {
+			if (next == n) {
 				fillVerticesData();
 			}
+		}
+
+		private void updateVertices() {
+			int i = 0;
+			for (int next = 0; next < n; next++) {
+				i = points[next];
+				verticesData[next * 7 + 0] = ps[i + 1];
+				verticesData[next * 7 + 1] = ps[i + 2];
+				verticesData[next * 7 + 2] = -ps[i + 0];
+				verticesData[next * 7 + 3] = Color.red(c) / 255f;
+				verticesData[next * 7 + 4] = Color.green(c) / 255f;
+				verticesData[next * 7 + 5] = Color.blue(c) / 255f;
+				verticesData[next * 7 + 6] = 1f;
+
+			}
+			fillVerticesData();
 		}
 
 		private void fillVerticesData() {
 			vertices = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 			vertices.put(verticesData).position(0);
 		}
-
 
 		/**
 		 * Draws this polywire on the screen. If a point is not visible (ie. behind the camera) then do not attempt to draw the line connecting that point.
@@ -786,7 +761,8 @@ public class Obj3d implements CameraSubject {
 		/**
 		 * Draws this triangle on the screen.
 		 */
-		void drawLines(float[] mMVPMatrix, float[] mViewMatrix, float[] mModelMatrix, float[] mProjectionMatrix, int mMVPMatrixHandle) {
+		void drawLines(float[] mMVPMatrix, float[] mViewMatrix, float[] mModelMatrix, float[] mProjectionMatrix, int mMVPMatrixHandle, int mPositionHandle,
+				int mColorHandle) {
 			// Pass in the position information
 			vertices.position(mPositionOffset);
 			GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
@@ -798,7 +774,7 @@ public class Obj3d implements CameraSubject {
 			GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
 
 			GLES20.glEnableVertexAttribArray(mColorHandle);
-			if(mModelMatrix == null) {
+			if (mModelMatrix == null) {
 				mModelMatrix = new float[16];
 				Matrix.setIdentityM(mModelMatrix, 0);
 			}
@@ -811,7 +787,7 @@ public class Obj3d implements CameraSubject {
 			Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 
 			GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-			GLES20.glDrawArrays(GLES20.GL_LINES, 0, n-1);
+			GLES20.glDrawArrays(GLES20.GL_LINES, 0, n - 1);
 		}
 
 	}

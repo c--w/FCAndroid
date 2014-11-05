@@ -48,7 +48,7 @@ public class Paraglider extends GliderType {
 
 class Paraglider3d extends Obj3dDir {
     public Paraglider3d(ModelViewer modelViewer, boolean register) {
-	super(modelViewer, 6 + Person.NUM_POLYGONS, register);
+	super(modelViewer, register);
 	init();
     }
 

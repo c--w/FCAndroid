@@ -18,11 +18,9 @@ import com.cloudwalk.client.Trigger;
 import com.cloudwalk.client.XCModelViewer;
 
 /**
- * This class implements the clock that manages model time. The clock runs on
- * its own thread and maintains a list of observers. Each time round the run
- * loop it calls the tick method of each of its observers. The frame rate starts
- * out as 25 but it may go up or down depending on how long it takes to execute
- * all the observer's tick methods. The clock keeps track of the *model* time.
+ * This class implements the clock that manages model time. The clock runs on its own thread and maintains a list of observers. Each time round the run loop it
+ * calls the tick method of each of its observers. The frame rate starts out as 25 but it may go up or down depending on how long it takes to execute all the
+ * observer's tick methods. The clock keeps track of the *model* time.
  */
 public class Clock implements Runnable {
 
@@ -45,7 +43,7 @@ public class Clock implements Runnable {
 									// factor of 10
 
 	private static final int INIT_RATE = 20;
-	private static final int MAX_RATE = 25;
+	private static final int MAX_RATE = 60;
 	private static final int BLOCK = 2; // how often do we review the frame rate
 										// ?
 	private static final float MODEL_TIME_PER_SECOND = 1.0f; // units of model
@@ -58,9 +56,8 @@ public class Clock implements Runnable {
 															// thrash the CPU
 
 	/*
-	 * Creates the clock. Pass in the current model time. This will be zero if
-	 * you are not connected to a game server, otherwise it will be the current
-	 * model time as defined on the server.
+	 * Creates the clock. Pass in the current model time. This will be zero if you are not connected to a game server, otherwise it will be the current model
+	 * time as defined on the server.
 	 */
 	public Clock(float modelTime) {
 		synchTime(modelTime);
@@ -85,9 +82,9 @@ public class Clock implements Runnable {
 		modelTime = getTimeNow();
 		for (int i = 0; i < observers.size(); i++) {
 			ClockObserver observer = (ClockObserver) observers.elementAt(i);
-			if(observer instanceof Trigger) {
-				Trigger t = ((Trigger)observer);
-				if(t.mode == Trigger.SLEEPING)
+			if (observer instanceof Trigger) {
+				Trigger t = ((Trigger) observer);
+				if (t.mode == Trigger.SLEEPING)
 					t.wakeUp(modelTime);
 			}
 		}
@@ -101,8 +98,8 @@ public class Clock implements Runnable {
 		modelTime = getTimeNow();
 		for (int i = 0; i < observers.size(); i++) {
 			ClockObserver observer = (ClockObserver) observers.elementAt(i);
-			if(observer instanceof Trigger) {
-				((Trigger)observer).sleep(modelTime);
+			if (observer instanceof Trigger) {
+				((Trigger) observer).sleep(modelTime);
 			}
 		}
 	}
@@ -122,22 +119,25 @@ public class Clock implements Runnable {
 			/*
 			 * if (_t == 0) { dt = modelTimePerFrame; } else { dt = t - _t; }
 			 */
-			for (int i = 0; i < observers.size(); i++) {
-				// when paused still tick the modelviewer so
-				// we can change our POV and *un*pause !
-				if (i == 0 || !paused) {
-					ClockObserver c = (ClockObserver) observers.elementAt(i);
-					try {
-						if (paused) {
-							if (((ModelViewer) c).modelView.dragging) {
+			synchronized (observers) {
+				for (int i = 0; i < observers.size(); i++) {
+					// when paused still tick the modelviewer so
+					// we can change our POV and *un*pause !
+					if (i == 0 || !paused) {
+						ClockObserver c = (ClockObserver) observers.elementAt(i);
+						try {
+							if (paused) {
+								if (((ModelViewer) c).modelView.dragging) {
+									c.tick(modelTime, modelTimePerFrame);
+								}
+							} else
 								c.tick(modelTime, modelTimePerFrame);
-							}
-						} else
-							c.tick(modelTime, modelTimePerFrame);
-					} catch (Exception e) {
-						Log.e("FC", e.getMessage(), e);
+						} catch (Exception e) {
+							Log.e("FC", e.getMessage(), e);
+						}
 					}
 				}
+
 			}
 
 			long now = System.currentTimeMillis();
@@ -177,8 +177,7 @@ public class Clock implements Runnable {
 	private float modelTimeAtSync;
 
 	/*
-	 * Synchronises this client's copy of the model time with the master time
-	 * held on the game server.
+	 * Synchronises this client's copy of the model time with the master time held on the game server.
 	 */
 	public void synchTime(float t) {
 		realTimeAtSync = System.currentTimeMillis();
@@ -196,8 +195,7 @@ public class Clock implements Runnable {
 	}
 
 	/*
-	 * Tune the frame rate up or down depending on how long we have been idle
-	 * over the last N ticks.
+	 * Tune the frame rate up or down depending on how long we have been idle over the last N ticks.
 	 */
 	void reviewRate(long t) {
 		long elapsed = t - blockStart;

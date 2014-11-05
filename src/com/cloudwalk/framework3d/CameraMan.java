@@ -40,7 +40,7 @@ public class CameraMan {
 	public static final int STAY_THERE = 6;
 
 	protected ModelViewer modelViewer;
-	protected float depthOfVision = 100;
+	public float depthOfVision = 100;
 
 	private float[] lightRay;
 	private float distance = 0;
@@ -269,7 +269,6 @@ public class CameraMan {
 		// TODO: move the following into a subclass
 		if (eye[2] < 0)
 			eye[2] = 0;
-
 		setMatrix();
 	}
 

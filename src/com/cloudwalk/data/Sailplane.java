@@ -18,9 +18,8 @@ import com.cloudwalk.framework3d.ModelViewer;
 import com.cloudwalk.framework3d.Obj3dDir;
 
 /**
- * This class outputs a text file of data for a sailplane. See GliderType for a
- * definition of the file format. The file sailplane.txt is output to the
- * current directory.
+ * This class outputs a text file of data for a sailplane. See GliderType for a definition of the file format. The file sailplane.txt is output to the current
+ * directory.
  */
 public class Sailplane extends GliderType {
 	public Sailplane() {
@@ -48,22 +47,19 @@ public class Sailplane extends GliderType {
  */
 class Sailplane3d extends Obj3dDir {
 	public Sailplane3d(ModelViewer app, boolean register) {
-		super(app, 6 + Person.NUM_POLYGONS, register);
+		super(app, register);
 		init();
 	}
 
 	private void init() {
 		/*
-		 * Each of the four wing panels has width one unit. Once the glider has
-		 * been constructed we reduce this by a scale factor
+		 * Each of the four wing panels has width one unit. Once the glider has been constructed we reduce this by a scale factor
 		 * 
 		 * plan y | | ------x
 		 * 
-		 * | ----- ----- ----- ----- | a | b | c | d | ----- ----- ----- ----- |
-		 * --|-- |-----|e f is the rudder
+		 * | ----- ----- ----- ----- | a | b | c | d | ----- ----- ----- ----- | --|-- |-----|e f is the rudder
 		 * 
-		 * front z | | ------x /\ / \R / \ / \ The wings bend up with a radius
-		 * of curvature R (~4).
+		 * front z | | ------x /\ / \R / \ / \ The wings bend up with a radius of curvature R (~4).
 		 * 
 		 * ---___ --- ___--- ---|---
 		 */

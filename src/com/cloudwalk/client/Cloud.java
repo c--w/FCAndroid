@@ -427,7 +427,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	 * Ok, so it doesn't look much like a cloud ! But it looks a bit like one
 	 * cell of a cloud.
 	 */
-	class Shape3d {
+	public class Shape3d {
 		double[] theta = new double[4];
 		double[] landa = new double[4];
 		Obj3d obj3d;
@@ -438,8 +438,6 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		float[] landaCos = new float[4];
 		float[] landaSin = new float[4];
 
-		int[] vertMap = new int[8];
-
 		float r0; // radius at base (vertices 0..3)
 		float r1; // radius at top (vertices 3..7)
 		boolean dirty = false;
@@ -448,7 +446,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		public Shape3d() {
 			setAngles();
-			obj3d = new Obj3d(xcModelViewer, 7, true);
+			obj3d = new Obj3d(xcModelViewer); 
 			setRadius();
 			addPolygons();
 		}
@@ -464,7 +462,6 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 				float dy = wind_y * dt;
 				obj3d.translateBy(dx, dy, 0);
 			}
-			obj3d.updateShadow();
 			dirty = false;
 		}
 
@@ -524,11 +521,10 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		 * Gets the new co-ords for each vertex and passes this data to obj3d.
 		 */
 		private void updateShape() {
-			for (int i = 0; i < 8; i++) {
-				float[] p = getVert(i);
-				obj3d.setPoint(vertMap[i], p[0], p[1], p[2]);
-			}
-			obj3d.setBB();
+			obj3d.destroyMe();
+			obj3d = new Obj3d(xcModelViewer); 
+			setRadius();
+			addPolygons();
 		}
 
 		/**
@@ -603,21 +599,12 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			 * from above).
 			 */
 			obj3d.addPolygon(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color);
-			obj3d.addPolygonWithShadow(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color_, false);
+			obj3d.addPolygon(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color_, true, true);
 
 			/*
 			 * Define a mapping from my vertex labels to obj3d's point indexes
 			 * so we can update the points later.
 			 */
-			vertMap[0] = obj3d.getPointIndex(0, 0);
-			vertMap[4] = obj3d.getPointIndex(0, 1);
-			vertMap[7] = obj3d.getPointIndex(0, 2);
-			vertMap[3] = obj3d.getPointIndex(0, 3);
-
-			vertMap[2] = obj3d.getPointIndex(1, 0);
-			vertMap[6] = obj3d.getPointIndex(1, 1);
-			vertMap[5] = obj3d.getPointIndex(1, 2);
-			vertMap[1] = obj3d.getPointIndex(1, 3);
 		}
 
 		private void setRadius() {

@@ -136,8 +136,7 @@ class Node implements CameraSubject {
 			return;
 		}
 		if (mode == AWAKE) {
-			obj3d = new Obj3d(xcModelViewer, 0, true);
-			obj3d.setNumPolywires(1);
+			obj3d = new Obj3d(xcModelViewer);
 			float[][] ps = Tools3d.circleXY(NUM_POINTS, radius, new float[] { x, y, 0 });
 			obj3d.addPolywireClosed(ps, COLOR);
 		} else {

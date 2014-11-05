@@ -287,8 +287,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 
 	private void renderMe() {
 		if (mode == AWAKE && show) {
-			obj3d = new Obj3d(xcModelViewer, 0, true);
-			obj3d.setNumPolywires(1);
+			obj3d = new Obj3d(xcModelViewer);
 			float radius = thermalStrength * 0.5f;
 			float[][] ps = Tools3d.circleXY(NUM_POINTS, radius, new float[] { x, y, 0 });
 			obj3d.addPolywireClosed(ps, Obj3d.COLOR_DEFAULT);

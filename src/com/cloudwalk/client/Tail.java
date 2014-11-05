@@ -45,8 +45,7 @@ class Tail extends Obj3d {
 
 	/** Creates a tail made from n wires. */
 	public Tail(ModelViewer modelViewer, Particle particle, int color, int nWires, int wireEvery) {
-		super(modelViewer, 0, true);
-		this.setNumPolywires(nWires);
+		super(modelViewer);
 		this.nWires = nWires;
 		this.particle = particle;
 		nPoints = (nWires - 1) * wireEvery + 2;

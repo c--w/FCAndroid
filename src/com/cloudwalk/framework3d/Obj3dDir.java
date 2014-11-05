@@ -28,13 +28,13 @@ public class Obj3dDir extends Obj3d {
 
 	private static final float[] UP = new float[] { 0, 0, 1 };
 
-	public Obj3dDir(ModelViewer modelViewer, int npolygons, boolean register) {
-		super(modelViewer, npolygons, register);
+	public Obj3dDir(ModelViewer modelViewer, boolean register) {
+		super(modelViewer);
 		init();
 	}
 
-	public Obj3dDir(ModelViewer modelViewer, int npolygons) {
-		this(modelViewer, npolygons, true);
+	public Obj3dDir(ModelViewer modelViewer) {
+		this(modelViewer, true);
 	}
 
 	public Obj3dDir(StreamTokenizer st, ModelViewer modelViewer, boolean register) throws IOException, FileFormatException {
@@ -48,6 +48,8 @@ public class Obj3dDir extends Obj3d {
 	 */
 	public Obj3dDir(Obj3dDir from, boolean register) {
 		super(from, register);
+		maxpoints = from.maxpoints;
+		npoints = from.npoints;
 		init();
 		System.arraycopy(from.ps, 0, locals, 0, npoints * 3);
 	}
@@ -221,9 +223,10 @@ public class Obj3dDir extends Obj3d {
 	public void transform() {
 		if (dirtyR) {
 			updateRotated();
+			updateVerticesData();
 		} else if (dirtyT) {
 			updateTranslated();
+			updateVerticesData();
 		}
-		this.updateShadow();
 	}
 }

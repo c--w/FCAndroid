@@ -3,17 +3,17 @@ package com.cloudwalk.framework3d;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import com.cloudwalk.client.XCModel;
-import com.cloudwalk.client.XCModelViewer;
-
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.SystemClock;
+import android.util.Log;
+
+import com.cloudwalk.client.XCModelViewer;
 
 /**
  * This class implements our custom renderer. Note that the GL10 parameter passed in is unused for OpenGL ES 2.0 renderers -- the static class GLES20 is used
@@ -65,16 +65,33 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	private final int mColorDataSize = 4;
 
 	public XCModelViewer modelViewer;
+
+	public float far = 100f;
+	public float lastFar = 0f;
+	public int width;
+	public int height;
+
 	/**
 	 * Initialize the model data.
 	 */
 	public ModelViewRenderer() {
 	}
 
-	@Override
-	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-		// Set the background clear color to gray.
-		GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+	public void updateCamera() {
+
+		// Position the eye behind the origin.
+		float[] eye = modelViewer.cameraMan.getEye();
+		// We are looking toward the distance
+		float[] focus = modelViewer.cameraMan.getFocus();
+		// Set our up vector. This is where our head would be pointing were we holding the camera.
+		final float upX = 0.0f;
+		final float upY = 1.0f;
+		final float upZ = 0.0f;
+
+		// Set the view matrix. This matrix can be said to represent the camera position.
+		// NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
+		// view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
+		Matrix.setLookAtM(mViewMatrix, 0, eye[1], eye[2], -eye[0], focus[1], focus[2], -focus[0], upX, upY, upZ);
 
 		// Position the eye behind the origin.
 		final float eyeX = 0.0f;
@@ -85,17 +102,25 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		final float lookX = 0.0f;
 		final float lookY = 0.0f;
 		final float lookZ = -5.0f;
-
-		// Set our up vector. This is where our head would be pointing were we holding the camera.
-		final float upX = 0.0f;
-		final float upY = 1.0f;
-		final float upZ = 0.0f;
+		//
+		// // Set our up vector. This is where our head would be pointing were we holding the camera.
+		// final float upX = 0.0f;
+		// final float upY = 1.0f;
+		// final float upZ = 0.0f;
 
 		// Set the view matrix. This matrix can be said to represent the camera position.
 		// NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
 		// view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
-		Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+		// Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
+	}
+
+	@Override
+	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
+		// Set the background clear color to white.
+		GLES20.glClearColor(1f, 1f, 1f, 1);
+
+		updateCamera();
 		final String vertexShader = "uniform mat4 u_MVPMatrix;      \n" // A constant representing the combined model/view/projection matrix.
 
 				+ "attribute vec4 a_Position;     \n" // Per-vertex position information we will pass in.
@@ -209,33 +234,51 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		GLES20.glUseProgram(programHandle);
 	}
 
+	public void updateProjectionMatrixIfNeeded() {
+		this.far = modelViewer.cameraMan.depthOfVision;
+		if (far != lastFar) {
+			final float ratio = (float) width / height;
+			final float left = -ratio;
+			final float right = ratio;
+			final float bottom = -1.0f;
+			final float top = 1.0f;
+			final float near = 3f;
+			// Create a new perspective projection matrix. The height will stay the same
+			// while the width will vary as per aspect ratio.
+
+			Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+			lastFar = far;
+		}
+
+	}
+
 	@Override
 	public void onSurfaceChanged(GL10 glUnused, int width, int height) {
 		// Set the OpenGL viewport to the same size as the surface.
 		GLES20.glViewport(0, 0, width, height);
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-
-		// Create a new perspective projection matrix. The height will stay the same
-		// while the width will vary as per aspect ratio.
-		final float ratio = (float) width / height;
-		final float left = -ratio;
-		final float right = ratio;
-		final float bottom = -1.0f;
-		final float top = 1.0f;
-		final float near = 1.0f;
-		final float far = 1000.0f;
-
-		Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+		this.width = width;
+		this.height = height;
+		updateProjectionMatrixIfNeeded();
 	}
 
 	@Override
 	public void onDrawFrame(GL10 glUnused) {
+		Matrix.setIdentityM(mModelMatrix, 0);
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+		updateCamera();
+		updateProjectionMatrixIfNeeded();
+		// drawTriangle();
+		synchronized (modelViewer.clock.observers) {
 
-		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
-			Obj3d o = modelViewer.obj3dManager.obj(i);
-			Matrix.setIdentityM(mModelMatrix, 0);
-			o.draw(mMVPMatrix, mViewMatrix, mModelMatrix, mProjectionMatrix, mMVPMatrixHandle);
+			for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
+				try {
+					Obj3d o = modelViewer.obj3dManager.obj(i);
+					Matrix.setIdentityM(mModelMatrix, 0);
+					o.draw(mMVPMatrix, mViewMatrix, mModelMatrix, mProjectionMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle);
+				} catch (Exception e) {
+				}
+			}
 		}
 
 	}
@@ -246,7 +289,18 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	 * @param aTriangleBuffer
 	 *            The buffer containing the vertex data.
 	 */
-	private void drawTriangle(final FloatBuffer aTriangleBuffer) {
+	private void drawTriangle() {
+
+		final float[] triangle1VerticesData = {
+				// X, Y, Z,
+				// R, G, B, A
+				0f, 0f, -30.0f, 1.0f, 0.0f, 0.0f, 1.0f, 5f, 10.25f, -30.0f, 0.0f, 0.0f, 1.0f, 1.0f, 10.0f, 0, -30.0f, 0.0f, 1.0f, 0.0f, 1.0f };
+		final float[] triangle1VerticesData2 = { 15.708405f, 3.0f, -26.365923f, 0.73333335f, 0.73333335f, 0.73333335f, 1.0f, 15.880904f, 4.767948f,
+				-26.784058f, 0.73333335f, 0.73333335f, 0.73333335f, 1.0f, 14.619017f, 4.2414694f, -27.276192f, 0.73333335f, 0.73333335f, 0.73333335f, 1.0f };
+		// Initialize the buffers.
+		FloatBuffer aTriangleBuffer = ByteBuffer.allocateDirect(triangle1VerticesData2.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		aTriangleBuffer.put(triangle1VerticesData2).position(0);
+
 		// Pass in the position information
 		aTriangleBuffer.position(mPositionOffset);
 		GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, aTriangleBuffer);

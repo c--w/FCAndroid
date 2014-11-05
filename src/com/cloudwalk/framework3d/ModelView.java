@@ -137,7 +137,7 @@ public class ModelView extends GLSurfaceView {
 	}
 
 	public void handleTouch(View v, MotionEvent event) {
-		// Log.w("FC",""+event.getActionMasked());
+		//og.w("FC",""+event.getActionMasked());
 		/*
 		 * float x = event.getX(); if (x < v.getWidth() / 4 || x > v.getWidth() / 4 * 3) { return; }
 		 */

@@ -86,7 +86,7 @@ class Hill implements LiftSource, CameraSubject {
 				frontFace = 2;
 			numTiles = 2 * numSlices * (2 * Math.round(frontFace / tileWidth));
 			Log.i("FC Hill", "numTiles:" + numTiles);
-			obj3d = new Obj3d(theApp.xcModelViewer, numTiles);
+			obj3d = new Obj3d(theApp.xcModelViewer);
 			tileHill();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -117,7 +117,7 @@ class Hill implements LiftSource, CameraSubject {
 		else
 			frontFace = 2;
 		numTiles = 2 * (numSlices * (2 * Math.round(frontFace / tileWidth)));
-		obj3d = new Obj3d(theApp.xcModelViewer, numTiles);
+		obj3d = new Obj3d(theApp.xcModelViewer);
 		tileHill();
 		// registerWithNodes(true);
 	}

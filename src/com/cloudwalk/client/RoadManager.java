@@ -157,8 +157,7 @@ class Road {
 			}
 		}
 
-		obj3d = new Obj3d(xcModelViewer, 0, true);
-		obj3d.setNumPolywires(n);
+		obj3d = new Obj3d(xcModelViewer);
 
 		for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
 			obj3d.addPolywire(pss[i], COLOR_ROAD);
