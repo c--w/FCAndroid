@@ -330,13 +330,13 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 	private void setColor() {
 		final int COLOR = 250; // 230
-		final int COLOR_STEP = 30; // how much darker are strong clouds
-		final int BASE_UP = -10; // 20;
+		final int DARKEST_CLOUD = 100; // how much darker are strong clouds
+		final int BASE_UP = -30; // 20;
 
 		// bigger clouds are darker
 		int c = COLOR;
 		if (size > 1) {
-			c -= (size - 1) * COLOR_STEP;
+			c -= (size/5) * DARKEST_CLOUD;
 		}
 		color = Color.rgb(c, c, c);
 
@@ -437,6 +437,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		float[] thetaSin = new float[4];
 		float[] landaCos = new float[4];
 		float[] landaSin = new float[4];
+		int[] pointIndexes = new int[8];
 
 		float r0; // radius at base (vertices 0..3)
 		float r1; // radius at top (vertices 3..7)
@@ -521,10 +522,15 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		 * Gets the new co-ords for each vertex and passes this data to obj3d.
 		 */
 		private void updateShape() {
-			obj3d.destroyMe();
-			obj3d = new Obj3d(xcModelViewer); 
-			setRadius();
-			addPolygons();
+			if(!obj3d.visible())
+				return;
+			for (int i = 0; i < 8; i++) {
+				float[] point = getVert(i);
+				obj3d.ps[pointIndexes[i]] = point[0];
+				obj3d.ps[pointIndexes[i]+1] = point[1];
+				obj3d.ps[pointIndexes[i]+2] = point[2];
+			}
+			obj3d.updateVerticesData();
 		}
 
 		/**
@@ -552,6 +558,14 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			return p;
 		}
 
+		private int getVertColor(int index) {
+			if (index < 4) {
+				return color_;
+			} else {
+				return color;
+			}
+		}
+
 		private float[] getVertBase(int quad) {
 			float[] p = new float[3];
 			p[0] = r0 * thetaCos[quad];
@@ -575,10 +589,13 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		private void addPolygons() {
 			float[][] ps = new float[8][];
+			int[] colors = new int[8];
 
 			// get the 8 vertices' co-ords
 			for (int i = 0; i < 8; i++) {
 				ps[i] = getVert(i);
+				colors[i] = getVertColor(i);
+				pointIndexes[i] = obj3d.addPoint(ps[i][0], ps[i][1], ps[i][2], colors[i]);
 			}
 
 			/*

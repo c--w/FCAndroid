@@ -11,6 +11,8 @@ package com.cloudwalk.framework3d;
 
 import java.io.*;
 
+import android.graphics.Color;
+
 /**
  * This class extends Obj3d to include a local frame of reference. We may rotate the local frame by specifying a unit vector v and an angle of bank. We may move
  * the local frame by giving the co-ords of its origin.
@@ -67,9 +69,9 @@ public class Obj3dDir extends Obj3d {
 	/**
 	 * Extends super to also hold a copy of the initial co-ords as the local co-ords.
 	 */
-	int addPoint(float x, float y, float z) {
+	public int addPoint(float x, float y, float z, int color) {
 		int _npoints = npoints;
-		int index = super.addPoint(x, y, z);
+		int index = super.addPoint(x, y, z, color);
 
 		// if we have added a new point we must copy it to locals
 		if (npoints > _npoints) {

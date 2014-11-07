@@ -98,9 +98,9 @@ public class XCCameraMan extends CameraMan {
 			xcModel.task.nodeManager.loadAllNodes(true);
 			setSubject((CameraSubject) xcModel.task, false);
 			Glider.filmID = -1;
-			depthOfVision = 2000f;
+			setDepthOfVision(2000f);
 		} else
-			depthOfVision = 100f;
+			setDepthOfVision(100f);
 
 		this.stayThere = (inMode == STAY_THERE);
 		mode = inMode;

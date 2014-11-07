@@ -67,7 +67,7 @@ public class ModelView extends GLSurfaceView {
 	public void init() {
 		// 4 seconds to rotate 90 degrees (at 25hz) - slooow !
 		setKeepScreenOn(true);
-		rotationStep = (float) Math.PI / (25 * 8);
+		rotationStep = (float) Math.PI / (25 * 4);
 		width = getWidth();
 		height = getHeight();
 		DRAG_MIN = height / 15;

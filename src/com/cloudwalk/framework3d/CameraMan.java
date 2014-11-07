@@ -40,7 +40,8 @@ public class CameraMan {
 	public static final int STAY_THERE = 6;
 
 	protected ModelViewer modelViewer;
-	public float depthOfVision = 100;
+	private float depthOfVision = 100;
+	public float dofxdof = depthOfVision * depthOfVision;
 
 	private float[] lightRay;
 	private float distance = 0;
@@ -126,6 +127,7 @@ public class CameraMan {
 			cutStep();
 		if (track)
 			followSubject();
+		setDepthOfVision(Math.max(eye[2] * 2, 100f));
 	}
 
 	/**
@@ -370,5 +372,14 @@ public class CameraMan {
 	/** Returns a string that may be handy for debugging. */
 	public String toString() {
 		return "Camera: \n\t distance: " + Tools3d.round(distance) + "\n\t eye: " + Tools3d.toString(eye) + "\n\t focus: " + Tools3d.toString(focus);
+	}
+
+	public float getDepthOfVision() {
+		return depthOfVision;
+	}
+
+	public void setDepthOfVision(float depthOfVision) {
+		this.depthOfVision = depthOfVision;
+		dofxdof = depthOfVision * depthOfVision;
 	}
 }

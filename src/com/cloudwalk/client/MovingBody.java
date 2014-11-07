@@ -77,6 +77,7 @@ abstract class MovingBody extends Particle {
 
 		// pass message to obj
 		obj.setFrame(p, v, roll);
+		obj.transform();
 	}
 
 	public void destroyMe() {

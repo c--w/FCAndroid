@@ -103,64 +103,66 @@ public class Clock implements Runnable {
 			}
 		}
 	}
-
-	public void run() {
-		Log.w("FC Clock", "" + this + " " + getTimeNow());
-
-		while (ticker != null) {
+	float t, _t = 0, dt;
+	public void oneFrame(ModelViewRenderer renderer) {
+		if (ticker != null) {
 			if (((XCModelViewer) observers.elementAt(0)).netFlag && !((XCModelViewer) observers.elementAt(0)).netTimeFlag) {
 				SystemClock.sleep(10);
-				continue;
+				return;
 			}
 			currentTick = System.currentTimeMillis();
 			tickCount++;
 
-			modelTime = getTimeNow();
-			/*
-			 * if (_t == 0) { dt = modelTimePerFrame; } else { dt = t - _t; }
-			 */
-			synchronized (observers) {
-				for (int i = 0; i < observers.size(); i++) {
-					// when paused still tick the modelviewer so
-					// we can change our POV and *un*pause !
-					if (i == 0 || !paused) {
-						ClockObserver c = (ClockObserver) observers.elementAt(i);
-						try {
-							if (paused) {
-								if (((ModelViewer) c).modelView.dragging) {
-									c.tick(modelTime, modelTimePerFrame);
-								}
-							} else
+			modelTime = t = getTimeNow();
+			
+			 if (_t == 0) { dt = modelTimePerFrame; } else { dt = t - _t; }
+			
+			for (int i = 0; i < observers.size(); i++) {
+				// when paused still tick the modelviewer so
+				// we can change our POV and *un*pause !
+				if (i == 0 || !paused) {
+					ClockObserver c = (ClockObserver) observers.elementAt(i);
+					try {
+						if (paused) {
+							if (((ModelViewer) c).modelView.dragging) {
 								c.tick(modelTime, modelTimePerFrame);
-						} catch (Exception e) {
-							Log.e("FC", e.getMessage(), e);
-						}
+							}
+						} else
+							c.tick(modelTime, modelTimePerFrame);
+					} catch (Exception e) {
+						Log.e("FC", e.getMessage(), e);
 					}
 				}
-
 			}
-
-			long now = System.currentTimeMillis();
-			long timeLeft = sleepTime + currentTick - now;
-
-			// idle for a bit
-			if (timeLeft > 0) {
-				idleTime += timeLeft;
-				try {
-					Thread.sleep(timeLeft);
-				} catch (InterruptedException e) {
-					ticker = null;
-					return;
-				}
-			}
-
-			// check frame rate every so often
-			if (tickCount % BLOCK == 0) {
-				reviewRate(now);
-			}
-			// _t = t;
+			renderer.drawEverything();
 		}
-		ticker = null;
+
+		long now = System.currentTimeMillis();
+		long timeLeft = sleepTime + currentTick - now;
+
+		// idle for a bit
+		if (timeLeft > 0) {
+			idleTime += timeLeft;
+			try {
+				Thread.sleep(timeLeft);
+			} catch (InterruptedException e) {
+				ticker = null;
+				return;
+			}
+		}
+
+		// check frame rate every so often
+		if (tickCount % BLOCK == 0) {
+			reviewRate(now);
+		}
+		_t = t;
+
+	}
+
+	public void run() {
+		Log.w("FC Clock", "" + this + " " + getTimeNow());
+
+		// ticker = null;
 	}
 
 	/* Returns the current model time as defined by the run loop (discrete). */
