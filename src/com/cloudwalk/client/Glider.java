@@ -130,7 +130,6 @@ public class Glider extends MovingBody {
 		float dx = (myID - 5) * TO_DIST * tp.dy;
 		float dy = -(myID - 5) * TO_DIST * tp.dx;
 		float[] p = new float[] { tp.x + dx, tp.y + dy, xcModelViewer.xcModel.task.CLOUDBASE * 0.75f };
-		//float[] p = new float[] { 1964, 167, xcModelViewer.xcModel.task.CLOUDBASE * 0.75f };
 
 		if (really) {
 			this.takeOff(p, v);

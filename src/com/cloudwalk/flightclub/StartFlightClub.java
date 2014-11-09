@@ -79,7 +79,6 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						int current_time = (int) ((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.timeFinished;
 						Log.i("FC StartFlightClub", "currenttime " + current_time + " " + best_time);
 						if (current_time < best_time) {
-							prefs.edit().putInt("best_time0" + task + pilotType, current_time).commit();
 							submitScore(pilotType, current_time);
 						}
 					} catch (Exception e) {
@@ -92,7 +91,6 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						int current_distance = (int) (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.distanceFlown()/2 * 100);
 						Log.i("FC StartFlightClub", "current_distance " + current_distance + " " + best_distance);
 						if (current_distance > best_distance) {
-							prefs.edit().putInt("best_distance0" + task + pilotType, current_distance).commit();
 							submitScore(pilotType, current_distance);
 						}
 					} catch (Exception e) {
@@ -121,6 +119,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 			wasPaused = false;
 			return;
 		}
+		prefs.edit().putInt("best_time0" + task + pilotType, current_time).commit();
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(StartFlightClub.this);
 
