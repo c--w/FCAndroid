@@ -14,7 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
+import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
+import net.e175.klaus.solarpositioning.PSA;
 import android.graphics.Color;
 import android.util.Log;
 
@@ -42,6 +46,9 @@ public class Task implements CameraSubject {
 	public String desc = "";
 	public float NODE_SPACING;
 	public int type = TIME;
+	static float SUN_DISTANCE = 1000000000f;
+	public static float[] sun = {SUN_DISTANCE/4, SUN_DISTANCE/8, SUN_DISTANCE};
+	public static float[] shadowFactors = {1/4f, 1/8f};
 
 	// for the default course
 	static float HEXAGON; // 8;
@@ -64,7 +71,15 @@ public class Task implements CameraSubject {
 		nodeManager = new NodeManager(xcModelViewer, this);
 		Glider.air[0] = wind_x;
 		Glider.air[1] = wind_y;
-
+		shadowFactors[0] = sun[0]/sun[2];
+		shadowFactors[1] = sun[1]/sun[2];
+		GregorianCalendar calendar = (GregorianCalendar) GregorianCalendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, 14);
+		calendar.set(Calendar.MONTH, 1);
+		AzimuthZenithAngle azimuthZenithAngle = PSA.calculateSolarPosition(calendar, 46.0, 16.0);
+		Log.i("FC TASK", azimuthZenithAngle.toString());
+		shadowFactors[1] = (float) Math.tan(Math.toRadians(azimuthZenithAngle.getZenithAngle()));
+		shadowFactors[0] = (float) Math.tan(Math.toRadians(azimuthZenithAngle.getAzimuth()));
 	}
 
 	private void generateT1Task() {

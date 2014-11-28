@@ -28,7 +28,7 @@ public interface ModelEnv {
     void setTask(String task);
     String getHostPort(); 
     int[] getTypeNums();
-	void play(int sound);
+	void play(float sound, int index, int loop);
 	Context getContext();
 }
    

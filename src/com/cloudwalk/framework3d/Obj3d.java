@@ -14,18 +14,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Paint.Style;
-import android.graphics.Path;
+import android.opengl.GLES20;
 import android.util.Log;
 
+import com.cloudwalk.client.Task;
+import com.cloudwalk.client.XCModelViewer;
+
 /**
- * This class implements a 3d object made up of polygons. We have a list of points (x, y, z) in model space and a second list of the those points after they
+ * This class implements a 3d object made up of triangles. We have a list of points (x, y, z) in model space and a second list of the those points after they
  * have been mapped into screen space (x_, y_, z_). The x_ coord is handy for fogging and sorting; it represents the 'depth' of the projected point. (y_, z_) is
  * the location of the point in screen space.
  * 
@@ -42,45 +47,31 @@ import android.util.Log;
  */
 public class Obj3d implements CameraSubject {
 	protected ModelViewer modelViewer;
-	float[] ps;
-	float[] ps_;
-	/** A flag for each point set to true if point can be seen by the camera. */
-	private boolean[] visibles;
-	private boolean visible; // if any points are visible then we say the object
-								// is visible
+	public float[] ps;
+	public int[] colors;
+
 	int npoints = 0;
-	int maxpoints;
-	Polygon[] polygons;
-	private int polynext = 0;
-	Polywire[] polywires = new Polywire[0]; // hhm, tagged these on
+	int maxpoints = 16;
+	List<Triangle> triangles = new ArrayList<Obj3d.Triangle>();
+	List<Polywire> polywires = new ArrayList<Polywire>();
 	private int wirenext = 0;
 	boolean noShade = false; // hack for sky
+	int shadowColor = Color.rgb(200, 200, 200);
 
 	/** Bounding box in model space */
 	BB box = new BB();
-
-	/** Depth bounding box (in screen space) */
-	private float x_min, x_max;
-
-	public static final int CONCAVE = 0;
-	public static final int CONVEX = 1;
+	float x_min, x_max;
 
 	// I *like* gray
-	public static final int COLOR_DEFAULT = Color.GRAY;
-
-	// shadowy bits
-	static final int MAX_SHADOWS = 6;
-	static final int SHADOW_COLOR = 180;
-	int[] shadowCasters = new int[MAX_SHADOWS];
-	Polygon[] shadows = new Polygon[MAX_SHADOWS];
-	int numShadows = 0;
+	public static final int COLOR_DEFAULT = Color.LTGRAY;
 
 	/**
 	 * Creates an Obj3d that may or may not be registed with the 3d object manager. Only registered objects are drawn on the screen. This constructor is private
-	 * because it is only used by the parser. Everyone else should call the public constructor below which specifies the number of polygons that are used to
+	 * because it is only used by the parser. Everyone else should call the public constructor below which specifies the number of triangles that are used to
 	 * model this object.
 	 */
-	private Obj3d(ModelViewer modelViewer, boolean register) {
+
+	public Obj3d(ModelViewer modelViewer, boolean register) {
 		this.modelViewer = modelViewer;
 		if (register) {
 			registerObject3d();
@@ -88,61 +79,39 @@ public class Obj3d implements CameraSubject {
 
 		// maxpoints is not a real limit because if we hit it we
 		// double it
-		maxpoints = 20;
+		maxpoints = 30;
 		ps = new float[maxpoints * 3];
-		ps_ = new float[maxpoints * 3];
-		visibles = new boolean[maxpoints];
-		initShadow();
-	}
-
-	public Obj3d(ModelViewer modelViewer, int npolygons, boolean register) {
-		this(modelViewer, register);
-		setNumPolygons(npolygons);
-	}
-
-	private void setNumPolygons(int n) {
-		polygons = new Polygon[n];
-	}
-
-	// hack for glider tails !
-	public void setNumPolywires(int n) {
-		polywires = new Polywire[n];
+		colors = new int[maxpoints];
 	}
 
 	/** Creates an Obj3d and registers it with the 3d object manager. */
-	public Obj3d(ModelViewer modelViewer, int npolygons) {
-		this(modelViewer, npolygons, true);
+	public Obj3d(ModelViewer modelViewer) {
+		this(modelViewer, true);
 	}
 
 	/** Creates a copy of <code>from</code>. */
 	public Obj3d(Obj3d from, boolean register) {
-		this(from.modelViewer, from.polygons.length, register);
+		this(from.modelViewer, register);
 
 		// make our storage same size as from's
 		maxpoints = from.maxpoints;
 		npoints = from.npoints;
-		polynext = from.polynext;
 		ps = new float[maxpoints * 3];
-		ps_ = new float[maxpoints * 3];
-		visibles = new boolean[maxpoints];
+		colors = new int[maxpoints];
 
 		// copy co-ords data
 		System.arraycopy(from.ps, 0, ps, 0, npoints * 3);
+		System.arraycopy(from.colors, 0, colors, 0, npoints);
 
-		// copy polygons
-		for (int i = 0; i < from.polygons.length; i++) {
-			Polygon fromPoly = from.polygons[i];
-			polygons[i] = new Polygon(fromPoly.n, fromPoly.c, fromPoly.doubleSided);
-			System.arraycopy(fromPoly.points, 0, polygons[i].points, 0, fromPoly.points.length);
-		}
-
-		// copy shadows
-		numShadows = from.numShadows;
-		System.arraycopy(from.shadowCasters, 0, shadowCasters, 0, MAX_SHADOWS);
-		for (int i = 0; i < numShadows; i++) {
-			Polygon fromPoly = from.shadows[i];
-			shadows[i] = new Polygon(fromPoly.n, fromPoly.c, fromPoly.doubleSided);
-			System.arraycopy(fromPoly.points, 0, shadows[i].points, 0, fromPoly.points.length);
+		// copy triangles
+		for (int i = 0; i < from.triangles.size(); i++) {
+			Triangle fromTriangle = from.triangles.get(i);
+			Triangle triangle = new Triangle(fromTriangle.c);
+			System.arraycopy(fromTriangle.points, 0, triangle.points, 0, fromTriangle.points.length);
+			triangle.updateVertices(true, true);
+			triangle.shadow = fromTriangle.shadow;
+			addTriangle(triangle, false);
+			// triangle.logVerticesData();
 		}
 	}
 
@@ -151,20 +120,20 @@ public class Obj3d implements CameraSubject {
 	 * 
 	 * <pre>
 	 * 
-	 * 	# a simple kite made of two triangular polygons
+	 * 	# a simple kite made of two triangular triangles
 	 * 	# by foo bar, 27 Aug 2002
 	 * 	2
 	 * 	t f CC99FF 12.1 2.4 3.5, 12.4 2.2 3.5, 3.2 5 7.4, 
 	 * 	t t 336699 9.7 0 3.5, 2.2 2.2 3.5, 3.2 5 7.3,
 	 * </pre>
 	 * 
-	 * The above represents an Obj3d with two polygons, the second of which is double sided; each is a differnt color; each is made up of 3 points. Both cast
+	 * The above represents an Obj3d with two triangles, the second of which is double sided; each is a differnt color; each is made up of 3 points. Both cast
 	 * shadows. The first flag indicates if the polygon casts a shadow. The second flag indicates if the polygon is double sided.
 	 */
 	public Obj3d(StreamTokenizer st, ModelViewer modelViewer, boolean register) throws IOException, FileFormatException {
 
 		// call to constructor must be first, but we do not
-		// know how many polygons yet, hence the following
+		// know how many triangles yet, hence the following
 		this(modelViewer, register);
 
 		// gobble EOL's due to comments
@@ -174,9 +143,6 @@ public class Obj3d implements CameraSubject {
 
 		// how many polygons
 		int num = (int) st.nval;
-
-		// set num polygons
-		this.setNumPolygons(num);
 
 		// gobble up new line
 		st.nextToken();
@@ -235,11 +201,7 @@ public class Obj3d implements CameraSubject {
 			}
 
 			// finally, add the polygon
-			if (!shadow) {
-				this.addPolygon(vs, color, doubleSided);
-			} else {
-				this.addPolygonWithShadow(vs, color, doubleSided);
-			}
+			this.addPolygon(vs, color, doubleSided, shadow);
 		}
 	}
 
@@ -270,82 +232,52 @@ public class Obj3d implements CameraSubject {
 		modelViewer.obj3dManager.addObj(this);
 	}
 
-	/**
+	/*
 	 * Draws a 2d representation of the object onto the screen.
 	 * 
 	 * @see ModelCanvas#paintModel
 	 */
-	public void draw(Canvas g) {
-		if (!visible) {
+	public void draw(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
+		if (polywires.size() == 0 && !visible())
 			return;
-		}
 		try {
-
-			drawShadow(g);
-			final float[] eye = modelViewer.cameraMan.getEye();
-
-			for (int i = 0; i < polygons.length; i++) {
-				// if (polygons[i] == null) {
-				// Log.i("FC", "Warning: polygon is null");
-				// break;
-				// }
-				if (!polygons[i].isBackFace(eye))
-					polygons[i].draw(g);
+			for (int i = 0; i < triangles.size(); i++) {
+				triangles.get(i).drawTriangle(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
 			}
 
-			for (int i = 0; i < polywires.length; i++) {
-				polywires[i].draw(g);
+			for (int i = 0; i < polywires.size(); i++) {
+				polywires.get(i).drawLines(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
 			}
 		} catch (Exception e) {
 			Log.e("FC OBJ3D draw", e.getMessage(), e);
 		}
 	}
 
-	/**
-	 * Uses the camera to map all points from model space, (x, y, z) to screen space (x_, y_, z_). Remember that x_ represents the depth of the point and (y_,
-	 * z_) maps to the screen (x, y) co-ords of the point.
-	 * 
-	 * @see CameraMan
-	 */
-	public void transform() {
+	float[] rayToObject = new float[3];
 
-		final float[] f = modelViewer.cameraMan.getFocus();
-		// if (ps[0] - f[0] > 100 || ps[1] - f[1] > 100)
-		// return;
-		final float[][] m = modelViewer.cameraMan.getMatrix();
-		final float d = modelViewer.cameraMan.getDistance();
-		float[] a = new float[3];
-
-		visible = false; // set true if any points are visble to the camera
-		for (int i = 0; i < npoints * 3; i += 3) {
-
-			a[0] = ps[i] - f[0];
-			a[1] = ps[i + 1] - f[1];
-			a[2] = ps[i + 2] - f[2];
-			Tools3d.applyTo(m, a, a);
-			visibles[i / 3] = Tools3d.projectYZ(a, a, d);
-			ps_[i] = a[0];
-
-			if (visibles[i / 3]) {
-				modelViewer.cameraMan.scaleToScreen(a);
-				ps_[i + 1] = a[1];
-				ps_[i + 2] = a[2];
-				visible = true;
+	public boolean visible() {
+		float[] eye = modelViewer.cameraMan.getEye();
+		float[] p = new float[] { ps[0], ps[1], ps[2] };
+		float xd = eye[0] - ps[0];
+		float yd = eye[1] - ps[1];
+		if (xd * xd + yd * yd > modelViewer.cameraMan.dofxdof)
+			return false;
+		else {
+			if (Math.abs(p[0] - eye[0]) < 10 && Math.abs(p[1] - eye[1]) < 10) {
+				return true;
 			}
-
-			// depth bounding box
-			if (i == 0) {
-				x_min = x_max = ps_[i];
-			} else {
-				if (ps_[i] < x_min)
-					x_min = ps_[i];
-				if (ps_[i] > x_max)
-					x_max = ps_[i];
+			float[] rayCamera = modelViewer.cameraMan.getRay();
+			Tools3d.subtract(eye, p, rayToObject);
+			float result = Tools3d.dot(rayCamera, rayToObject);
+			if (result > 0)
+				return true;
+			else {
+				return false;
 			}
 		}
 	}
 
-	public void translateBy(float dx, float dy, float dz) {
+	public void translateBy(float dx, float dy, float dz, boolean dirty_normals) {
 		for (int i = 0; i < npoints * 3; i += 3) {
 			ps[i] = ps[i] + dx;
 			ps[i + 1] = ps[i + 1] + dy;
@@ -353,6 +285,18 @@ public class Obj3d implements CameraSubject {
 		}
 		// reset bounding box
 		this.box.translateBy(dx, dy, dz);
+		updateVerticesData(dirty_normals, true, false);
+	}
+
+	public void updateVerticesData(boolean dirty_normals, boolean fortriangle, boolean dirty_colors) {
+		if (fortriangle)
+			for (Triangle triangle : triangles) {
+				triangle.updateVertices(dirty_normals, dirty_colors);
+			}
+		else
+			for (Polywire polywire : polywires) {
+				polywire.updateVertices();
+			}
 	}
 
 	public void scaleBy(float s) {
@@ -363,27 +307,22 @@ public class Obj3d implements CameraSubject {
 		}
 		// reset bounding box
 		this.box.scaleBy(s);
+		updateVerticesData(false, true, false);
 	}
 
-	/** Gives all polygons the specifed color. */
+	/** Gives all triangles the specifed color. */
 	public void setColor(int c) {
-		for (int i = 0; i < polygons.length; i++) {
-			polygons[i].c = c;
+		for (int i = 0; i < npoints; i++) {
+			colors[i] = c;
 		}
-	}
-
-	/** Gives the specifed color to poligons depending on doublesidednes. */
-	public void setColor(int c, boolean doubleSided) {
-		for (int i = 0; i < polygons.length; i++) {
-			if (polygons[i].doubleSided == doubleSided)
-				polygons[i].c = c;
-		}
+		updateVerticesData(false, true, true);
 	}
 
 	/**
 	 * Adds a point to the list. First scan thru' the list to see if we already have a point with identical coords. If so, return index of that point.
 	 */
-	int addPoint(float x, float y, float z) {
+
+	public int addPoint(float x, float y, float z, int color) {
 		int index = -1;
 		for (int i = 0; i < npoints * 3; i += 3) {
 			if (ps[i] == x && ps[i + 1] == y && ps[i + 2] == z) {
@@ -399,101 +338,97 @@ public class Obj3d implements CameraSubject {
 			// add point
 			if (npoints >= maxpoints) {
 				// double array size
-				maxpoints *= 2;
+				maxpoints *= 1.5f;
 				float[] qs = new float[maxpoints * 3];
+				int[] qc = new int[maxpoints];
 				System.arraycopy(ps, 0, qs, 0, ps.length);
+				System.arraycopy(colors, 0, qc, 0, colors.length);
 				ps = qs;
-
-				ps_ = new float[maxpoints * 3];
-				visibles = new boolean[maxpoints];
+				colors = qc;
 			}
 
 			int i = npoints * 3;
 			ps[i] = x;
 			ps[i + 1] = y;
 			ps[i + 2] = z;
-
+			colors[npoints] = color;
 			npoints++;
 			return i;
 		}
 	}
 
 	/**
-	 * Adds a polygon. Note that the vertices of the polygon are passed using a float[][] and NOT a float[]. Eg.
+	 * Adds a polygon. Note that the verticesFB of the polygon are passed using a float[][] and NOT a float[]. Eg.
 	 * 
 	 * {{x0, y0, z0}, {x1, y1, z1}, ...}
 	 * 
 	 * We *flatten* the data once it is encapsulated inside this class; outside this class we want clarity; inside this class we want speed !
 	 */
-	public int addPolygon(float[][] vs, int c, boolean doubleSided) {
-		Polygon polygon = new Polygon(vs.length, c, doubleSided);
+	public void addPolygon(float[][] vs, int c, boolean doubleSided, boolean shadow) {
+		Triangle polygon = new Triangle(c);
+		int j = 0;
 		for (int i = 0; i < vs.length; i++) {
-			polygon.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
+			if (j % 3 == 0 && j != 0) {
+				addTriangle(polygon, shadow);
+				polygon = new Triangle(c);
+				polygon.addPoint(this.addPoint(vs[0][0], vs[0][1], vs[0][2], c));
+				i -= 2;
+				j = 0;
+			} else {
+				polygon.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2], c));
+			}
+			j++;
 		}
-		polygons[polynext] = polygon;
+		addTriangle(polygon, shadow);
 
 		// if this was the last polygon then we may now set the
 		// bounding box
-		if (polynext == polygons.length - 1) {
-			this.box.setBB();
-		}
-		return polynext++;
+		this.box.setBB();
+		return;
+	}
+
+	void addTriangle(Triangle triangle, boolean shadow) {
+		triangles.add(triangle);
+		if (shadow)
+			addShadow(triangle);
+	}
+
+	public void addShadow(Triangle triangle) {
+		int color = Color.rgb(220, 220, 220);
+		Triangle shadow = new Triangle(color);
+		shadow.shadow = true;
+
+		System.arraycopy(triangle.points, 0, shadow.points, 0, triangle.points.length);
+		shadow.updateVertices(true, true);
+		triangles.add(shadow);
+		return;
 	}
 
 	/**
 	 * Adds a polygon with one side visible. Which of the two sides is visible is determined by the order of the points. If as you look at the polygon the
 	 * points go clockwise then the normal points away from you.
 	 */
-	public int addPolygon(float[][] vs, int c) {
-		return addPolygon(vs, c, false);
+	public void addPolygon(float[][] vs, int c) {
+		addPolygon(vs, c, false, false);
 	}
 
 	/** Adds a single sided gray polygon. */
-	public int addPolygon(float[][] vs) {
-		return addPolygon(vs, COLOR_DEFAULT, false);
+	public void addPolygon(float[][] vs) {
+		addPolygon(vs, COLOR_DEFAULT, false, false);
 	}
 
 	/** Adds a polygon that is visible from both sides. */
-	public int addPolygon2(float[][] vs, int c) {
-		return addPolygon(vs, c, true);
+	public void addPolygon2(float[][] vs, int c) {
+		addPolygon(vs, c, true, false);
 	}
 
 	/** Adds a gray polygon that is visible from both sides. */
-	public int addPolygon2(float[][] vs) {
-		return addPolygon(vs, COLOR_DEFAULT, true);
+	public void addPolygon2(float[][] vs) {
+		addPolygon(vs, COLOR_DEFAULT, true, false);
 	}
 
 	/**
-	 * Adds a bent polygon (made out of two triangles). We are passed four points that do NOT lie in a plane.
-	 * 
-	 * <pre>
-	 * 
-	 *        p3 .-------.  p2
-	 * 	  |     / |
-	 * 	  |   /   |
-	 * 	  | /     |
-	 *        p0 .-------.  p1
-	 * </pre>
-	 */
-	public void addPolygonBent(float[][] ps, int color, int concaveFlag) {
-		float h1 = ps[0][2] + ps[2][2];
-		float h2 = ps[1][2] + ps[3][2];
-
-		if (ps.length != 4) {
-			return;
-		}
-
-		if (h1 <= h2 && concaveFlag == CONCAVE || h1 >= h2 && concaveFlag == CONVEX) {
-			this.addPolygon(new float[][] { ps[0], ps[1], ps[2] }, color);
-			this.addPolygon(new float[][] { ps[2], ps[3], ps[0] }, color);
-		} else {
-			this.addPolygon(new float[][] { ps[0], ps[1], ps[3] }, color);
-			this.addPolygon(new float[][] { ps[2], ps[3], ps[1] }, color);
-		}
-	}
-
-	/**
-	 * Adds a series of polygons by rotating the points list (ps) steps times, and colouring them as defined by the color array (stripes!).
+	 * Adds a series of triangles by rotating the points list (ps) steps times, and colouring them as defined by the color array (stripes!).
 	 */
 	public void lathePolygons(float[][] ps, int[] color, int steps) {
 		float _ps[][] = new float[ps.length][3];
@@ -510,7 +445,7 @@ public class Obj3d implements CameraSubject {
 				Tools3d.applyTo(m, ps[i], _ps[i]);
 			}
 
-			// build the polygons
+			// build the triangles
 			for (int point = 0; point < ps.length - 1; point++) {
 				this.addPolygon(new float[][] { _ps[point], ps[point], ps[point + 1], _ps[point + 1] }, color[currColor]);
 			}
@@ -533,10 +468,10 @@ public class Obj3d implements CameraSubject {
 	public int addPolywire(float[][] vs, int c, int thickness) {
 		Polywire wire = new Polywire(vs.length, c, thickness);
 		for (int i = 0; i < vs.length; i++) {
-			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
+			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2], c));
 		}
 		// Log.i("FC", "" + this + " " + wirenext);
-		polywires[wirenext] = wire;
+		polywires.add(wire);
 		return wirenext++;
 	}
 
@@ -544,10 +479,10 @@ public class Obj3d implements CameraSubject {
 	public int addPolywire(float[][] vs, int c) {
 		Polywire wire = new Polywire(vs.length, c);
 		for (int i = 0; i < vs.length; i++) {
-			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
+			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2], c));
 		}
 		// Log.i("FC", "" + this + " " + wirenext);
-		polywires[wirenext] = wire;
+		polywires.add(wire);
 		return wirenext++;
 	}
 
@@ -555,25 +490,13 @@ public class Obj3d implements CameraSubject {
 	public int addPolywireClosed(float[][] vs, int c) {
 		Polywire wire = new Polywire(vs.length + 1, c);
 		for (int i = 0; i < vs.length; i++) {
-			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2]));
+			wire.addPoint(this.addPoint(vs[i][0], vs[i][1], vs[i][2], c));
 		}
 		// close the wire by adding the first point onto its end
-		wire.addPoint(this.addPoint(vs[0][0], vs[0][1], vs[0][2]));
+		wire.addPoint(this.addPoint(vs[0][0], vs[0][1], vs[0][2], c));
 		// Log.i("FC", "" + this + " " + wirenext);
-		polywires[wirenext] = wire;
+		polywires.add(wire);
 		return wirenext++;
-	}
-
-	/**
-	 * Reverses the ordering of the polygons that make up this object. This may be useful for fudging the z order before drawing the object.
-	 */
-	void reverse() {
-		for (int i = 0; i < polygons.length / 2 - 1; i++) {
-			int j = polygons.length - 1 - i;
-			Polygon p = polygons[i];
-			polygons[i] = polygons[j];
-			polygons[j] = p;
-		}
 	}
 
 	/**
@@ -581,7 +504,7 @@ public class Obj3d implements CameraSubject {
 	 */
 	public static Obj3d makeCube(ModelViewer modelViewer) {
 
-		Obj3d o = new Obj3d(modelViewer, 6);
+		Obj3d o = new Obj3d(modelViewer);
 
 		/**
 		 * Two steps. First we create a cube whose corner is at the origin and then we translate it so that its center is at the origin.
@@ -599,7 +522,7 @@ public class Obj3d implements CameraSubject {
 		o.addPolygon(new float[][] { { 0, 0, 1 }, { 1, 0, 1 }, { 1, 1, 1 }, { 0, 1, 1 } }, Color.BLUE);
 		o.addPolygon(new float[][] { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 1, 0 }, { 1, 0, 0 } }, Color.MAGENTA);
 
-		o.translateBy(-0.5f, -0.5f, -0.5f);
+		o.translateBy(-0.5f, -0.5f, -0.5f, true);
 		return o;
 	}
 
@@ -617,12 +540,12 @@ public class Obj3d implements CameraSubject {
 
 	/** Gets the index of a point on a polygon. */
 	public int getPointIndex(int poly, int vertex) {
-		return polygons[poly].points[vertex];
+		return triangles.get(poly).points[vertex];
 	}
 
 	/** Gets the index of a point on a polywire. (See Tail.java) */
 	public int getPointIndex2(int poly, int vertex) {
-		return polywires[poly].points[vertex];
+		return polywires.get(poly).points[vertex];
 	}
 
 	/** Sets the co-ords of a point. */
@@ -645,9 +568,9 @@ public class Obj3d implements CameraSubject {
 	 * 
 	 * StringBuffer sb = new StringBuffer();
 	 * 
-	 * // number of polygons sb.append(polygons.length + "\n");
+	 * // number of triangles sb.append(triangles.size() + "\n");
 	 * 
-	 * // loop - one line per polygon for (int i = 0; i < polygons.length; i++) { Polygon po = polygons[i];
+	 * // loop - one line per polygon for (int i = 0; i < triangles.size(); i++) { Polygon po = triangles.get(i);
 	 * 
 	 * // todo: tidy up shadows - what a mess ! boolean shadow = false; for (int j = 0; j < MAX_SHADOWS; j++) { if (shadowCasters[j] == i) { shadow = true;
 	 * break; } } sb.append(shadow ? "t " : "f ");
@@ -661,262 +584,230 @@ public class Obj3d implements CameraSubject {
 	 * 
 	 * // finished this polygon so end line sb.append("\n"); } return new String(sb); }
 	 */
-	/**
-	 * Loops thru' surfaces setting their dirtyNormal flags so that the surface normals will be computed again.
-	 * 
-	 * @see Obj3dDir.updateRotated
-	 */
-	public void setNormals() {
-		for (int i = 0; i < polygons.length; i++) {
-			polygons[i].dirtyNormal = true;
-		}
-	}
 
 	/**
 	 * Adds a polygon. And then add a second polygon - the shadow - using the same points with z ~ 0
 	 */
-	public int addPolygonWithShadow(float[][] vs, int c, boolean doubleSided) {
-		shadowCasters[numShadows] = this.addPolygon(vs, c, doubleSided);
-
-		// create shadow
-		float[][] vs_ = new float[vs.length][3];
-
-		// reverse point order so shadow faces
-		// up ?? assumes shadow caster faces down always ??
-		int j = 0;
-		for (int i = vs.length - 1; i >= 0; i--) {
-			float[] p = vs[i];
-			float[] q = new float[] { p[0], p[1], 0.00013f }; // change z so we
-																// get unique
-																// points
-			vs_[j++] = q;
-		}
-
-		int color = Color.rgb(SHADOW_COLOR, SHADOW_COLOR, SHADOW_COLOR);
-		// Color color = new Color(80, 170, 80);
-		shadows[numShadows] = new Polygon(vs_.length, color, false);
-
-		for (int i = 0; i < vs_.length; i++) {
-			int pointIndex = this.addPoint(vs_[i][0], vs_[i][1], vs_[i][2]);
-			shadows[numShadows].addPoint(pointIndex);
-		}
-		// Log.i("FC obj3d", shadows[numShadows].toString());
-		numShadows++;
-		return shadowCasters[numShadows - 1];
-	}
-
-	private void initShadow() {
-		for (int i = 0; i < MAX_SHADOWS; i++) {
-			shadowCasters[i] = -1;
-		}
-	}
 
 	/**
-	 * Keeps the shadow under its object. The owner/creator of this object should call this method each time they move the object.
-	 */
-	public void updateShadow() {
-		for (int i = 0; i < MAX_SHADOWS; i++) {
-			if (shadowCasters[i] == -1)
-				return;
-			Polygon polygon = polygons[shadowCasters[i]];
-
-			for (int j = polygon.n - 1; j >= 0; j--) {
-				float x = ps[polygon.points[j]];
-				float y = ps[polygon.points[j] + 1];
-				int index = shadows[i].points[polygon.n - 1 - j];
-				ps[index] = x;
-				ps[index + 1] = y;
-				ps[index + 2] = 0;
-
-				// old
-				/*
-				 * float[] p = (Vector3d) points.elementAt(surface.points[j]); float[] q = (Vector3d) points.elementAt(shadows[i].points[surface.numPoints - 1 -
-				 * j]);//?? Tools3d.clone(p, q); if (app.landscape != null) q.z = app.landscape.getHeight(q.x, q.y); else q.z = 0;
-				 */
-			}
-		}
-	}
-
-	public void drawShadow(Canvas g) {
-		final float[] eye = modelViewer.cameraMan.getEye();
-		for (int i = 0; i < MAX_SHADOWS; i++) {
-			if (shadowCasters[i] == -1)
-				return;
-			if (!shadows[i].isBackFace(eye))
-				shadows[i].draw(g);
-		}
-	}
-
-	/**
-	 * This inner class represents a polygon. The polygon is made from N points (or vertices). It is either only visible from one side or it is visible from
+	 * This inner class represents a polygon. The polygon is made from N points (or verticesFB). It is either only visible from one side or it is visible from
 	 * both sides.
 	 */
-	class Polygon {
-		int n; // number of points eg. 4 for a square
+
+	class Triangle {
+		private FloatBuffer verticesFB = null;
+		private FloatBuffer colorsFB = null;
+		private FloatBuffer normalsFB = null;
+
+		/** How many bytes per float. */
+		private final int mBytesPerFloat = 4;
+
+		/** How many elements per vertex. */
+		private final int mStrideBytes = 3 * mBytesPerFloat;
+
+		/** Offset of the position data. */
+		private final int mPositionOffset = 0;
+
+		/** Size of the position data in elements. */
+		private final int mPositionDataSize = 3;
+
+		/** Offset of the normal data. */
+		private final int mNormalOffset = 0;
+
+		/** Size of the normal data in elements. */
+		private final int mNormalDataSize = 3;
+
+		/** How many elements per vertex. */
+		private final int mStrideNormalBytes = 3 * mBytesPerFloat;
+
+		/** Offset of the color data. */
+		private final int mColorOffset = 0;
+
+		/** Size of the color data in elements. */
+		private final int mColorDataSize = 4;
+
+		/** How many elements per vertex. */
+		private final int mStrideColorBytes = 4 * mBytesPerFloat;
+
+		float[] verticesData = null;
+		float[] colorsData = null;
+
 		int[] points; // list of indexes for the points that make up this
 						// Polygon
 		int next = 0;
 		int c; // true color
-		boolean doubleSided = false;
-		float[] normal;
-		boolean dirtyNormal = true; // when true the normal needs to be reset by
-									// calling setNormal
-		Paint paint = new Paint();
-		// for drawing
-		int[] xs;
-		int[] ys;
+		boolean shadow;
 
-		public Polygon(int n, int color, boolean doubleSided) {
-			this.n = n;
-			points = new int[n];
+		public Triangle(int color) {
+			points = new int[3];
+			verticesData = new float[3 * 3];
+			colorsData = new float[4 * 3];
 			c = color;
-			this.doubleSided = doubleSided;
-			xs = new int[n];
-			ys = new int[n];
-			paint.setStyle(Style.FILL);
-			paint.setAntiAlias(true);
-
 		}
 
-		public void addPoint(int index) {
-			points[next] = index;
-			next++;
-		}
-
-		// some state for speeding up 'isBackFace'
-		private float[] p = new float[3];
-		private float[] ray = new float[3];
-
-		/**
-		 * Decides if this polygon is a 'back face'. A back face is a polygon that is facing away from the camera and therefore should not be drawn. If this
-		 * polygon is double sided then it can not be a back face. In such a case this routine has the side effect of ensuring that the normal points towards
-		 * the camera eye rather than away from it.
-		 * 
-		 * @see Obj3d#draw(Graphics)
-		 */
-		boolean isBackFace(final float[] eye) {
-
-			if (dirtyNormal) {
-				setNormal();
-			}
-
-			p[0] = ps[points[0]];
-			p[1] = ps[points[0] + 1];
-			p[2] = ps[points[0] + 2];
-
-			Tools3d.subtract(p, eye, ray);
-
-			if (doubleSided) {
-				// flip the normal if necessary so this is NOT a backface
-				if (Tools3d.dot(normal, ray) >= 0) {
-					Tools3d.scaleBy(normal, -1);
-				}
-				return false;
+		public void addPoint(int i) {
+			int c = colors[i / 3];
+			if (shadow)
+				c = shadowColor;
+			points[next] = i;
+			if (shadow) {
+				verticesData[next * 3 + 0] = -ps[i + 1] - ps[i + 2] * Task.shadowFactors[1];
+				verticesData[next * 3 + 1] = -0.001f;
+				verticesData[next * 3 + 2] = -ps[i + 0] - ps[i + 2] * Task.shadowFactors[0];
 			} else {
-				return (Tools3d.dot(normal, ray) >= 0);
+				verticesData[next * 3 + 0] = -ps[i + 1];
+				verticesData[next * 3 + 1] = ps[i + 2];
+				verticesData[next * 3 + 2] = -ps[i + 0];
 			}
+			colorsData[next * 4 + 0] = Color.red(c) / 255f;
+			colorsData[next * 4 + 1] = Color.green(c) / 255f;
+			colorsData[next * 4 + 2] = Color.blue(c) / 255f;
+			colorsData[next * 4 + 3] = 1f;
+			next++;
+			if (next == 3) {
+				fillVerticesData(true, true);
+			}
+		}
+
+		public void updateVertices(boolean dirty_normals, boolean dirty_colors) {
+			int i = 0;
+			for (int next = 0; next < 3; next++) {
+				i = points[next];
+				if (shadow) {
+					verticesData[next * 3 + 0] = -ps[i + 1] - ps[i + 2] * Task.shadowFactors[1];
+					verticesData[next * 3 + 1] = -0.001f;
+					verticesData[next * 3 + 2] = -ps[i + 0] - ps[i + 2] * Task.shadowFactors[0];
+				} else {
+					verticesData[next * 3 + 0] = -ps[i + 1];
+					verticesData[next * 3 + 1] = ps[i + 2];
+					verticesData[next * 3 + 2] = -ps[i + 0];
+				}
+				if (dirty_colors) {
+					int c = colors[i / 3];
+					if (shadow)
+						c = shadowColor;
+					colorsData[next * 4 + 0] = Color.red(c) / 255f;
+					colorsData[next * 4 + 1] = Color.green(c) / 255f;
+					colorsData[next * 4 + 2] = Color.blue(c) / 255f;
+					colorsData[next * 4 + 3] = 1f;
+				}
+
+			}
+			fillVerticesData(dirty_normals, dirty_colors);
+		}
+
+		public void fillVerticesData(boolean dirty_normals, boolean dirty_colors) {
+			// Log.i("FC", Arrays.toString(verticesData));
+			if (verticesFB == null)
+				verticesFB = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			else
+				verticesFB.position(0);
+			verticesFB.put(verticesData).position(0);
+			if (dirty_normals) {
+				float va0 = verticesData[3] - verticesData[0];
+				float va1 = verticesData[4] - verticesData[1];
+				float va2 = verticesData[5] - verticesData[2];
+				float vb0 = verticesData[6] - verticesData[0];
+				float vb1 = verticesData[7] - verticesData[1];
+				float vb2 = verticesData[8] - verticesData[2];
+				float n0 = va1 * vb2 - va2 * vb1;
+				float n1 = va2 * vb0 - va0 * vb2;
+				float n2 = va0 * vb1 - va1 * vb0;
+				float[] normal = new float[] { n0, n1, n2, n0, n1, n2, n0, n1, n2 };
+				if (normalsFB == null)
+					normalsFB = ByteBuffer.allocateDirect(normal.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+				else
+					normalsFB.position(0);
+				normalsFB.put(normal);
+			}
+			if (dirty_colors) {
+				if (colorsFB == null)
+					colorsFB = ByteBuffer.allocateDirect(colorsData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+				else
+					colorsFB.position(0);
+				colorsFB.put(colorsData);
+
+			}
+			// Log.w("OBJ3D", Arrays.toString(n));
+		}
+
+		public void logVerticesData() {
+			Log.i("FC OBJ3D", Arrays.toString(verticesData));
 		}
 
 		/**
-		 * Creates the unit normal to the polygon by taking the cross product of the first two edges. Call with 'nsides' set to two if the polygon is visible
-		 * from both sides.
+		 * Draws this triangle on the screen.
 		 */
-		void setNormal() {
-			/** We need three points to define two edges. */
-			if (n < 3)
-				return;
-			if (normal == null)
-				normal = new float[3];
+		void drawTriangle(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
+			// Pass in the position information
+			verticesFB.position(mPositionOffset);
+			GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, verticesFB);
 
-			float[] p0 = { ps[points[0]], ps[points[0] + 1], ps[points[0] + 2] };
-			float[] p1 = { ps[points[1]], ps[points[1] + 1], ps[points[1] + 2] };
-			float[] p2 = { ps[points[2]], ps[points[2] + 1], ps[points[2] + 2] };
+			GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-			float[] e1 = new float[3];
-			float[] e2 = new float[3];
+			// Pass in the color information
+			colorsFB.position(mColorOffset);
+			GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideColorBytes, colorsFB);
 
-			Tools3d.subtract(p1, p0, e1);
-			Tools3d.subtract(p2, p1, e2);
+			GLES20.glEnableVertexAttribArray(mColorHandle);
 
-			Tools3d.cross(e1, e2, normal);
-			Tools3d.makeUnit(normal);
+			// Pass in the normal information
+			normalsFB.position(mNormalOffset);
+			GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideNormalBytes, normalsFB);
 
-			dirtyNormal = false;
-		}
+			GLES20.glEnableVertexAttribArray(mNormalHandle);
 
-		/**
-		 * Calculates the apparent color of this polygon. We ask the camera how much light falls on a surface wiith this normal and then darken the color
-		 * accordingly.
-		 */
-		private int calcLight() {
-			if (noShade) {
-				return c;
-			}
-
-			int r = Color.red(c);
-			int g = Color.green(c);
-			int b = Color.blue(c);
-
-			float light = modelViewer.cameraMan.surfaceLight(normal);
-
-			r *= light;
-			g *= light;
-			b *= light;
-
-			return Color.rgb(r, g, b);
-		}
-
-		/** Calculates the apparent color in two stages: lighting then fogging. */
-		int getColor() {
-			return modelViewer.cameraMan.foggyColor(ps_[points[0]], calcLight());
-		}
-
-		/**
-		 * Draws this polygon on the screen. If any of the points are not visible (ie. behind the camera) then do not attempt to draw this polygon.
-		 */
-		void draw(Canvas g) {
-			if (n <= 1)
-				return;
-			paint.setColor(getColor());
-
-			for (int i = 0; i < n; i++) {
-				if (!visibles[points[i] / 3])
-					return;
-				xs[i] = (int) ps_[points[i] + 1];
-				ys[i] = (int) ps_[points[i] + 2];
-			}
-
-			Path path = new Path();
-			path.moveTo(xs[0], ys[0]);
-			for (int i = 1; i < n; i++) {
-				path.lineTo(xs[i], ys[i]);
-			}
-			path.lineTo(xs[0], ys[0]);
-			g.drawPath(path, paint);
-			// g.drawLines(Tools.coordinates2LinePoint(xs, ys), p);
+			GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
 		}
 
 		public String toString() {
-			return "points:" + n + " p" + Arrays.toString(points);
+			return "points: " + Arrays.toString(points);
 		}
 
 	}
 
 	/**
-	 * This inner class represents a wire. The wire is made from N points (or vertices).
+	 * This inner class represents a wire. The wire is made from N points (or verticesFB).
 	 */
 	class Polywire {
+		private FloatBuffer vertices = null;
+		private FloatBuffer normals = null;
+
+		/** How many bytes per float. */
+		private final int mBytesPerFloat = 4;
+
+		/** How many elements per vertex. */
+		private final int mStrideBytes = 7 * mBytesPerFloat;
+
+		/** Offset of the position data. */
+		private final int mPositionOffset = 0;
+
+		/** Size of the position data in elements. */
+		private final int mPositionDataSize = 3;
+
+		/** Offset of the color data. */
+		private final int mColorOffset = 3;
+
+		/** Size of the color data in elements. */
+		private final int mColorDataSize = 4;
+
+		/** Offset of the normal data. */
+		private final int mNormalOffset = 0;
+
+		/** Size of the normal data in elements. */
+		private final int mNormalDataSize = 3;
+
+		/** How many elements per vertex. */
+		private final int mStrideNormalBytes = 3 * mBytesPerFloat;
+
+		float[] verticesData = null;
+
 		int n; // number of points eg. 4 for a square
 		int[] points; // list of indexes for the points that make up this
 						// Polygon
 		int next = 0;
 		int c; // true color
 		int thickness;
-		Paint paint = new Paint();
-
-		// for drawing
-		int[] xs;
-		int[] ys;
 
 		public Polywire(int n, int color) {
 			this(n, color, 0);
@@ -925,21 +816,52 @@ public class Obj3d implements CameraSubject {
 		public Polywire(int n, int color, int thickness) {
 			this.n = n;
 			points = new int[n];
+			verticesData = new float[n * 7];
 			this.thickness = thickness;
 			c = color;
-			xs = new int[n];
-			ys = new int[n];
-			paint.setStrokeWidth(thickness);
-			paint.setAntiAlias(false);
 		}
 
-		public void addPoint(int index) {
-			points[next++] = index;
+		public void addPoint(int i) {
+			points[next] = i;
+			verticesData[next * 7 + 0] = -ps[i + 1];
+			verticesData[next * 7 + 1] = ps[i + 2];
+			verticesData[next * 7 + 2] = -ps[i + 0];
+			verticesData[next * 7 + 3] = Color.red(colors[i / 3]) / 255f;
+			verticesData[next * 7 + 4] = Color.green(colors[i / 3]) / 255f;
+			verticesData[next * 7 + 5] = Color.blue(colors[i / 3]) / 255f;
+			verticesData[next * 7 + 6] = 1f;
+			next++;
+			if (next == n) {
+				fillVerticesData();
+			}
 		}
 
-		/** Calculates the apparent color due to fogging. */
-		private int getColor() {
-			return modelViewer.cameraMan.foggyColor(ps_[points[0]], c);
+		public void updateVertices() {
+			int i = 0;
+			for (int next = 0; next < n; next++) {
+				i = points[next];
+				verticesData[next * 7 + 0] = -ps[i + 1];
+				verticesData[next * 7 + 1] = ps[i + 2];
+				verticesData[next * 7 + 2] = -ps[i + 0];
+				verticesData[next * 7 + 3] = Color.red(colors[i / 3]) / 255f;
+				verticesData[next * 7 + 4] = Color.green(colors[i / 3]) / 255f;
+				verticesData[next * 7 + 5] = Color.blue(colors[i / 3]) / 255f;
+				verticesData[next * 7 + 6] = 1f;
+
+			}
+			fillVerticesData();
+		}
+
+		public void fillVerticesData() {
+			vertices = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			vertices.put(verticesData).position(0);
+			float[] normal = new float[] { 0, 1, 0 };
+			normals = ByteBuffer.allocateDirect(normal.length * n * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			for (int next = 0; next < n; next++) {
+				normals.put(normal);
+			}
+			normals.position(0);
+
 		}
 
 		/**
@@ -947,21 +869,30 @@ public class Obj3d implements CameraSubject {
 		 * 
 		 * Loop thru the list and draw a line connecting each point to the next.
 		 */
-		void draw(Canvas g) {
-			int x1, y1, x2, y2;
-			if (n <= 1)
-				return;
-			paint.setColor(getColor());
+		/**
+		 * Draws this triangle on the screen.
+		 */
+		void drawLines(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
+			// Pass in the position information
+			vertices.position(mPositionOffset);
+			GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
 
-			for (int i = 0; i < n - 1; i++) {
-				x1 = (int) ps_[points[i] + 1];
-				y1 = (int) ps_[points[i] + 2];
-				x2 = (int) ps_[points[i + 1] + 1];
-				y2 = (int) ps_[points[i + 1] + 2];
-				if (visibles[points[i] / 3] && visibles[points[i + 1] / 3]) {
-					g.drawLine(x1, y1, x2, y2, paint);
-				}
-			}
+			GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+			// Pass in the color information
+			vertices.position(mColorOffset);
+			GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
+
+			GLES20.glEnableVertexAttribArray(mColorHandle);
+
+			// Pass in the normal information
+			normals.position(mNormalOffset);
+			GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideNormalBytes, normals);
+
+			GLES20.glEnableVertexAttribArray(mNormalHandle);
+
+			GLES20.glLineWidth(thickness);
+			GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, n);
 		}
 
 	}

@@ -16,7 +16,11 @@
         android:layout_gravity="left|bottom"
         android:padding="5dp"
         android:text="-"
-        android:textColor="@color/dark_gray" />
+        android:textColor="@color/black" 
+        android:shadowColor="@color/white" 
+        android:shadowRadius="1"
+        android:shadowDx="1"
+        android:shadowDy="1"/>
 
     <FrameLayout
         android:id="@+id/overlay"
@@ -36,7 +40,7 @@
                 android:id="@+id/pause"
                 style="@style/button_text"
                 android:text="p" />
-            
+
             <Button
                 android:id="@+id/zoomin"
                 style="@style/button_text"
@@ -46,7 +50,6 @@
                 android:id="@+id/zoomout"
                 style="@style/button_text"
                 android:text="-" />
-
         </LinearLayout>
 
         <LinearLayout
@@ -100,6 +103,37 @@
                 style="@style/start_button_text"
                 android:text="Start race" />
         </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="@dimen/controls_padding" >
+
+            <LinearLayout
+                android:layout_width="100dp"
+                android:layout_height="1dp"
+                android:layout_gravity="center"
+                android:background="#000000" />
+
+            <LinearLayout
+                android:layout_width="1dp"
+                android:layout_height="10dp"
+                android:layout_gravity="center"
+                android:background="#000000" />
+            <SeekBar
+                android:id="@+id/vario"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clickable="false"
+                android:enabled="false"
+                android:focusable="false"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="50"
+                android:progressDrawable="@android:color/transparent" />
+        </FrameLayout>
 
         <include layout="@layout/controls" />
     </FrameLayout>

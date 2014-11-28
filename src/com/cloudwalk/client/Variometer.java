@@ -16,7 +16,7 @@ public class Variometer {
 	XCModelViewer xcModelViewer;
 	private Glider glider;
 	float[] steps; // different beeps as we go up the steps
-
+	float liftMax;
 	static final float BEEP_T = 0.2f;
 	static final int NUM_BEEPS = 4; // how many different sounds
 
@@ -31,7 +31,7 @@ public class Variometer {
 	 * the strongest lift in the game.
 	 */
 	private void init() {
-		float liftMax = Cloud.getLift(Cloud.MAX_SIZE);
+		liftMax = Cloud.getLift(Cloud.MAX_SIZE);
 		steps = new float[NUM_BEEPS];
 		for (int i = 0; i < NUM_BEEPS; i++) {
 			steps[i] = i * liftMax / NUM_BEEPS;
@@ -51,9 +51,9 @@ public class Variometer {
 	 * Beeps if we are going up. Which beep depends on how strong the lift is.
 	 */
 	private void beep() {
-		float lift = glider.getSink() + glider.airv;
+		float lift = glider.getActualSink();
 		if (lift > 0) {
-			xcModelViewer.modelEnv.play(whichStep(lift));
+			xcModelViewer.modelEnv.play(0.8f+lift/liftMax*1.2f, 0, 0);
 		}
 	}
 

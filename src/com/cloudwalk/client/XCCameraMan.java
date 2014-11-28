@@ -26,7 +26,7 @@ public class XCCameraMan extends CameraMan {
 		// this.setSubjectNow(((XCModelViewer)
 		// modelViewer).xcModel.task.nodeManager.nodes[0], false);
 		XCModel xcModel = ((XCModelViewer) modelViewer).xcModel;
-		//this.depthOfVision = xcModel.task.nodeManager.nodeSpacing * 1.5f;
+		// this.depthOfVision = xcModel.task.nodeManager.nodeSpacing * 1.5f;
 		Node node = xcModel.task.nodeManager.nodes[0];
 		float[] focus = node.getFocus();
 		float[] eye = new float[] { focus[0], focus[1] - 1, 0 };
@@ -36,9 +36,8 @@ public class XCCameraMan extends CameraMan {
 	}
 
 	/**
-	 * Switches between camera modes... 1. Follow user 2. Follow gaggle 3. Plan
-	 * 4. The current node (from far away) 5. The entire task 6. Pilot's view 7.
-	 * Stay there
+	 * Switches between camera modes... 1. Follow user 2. Follow gaggle 3. Plan 4. The current node (from far away) 5. The entire task 6. Pilot's view 7. Stay
+	 * there
 	 */
 
 	XCModel xcModel = null;
@@ -59,33 +58,25 @@ public class XCCameraMan extends CameraMan {
 			((GliderUser) x).setCameraMode(USER);
 			setSubject(x, true);
 			Glider.filmID = gliderID = x.myID;
-		}
-
-		if (inMode == PILOT) {
+		} else if (inMode == PILOT) {
 			Glider x = xcModel.gliderManager.gliderUser;
 			((GliderUser) x).setCameraMode(PILOT);
 			setSubject(x, true);
 			Glider.filmID = gliderID = x.myID;
-		}
-
-		if (inMode == GAGGLE) {
+		} else if (inMode == GAGGLE) {
 			Glider x = xcModel.gliderManager.gaggleGlider();
 			if (x != null) {
 				setSubject(x, true);
 				Glider.filmID = gliderID = x.myID;
 			}
-		}
-
-		if (inMode == PLAN) {
+		} else if (inMode == PLAN) {
 			Node node = xcModel.task.nodeManager.currentNode();
 			float[] focus = node.getFocus();
 			float[] eye = new float[] { focus[0], focus[1] - 1, 0 };
 			eye[2] = xcModel.task.nodeManager.nodeSpacing / 2;
 			setSubject(new CameraSubjectSimple(eye, focus), false);
 			Glider.filmID = -1;
-		}
-
-		if (inMode == NODE) {
+		} else if (inMode == NODE) {
 			// setSubject((CameraSubject)
 			// xcModel.task.nodeManager.currentNode(), false);
 			GliderTask g = (GliderTask) xcModel.gliderManager.theGlider();
@@ -107,15 +98,16 @@ public class XCCameraMan extends CameraMan {
 			xcModel.task.nodeManager.loadAllNodes(true);
 			setSubject((CameraSubject) xcModel.task, false);
 			Glider.filmID = -1;
-		}
+			setDepthOfVision(2000f);
+		} else
+			setDepthOfVision(100f);
 
 		this.stayThere = (inMode == STAY_THERE);
 		mode = inMode;
 	}
 
 	/**
-	 * Returns text for user feedback. We append the pilot id of glider that is
-	 * currently being filmed.
+	 * Returns text for user feedback. We append the pilot id of glider that is currently being filmed.
 	 */
 	String getStatusMsg() {
 		String s = "Camera: " + (mode + 1) + "> " + descriptions[mode];

@@ -51,22 +51,22 @@ import com.cloudwalk.framework3d.Tools3d;
 public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	XCModelViewer xcModelViewer;
 	LifeCycle lifeCycle;
-	private Shape3d shape3d;
+	Shape3d shape3d;
 	float x, y, h;
 
 	// TODO: cloud params - seperate size from strength (see Trigger)
 	private float size; // cloud size from 1 (small) to 5 (cu-nim !)
 
-	private float wind_x, wind_y;
-	private float slope_x, slope_y;
-	private float myRnd; // see getEye
-	private float liftMax;
-	private int color, color_;
+	float wind_x, wind_y;
+	float slope_x, slope_y;
+	float myRnd; // see getEye
+	float liftMax;
+	int color, color_;
 
 	// unique id for each instance of this class
 	static int nextID = 0;
 	int myID;
-	private Random random;
+	Random random;
 
 	float thermalRadius;
 	float coreRadius;
@@ -77,7 +77,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	static final float LIFT_UNIT = 0.08f;
 	// or a fn of site ?
 	public static final int MAX_SIZE = 5;
-
+	boolean hasShape = false;
 	/**
 	 * Creates a cloud. The cloud will grow from nothing, drift along for a
 	 * period of time and then evaporate. The cloud strength is measured in
@@ -330,13 +330,13 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 	private void setColor() {
 		final int COLOR = 250; // 230
-		final int COLOR_STEP = 30; // how much darker are strong clouds
-		final int BASE_UP = -10; // 20;
+		final int DARKEST_CLOUD = 100; // how much darker are strong clouds
+		final int BASE_UP = -50; // 20;
 
 		// bigger clouds are darker
 		int c = COLOR;
 		if (size > 1) {
-			c -= (size - 1) * COLOR_STEP;
+			c -= ((size-1)/5) * DARKEST_CLOUD;
 		}
 		color = Color.rgb(c, c, c);
 
@@ -396,7 +396,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	/**
 	 * This inner class implements a 3d shape for the cloud.
 	 * 
-	 * The cloud is represented using a cube like shape made from 6 polygons.
+	 * The cloud is represented using a cube like shape made from 6 triangles.
 	 * The 'cube' is distorted - the points to lie on the surface of a
 	 * hemi-sphere.
 	 * 
@@ -427,7 +427,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	 * Ok, so it doesn't look much like a cloud ! But it looks a bit like one
 	 * cell of a cloud.
 	 */
-	class Shape3d {
+	public class Shape3d {
 		double[] theta = new double[4];
 		double[] landa = new double[4];
 		Obj3d obj3d;
@@ -437,8 +437,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		float[] thetaSin = new float[4];
 		float[] landaCos = new float[4];
 		float[] landaSin = new float[4];
-
-		int[] vertMap = new int[8];
+		int[] pointIndexes = new int[8];
 
 		float r0; // radius at base (vertices 0..3)
 		float r1; // radius at top (vertices 3..7)
@@ -448,23 +447,22 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		public Shape3d() {
 			setAngles();
-			obj3d = new Obj3d(xcModelViewer, 7, true);
+			obj3d = new Obj3d(xcModelViewer); 
 			setRadius();
 			addPolygons();
 		}
 
 		/** If the cloud is changing then change this shape. */
 		public void updateMe(float t, float dt) {
+			boolean dirty_normals = false;
 			if (lifeCycle.isGrowing() || lifeCycle.isDecaying() || dirty) {
 				setRadius();
-				updateShape();
-			} else {
+				dirty_normals = updateShape();
+			} 
 				// no change in shape but we do have wind drift
-				float dx = wind_x * dt;
-				float dy = wind_y * dt;
-				obj3d.translateBy(dx, dy, 0);
-			}
-			obj3d.updateShadow();
+			float dx = wind_x * dt;
+			float dy = wind_y * dt;
+			obj3d.translateBy(dx, dy, 0, dirty_normals);
 			dirty = false;
 		}
 
@@ -523,14 +521,17 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		/**
 		 * Gets the new co-ords for each vertex and passes this data to obj3d.
 		 */
-		private void updateShape() {
+		private boolean updateShape() {
+			if(!obj3d.visible() && hasShape)
+				return false;
+			hasShape = true;
 			for (int i = 0; i < 8; i++) {
-				float[] p = getVert(i);
-				obj3d.setPoint(vertMap[i], p[0], p[1], p[2]);
+				float[] point = getVert(i);
+				obj3d.ps[pointIndexes[i]] = point[0];
+				obj3d.ps[pointIndexes[i]+1] = point[1];
+				obj3d.ps[pointIndexes[i]+2] = point[2];
 			}
-			obj3d.setBB();
-			if (lifeCycle.isDecaying())
-				obj3d.setNormals();
+			return true;
 		}
 
 		/**
@@ -558,6 +559,14 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			return p;
 		}
 
+		private int getVertColor(int index) {
+			if (index < 4) {
+				return color_;
+			} else {
+				return color;
+			}
+		}
+
 		private float[] getVertBase(int quad) {
 			float[] p = new float[3];
 			p[0] = r0 * thetaCos[quad];
@@ -581,14 +590,17 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		private void addPolygons() {
 			float[][] ps = new float[8][];
+			int[] colors = new int[8];
 
 			// get the 8 vertices' co-ords
 			for (int i = 0; i < 8; i++) {
 				ps[i] = getVert(i);
+				colors[i] = getVertColor(i);
+				pointIndexes[i] = obj3d.addPoint(ps[i][0], ps[i][1], ps[i][2], colors[i]);
 			}
 
 			/*
-			 * Add the 6 polygons. See the class comments above for an
+			 * Add the 6 triangles. See the class comments above for an
 			 * explanation of the vertex labelling.
 			 */
 
@@ -604,22 +616,13 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			 * bottom is a lighter color (because the cloud lets light thru'
 			 * from above).
 			 */
-			obj3d.addPolygonBent(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color, Obj3d.CONVEX);
-			obj3d.addPolygonWithShadow(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color_, false);
+			obj3d.addPolygon(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color);
+			obj3d.addPolygon(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color, true, true);
 
 			/*
 			 * Define a mapping from my vertex labels to obj3d's point indexes
 			 * so we can update the points later.
 			 */
-			vertMap[0] = obj3d.getPointIndex(0, 0);
-			vertMap[4] = obj3d.getPointIndex(0, 1);
-			vertMap[7] = obj3d.getPointIndex(0, 2);
-			vertMap[3] = obj3d.getPointIndex(0, 3);
-
-			vertMap[2] = obj3d.getPointIndex(1, 0);
-			vertMap[6] = obj3d.getPointIndex(1, 1);
-			vertMap[5] = obj3d.getPointIndex(1, 2);
-			vertMap[1] = obj3d.getPointIndex(1, 3);
 		}
 
 		private void setRadius() {

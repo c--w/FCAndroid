@@ -52,7 +52,7 @@ public class Balloon extends GliderType {
 
 class Balloon3d extends Obj3dDir {
     public Balloon3d(ModelViewer modelViewer, boolean register) {
-	super(modelViewer, 32 + Person.NUM_POLYGONS, register);
+	super(modelViewer, register);
 	init();
     }
 

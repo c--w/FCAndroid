@@ -8,4 +8,14 @@
         <item>5</item>
     </string-array>
 
+    <string-array name="view_angle_label">
+        <item>Wide</item>
+        <item>Normal</item>
+        <item>Narrow</item>
+    </string-array>
+    <string-array name="view_angle">
+        <item>7</item>
+        <item>10</item>
+        <item>15</item>
+    </string-array>
 </resources>

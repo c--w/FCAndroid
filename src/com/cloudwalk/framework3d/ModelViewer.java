@@ -86,13 +86,6 @@ public class ModelViewer implements ClockObserver, ModelViewerThin {
 	public void tick(float t, float dt) {
 		modelView.tick();
 		cameraMan.tick();
-		synchronized (modelView.holder) {
-			modelView.paintModel();
-		}
-		modelView.myInvalidate();
-
-		// uncomment next line to see frame rate
-		// modelCanvas.setText("F: " + clock.getFrameRate());
 	}
 
 	protected void createObj3dManager() {

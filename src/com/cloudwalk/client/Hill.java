@@ -86,7 +86,7 @@ class Hill implements LiftSource, CameraSubject {
 				frontFace = 2;
 			numTiles = 2 * numSlices * (2 * Math.round(frontFace / tileWidth));
 			Log.i("FC Hill", "numTiles:" + numTiles);
-			obj3d = new Obj3d(theApp.xcModelViewer, numTiles);
+			obj3d = new Obj3d(theApp.xcModelViewer);
 			tileHill();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -117,7 +117,7 @@ class Hill implements LiftSource, CameraSubject {
 		else
 			frontFace = 2;
 		numTiles = 2 * (numSlices * (2 * Math.round(frontFace / tileWidth)));
-		obj3d = new Obj3d(theApp.xcModelViewer, numTiles);
+		obj3d = new Obj3d(theApp.xcModelViewer);
 		tileHill();
 		// registerWithNodes(true);
 	}
@@ -184,8 +184,13 @@ class Hill implements LiftSource, CameraSubject {
 			corners[2] = new float[] { x2, y2, getZ(i + tileWidth, j) };
 			corners[3] = new float[] { x1, y2, getZ(i + tileWidth, j - tileWidth) };
 		}
-		int pol_color = getTileColor(corners);
-		obj3d.addPolygonBent(corners, pol_color, 0);
+		//int pol_color = getTileColor(corners);
+		for (float[] corner : corners) {
+			int cdiff = (int) (corner[2] * 100); 
+			int color = Color.rgb(255-cdiff, 255-cdiff, 225-cdiff);
+			obj3d.addPoint(corner[0], corner[1], corner[2], color);
+		}
+		obj3d.addPolygon(corners, 0); 
 		// object3d.addTile(corners, color, false, false);
 	}
 
@@ -195,7 +200,7 @@ class Hill implements LiftSource, CameraSubject {
 			if (Math.abs(corners[i][2]) < minz)
 				minz = Math.abs(corners[i][2]);
 		}
-		int color_corr = (int) (minz * 15);
+		int color_corr = (int) (minz * 50+30);
 		return Color.rgb(254 - color_corr, (int) 254, 254 - color_corr);
 	}
 

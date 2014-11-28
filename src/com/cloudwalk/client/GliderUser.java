@@ -36,8 +36,8 @@ public class GliderUser extends GliderTask {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences((Context) xcModelViewer.modelEnv);
 		this.color = prefs.getInt("glider_color", Color.BLUE);
 		this.color2 = prefs.getInt("pilot_color", Color.YELLOW);
-		this.obj.setColor(this.color, true);
-		this.obj.setColor(this.color2, false);
+		this.obj.setColor(this.color);
+		//this.obj.setColor(this.color2, false);
 	}
 
 	protected void createTail() {

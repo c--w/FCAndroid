@@ -17,7 +17,7 @@ public class Building {
 	final static float scale = 0.05f;
 
 	public static void createBuilding(ModelViewer modelViewer, int a, int b, int c, float x, float y, float z, int color) {
-		Obj3d o = new Obj3d(modelViewer, NUM_POLYGONS);
+		Obj3d o = new Obj3d(modelViewer);
 
 		float[][] pol;
 		float[][][] pols = new float[5][][];
@@ -53,7 +53,7 @@ public class Building {
 	}
 
 	public static void createPyramid(ModelViewer modelViewer, int a, int b, int c, float x, float y, float z, int color) {
-		Obj3d o = new Obj3d(modelViewer, NUM_POLYGONS);
+		Obj3d o = new Obj3d(modelViewer);
 
 		float[][] pol;
 		float[][][] pols = new float[4][][];

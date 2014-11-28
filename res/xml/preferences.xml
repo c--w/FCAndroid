@@ -30,6 +30,13 @@
     <PreferenceCategory
         android:key="uisettings"
         android:title="UI settings" >
+        <ListPreference
+            android:defaultValue="3"
+            android:entries="@array/view_angle_label"
+            android:entryValues="@array/view_angle"
+            android:key="view_angle"
+            android:summary="View angle of the camera"
+            android:title="View angle" />
         <EditTextPreference
             android:key="playerName"
             android:summary="Your handle to appear in multiplayer games"
@@ -46,6 +53,11 @@
             android:summary="Choose color of your pilot"
             android:title="Pilot color" />
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ambient_sound"
+            android:title="Ambient sounds" >
+        </CheckBoxPreference>
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="show_controls"

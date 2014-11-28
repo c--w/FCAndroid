@@ -309,6 +309,10 @@ public class Glider extends MovingBody {
 		return polar.get(iP)[SINK];
 	}
 
+	public float getActualSink() {
+		return getSink() + airv;
+	}
+
 	/**
 	 * Returns the speed for a given point on the polar, or the current point.
 	 */

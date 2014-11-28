@@ -49,7 +49,7 @@ public class HangGlider extends GliderType {
 */
 class HangGlider3d extends Obj3dDir {
     public HangGlider3d(ModelViewer app, boolean register) { 
-	super(app, 2 + 5, register); 
+	super(app, register); 
 	init(); 
     }
 
@@ -90,14 +90,14 @@ class HangGlider3d extends Obj3dDir {
 				  c, true);
 	*/
 
-	this.addPolygonWithShadow(new float[][] {{0, 0, z}, {1, - s, z + a}, {1, -y - s, a}, {0, -y, 0}}, 
-				  c, true);
-	this.addPolygonWithShadow(new float[][] {{0, 0, z}, {0, -y, 0}, {-1, -y - s, a}, {-1, -s, z + a}}, 
-				  c, true);
+	this.addPolygon(new float[][] {{0, 0, z}, {1, - s, z + a}, {1, -y - s, a}, {0, -y, 0}}, 
+				  c, true, true);
+	this.addPolygon(new float[][] {{0, 0, z}, {0, -y, 0}, {-1, -y - s, a}, {-1, -s, z + a}}, 
+				  c, true, true);
 
-	this.translateBy(0, y, 0);
+	this.translateBy(0, y, 0, false);
 	this.scaleBy(scaleModel);
-	this.translateBy(0, - 0.015f, 0.015f);
+	this.translateBy(0, - 0.015f, 0.015f, false);
 	Person.addPilot(this, Person.HG); // ?
 
 	//old (no shadows)...
