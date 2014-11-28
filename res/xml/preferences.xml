@@ -31,12 +31,17 @@
         android:key="uisettings"
         android:title="UI settings" >
         <ListPreference
-            android:defaultValue="3"
+            android:defaultValue="10"
             android:entries="@array/view_angle_label"
             android:entryValues="@array/view_angle"
             android:key="view_angle"
             android:summary="View angle of the camera"
             android:title="View angle" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="fancy"
+            android:summary="Paint ground and sky. (Disable if you can't start the race)"
+            android:title="Fancy" />
         <EditTextPreference
             android:key="playerName"
             android:summary="Your handle to appear in multiplayer games"

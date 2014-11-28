@@ -74,8 +74,8 @@ public class Task implements CameraSubject {
 		shadowFactors[0] = sun[0]/sun[2];
 		shadowFactors[1] = sun[1]/sun[2];
 		GregorianCalendar calendar = (GregorianCalendar) GregorianCalendar.getInstance();
-		calendar.set(Calendar.HOUR_OF_DAY, 14);
-		calendar.set(Calendar.MONTH, 1);
+		calendar.set(Calendar.HOUR_OF_DAY, 12);
+		calendar.set(Calendar.MONTH, 6);
 		AzimuthZenithAngle azimuthZenithAngle = PSA.calculateSolarPosition(calendar, 46.0, 16.0);
 		Log.i("FC TASK", azimuthZenithAngle.toString());
 		shadowFactors[1] = (float) Math.tan(Math.toRadians(azimuthZenithAngle.getZenithAngle()));

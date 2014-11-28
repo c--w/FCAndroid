@@ -56,7 +56,7 @@ public class Obj3d implements CameraSubject {
 	List<Polywire> polywires = new ArrayList<Polywire>();
 	private int wirenext = 0;
 	boolean noShade = false; // hack for sky
-	int shadowColor = Color.rgb(200, 200, 200);
+	int shadowColor = Color.argb(128, 220, 220, 220);
 
 	/** Bounding box in model space */
 	BB box = new BB();
@@ -652,7 +652,7 @@ public class Obj3d implements CameraSubject {
 			points[next] = i;
 			if (shadow) {
 				verticesData[next * 3 + 0] = -ps[i + 1] - ps[i + 2] * Task.shadowFactors[1];
-				verticesData[next * 3 + 1] = -0.001f;
+				verticesData[next * 3 + 1] = 0.001f;
 				verticesData[next * 3 + 2] = -ps[i + 0] - ps[i + 2] * Task.shadowFactors[0];
 			} else {
 				verticesData[next * 3 + 0] = -ps[i + 1];
@@ -675,7 +675,7 @@ public class Obj3d implements CameraSubject {
 				i = points[next];
 				if (shadow) {
 					verticesData[next * 3 + 0] = -ps[i + 1] - ps[i + 2] * Task.shadowFactors[1];
-					verticesData[next * 3 + 1] = -0.001f;
+					verticesData[next * 3 + 1] = 0.001f;
 					verticesData[next * 3 + 2] = -ps[i + 0] - ps[i + 2] * Task.shadowFactors[0];
 				} else {
 					verticesData[next * 3 + 0] = -ps[i + 1];
