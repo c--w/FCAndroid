@@ -121,7 +121,8 @@
                 android:layout_height="10dp"
                 android:layout_gravity="center"
                 android:background="#000000" />
-            <SeekBar
+
+            <SeekBar
                 android:id="@+id/vario"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
