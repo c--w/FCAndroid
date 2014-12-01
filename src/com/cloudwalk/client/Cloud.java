@@ -617,7 +617,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			 * from above).
 			 */
 			obj3d.addPolygon(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color);
-			obj3d.addPolygon(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color_, true, true);
+			obj3d.addPolygon(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color, true, true);
 
 			/*
 			 * Define a mapping from my vertex labels to obj3d's point indexes

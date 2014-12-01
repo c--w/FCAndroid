@@ -127,7 +127,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						soundPool.setRate(streamIDs[1], (float) Math.sqrt(glider.getSpeed() / 1.7));
 						currentSpeed = glider.getSpeed();
 					}
-					int rnd = (int) (Math.random() * 3000);
+					int rnd = (int) (Math.random() * 300);
 					if (rnd == 0)
 						soundPool.play(soundIds[2], (float) (volume * Math.random())*.05f, (float) (volume * Math.random())*.05f, 1, 0, 1);
 					else if (rnd == 1)
