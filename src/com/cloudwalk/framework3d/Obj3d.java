@@ -403,6 +403,12 @@ public class Obj3d implements CameraSubject {
 		shadow.shadow = true;
 
 		System.arraycopy(triangle.points, 0, shadow.points, 0, triangle.points.length);
+		if (Tools3d.dot(new float[] { ps[triangle.points[0]] - ps[triangle.points[1]], ps[triangle.points[0] + 1] - ps[triangle.points[1] + 1],
+				ps[triangle.points[0] + 2] - ps[triangle.points[1] + 2] }, new float[] { ps[triangle.points[0]] - ps[triangle.points[2]],
+				ps[triangle.points[0] + 1] - ps[triangle.points[2] + 1], ps[triangle.points[0] + 2] - ps[triangle.points[2] + 2] }) < 0) {
+			shadow.points[0] = triangle.points[2];
+			shadow.points[2] = triangle.points[0];
+		}
 		shadow.updateVertices(true, true);
 		triangles.add(shadow);
 		return;

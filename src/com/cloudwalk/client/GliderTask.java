@@ -159,8 +159,8 @@ public class GliderTask extends Glider {
 	public float[] getEye() {
 		TurnPoint tp = nextTP.prevTP;
 		float z = p[2] + EYE_H;
-		if (z > xcModelViewer.xcModel.task.CLOUDBASE - 0.3f)
-			z = xcModelViewer.xcModel.task.CLOUDBASE - 0.3f;
+		if (z > xcModelViewer.xcModel.task.CLOUDBASE - 0.4f)
+			z = xcModelViewer.xcModel.task.CLOUDBASE - 0.4f;
 
 		return new float[] { p[0] - tp.dx * EYE_D, p[1] - tp.dy * EYE_D, z };
 		// return new float[] {p[0], p[1], p[2]};

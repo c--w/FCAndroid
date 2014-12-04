@@ -10,6 +10,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -18,6 +19,7 @@ import android.util.Log;
 
 import com.cloudwalk.client.Task;
 import com.cloudwalk.client.XCModelViewer;
+import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.ErrorHandler.ErrorType;
 
 /**
@@ -105,6 +107,10 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	public int width;
 	public int height;
 	public int viewAngle;
+	boolean fancy = true;
+	int sky_color = Color.WHITE;
+	int ground_color = Color.WHITE;
+	SharedPreferences prefs;
 
 	/** The current heightmap object. */
 	private HeightMap heightMap;
@@ -113,8 +119,11 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	 * Initialize the model data.
 	 */
 	public ModelViewRenderer(Context c, ErrorHandler errorHandler) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+		prefs = PreferenceManager.getDefaultSharedPreferences(c);
 		viewAngle = Integer.parseInt(prefs.getString("view_angle", "10"));
+		fancy = prefs.getBoolean("fancy", true);
+		sky_color = prefs.getInt("sky_color", Color.WHITE);
+		ground_color = prefs.getInt("ground_color", Color.WHITE);
 		this.errorHandler = errorHandler;
 	}
 
@@ -134,15 +143,15 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		// view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
 		Matrix.setLookAtM(mViewMatrix, 0, -eye[1], eye[2], -eye[0], -focus[1], focus[2], -focus[0], upX, upY, upZ);
 
-//		// Position the eye behind the origin.
-//		final float eyeX = 0.0f;
-//		final float eyeY = 0.0f;
-//		final float eyeZ = 2.5f;
-//
-//		// We are looking toward the distance
-//		final float lookX = 0.0f;
-//		final float lookY = 0.0f;
-//		final float lookZ = -5.0f;
+		// // Position the eye behind the origin.
+		// final float eyeX = 0.0f;
+		// final float eyeY = 0.0f;
+		// final float eyeZ = 2.5f;
+		//
+		// // We are looking toward the distance
+		// final float lookX = 0.0f;
+		// final float lookY = 0.0f;
+		// final float lookZ = -5.0f;
 
 		mLightPosInModelSpace[0] = Task.sun[1];
 		mLightPosInModelSpace[1] = Task.sun[2];
@@ -162,9 +171,11 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-		heightMap = new HeightMap();
-		// Set the background clear color to white.
-		GLES20.glClearColor(191f / 255f, 251f / 255f, 1f, 1);
+		if (fancy) {
+			heightMap = new HeightMap();
+			GLES20.glClearColor(Color.red(sky_color) / 255f, Color.green(sky_color) / 255f, Color.blue(sky_color) / 255f, 0f);
+		} else
+			GLES20.glClearColor(1f, 1f, 1f, 1f);
 
 		updateCamera();
 		final String vertexShader = "uniform mat4 u_MVPMatrix;      \n" // A constant representing the combined model/view/projection matrix.
@@ -330,8 +341,10 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 		GLES20.glDisable(GLES20.GL_CULL_FACE);
 		GLES20.glHint(GL10.GL_POLYGON_SMOOTH_HINT, GL10.GL_NICEST);
+//		GLES20.glEnable(GL10.GL_POLYGON_OFFSET_FILL);
+//		GLES20.glPolygonOffset(-0.1f,0);
 		// GLES20.glEnable(GL10.GL_ALPHA_TEST);
-		GLES20.glEnable(GL10.GL_BLEND);
+		//GLES20.glEnable(GL10.GL_BLEND);
 		// GLES20.glBlendFunc(GL10.GL_SRC_ALPHA_SATURATE, GL10.GL_ONE);
 		// GLES20.glDepthFunc(GL10.GL_LEQUAL);
 		// GLES20.glEnable(GL10.GL_SMOOTH);
@@ -368,7 +381,8 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		GLES20.glVertexAttrib1f(mFarDistanceHandle, far);
 
 		// drawWorld();
-		heightMap.render();
+		if (fancy)
+			heightMap.render();
 		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
 			try {
 				Obj3d o = modelViewer.obj3dManager.obj(i);
@@ -430,9 +444,9 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 						heightMapVertexData[offset++] = 0f;
 
 						// Add some fancy colors.
-						heightMapVertexData[offset++] = 1f;
-						heightMapVertexData[offset++] = 1f;
-						heightMapVertexData[offset++] = 225f / 255f;
+						heightMapVertexData[offset++] = Color.red(ground_color) / 255f;
+						heightMapVertexData[offset++] = Color.green(ground_color) / 255f;
+						heightMapVertexData[offset++] = Color.blue(ground_color) / 255f;
 						heightMapVertexData[offset++] = 1f;
 					}
 				}

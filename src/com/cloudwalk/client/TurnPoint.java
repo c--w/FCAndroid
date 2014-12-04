@@ -171,7 +171,7 @@ public class TurnPoint {
 
 	/** Sector has radius and perpendicular width. */
 	private Obj3d objA = null; // start line , sector or finish line
-	static final int COLOR_SECTOR = Color.rgb(255, 200, 0); // ORANGE;
+	static int COLOR_SECTOR = Color.YELLOW; // ORANGE;
 
 	/**
 	 * Draws a pink triangle outline if turn point falls within a *loaded* node.
@@ -187,19 +187,9 @@ public class TurnPoint {
 	 * </pre>
 	 */
 	private void renderSector() {
-		if (!xcModelViewer.xcModel.task.nodeManager.contains(x, y)) {
-			if (objA != null) {
-				objA.destroyMe();
-				objA = null;
-			}
-			return;
-		}
-
-		// have we already created the sector ?
 		if (objA != null) {
 			return;
 		}
-
 		float[][] ps = new float[3][3];
 		float[] p = new float[3];
 		Tools3d.linearSum(radius, bisect, -dPerp, bisectPerp, ps[1]);
@@ -216,7 +206,6 @@ public class TurnPoint {
 
 	private Obj3d objB = null; // arrows
 	static final int ARROWS_MAX = 300; // just used to dim an array
-	static final int COLOR_ARROW = Color.rgb(255, 200, 0);// ORANGE
 
 	/**
 	 * Draws a line of arrows. Note we only draw arrows that fall within a loaded node.
@@ -232,6 +221,12 @@ public class TurnPoint {
 	private void renderArrows() {
 		if(xcModelViewer.xcModel.task.type == Task.DISTANCE)
 			return;
+		
+		// have we already created the sector ?
+		if (objB != null) {
+			return;
+		}
+		
 		float ARROW_SPACING = distanceToNext / 20f;
 		float ARROW_LEN = ARROW_SPACING * 0.3f;
 		float ARROW_HEAD = ARROW_LEN * 0.2f;
@@ -251,10 +246,6 @@ public class TurnPoint {
 		float[][][] qss = new float[num][3][3]; // heads
 		NodeManager nodeManager = xcModelViewer.xcModel.task.nodeManager;
 
-		// start afresh
-		if (objB != null) {
-			objB.destroyMe();
-		}
 
 		int n = 0;
 		float dist = 0;
@@ -292,20 +283,17 @@ public class TurnPoint {
 		objB = new Obj3d(xcModelViewer);
 
 		for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
-			objB.addPolywire(pss[i], COLOR_ARROW, 2);
-			objB.addPolywire(qss[i], COLOR_ARROW, 2);
+			objB.addPolywire(pss[i], COLOR_SECTOR, 2);
+			objB.addPolywire(qss[i], COLOR_SECTOR, 2);
 		}
 	}
 
 	/** Draws a perp line. */
 	private void renderStart() {
-		if (!xcModelViewer.xcModel.task.nodeManager.contains(x, y)) {
-			if (objA != null) {
-				objA.destroyMe();
-				objA = null;
-			}
+		if (objA != null) {
 			return;
 		}
+		COLOR_SECTOR = xcModelViewer.modelEnv.getPrefs().getInt("tp_color", Color.YELLOW);
 
 		float[][] ps = new float[2][3];
 		ps[0][0] = x - dPerp * dy;
@@ -319,11 +307,7 @@ public class TurnPoint {
 
 	// for now...
 	private void renderFinish() {
-		if (!xcModelViewer.xcModel.task.nodeManager.contains(x, y)) {
-			if (objA != null) {
-				objA.destroyMe();
-				objA = null;
-			}
+		if (objA != null) {
 			return;
 		}
 

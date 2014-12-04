@@ -37,6 +37,26 @@
             android:key="view_angle"
             android:summary="View angle of the camera"
             android:title="View angle" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="fancy"
+            android:summary="Paint ground and sky. (Disable if you have problems starting the race)"
+            android:title="Fancy" />
+        <afzkl.development.colorpickerview.preference.ColorPickerPreference
+            android:defaultValue="0xFFC0FBFF"
+            android:key="sky_color"
+            android:summary="Choose color of the sky (if 'Fancy' is on)"
+            android:title="Sky color" />
+        <afzkl.development.colorpickerview.preference.ColorPickerPreference
+            android:defaultValue="0xFFFFFFE0"
+            android:key="ground_color"
+            android:summary="Choose ground color (if 'Fancy' is on)"
+            android:title="Ground color" />
+        <afzkl.development.colorpickerview.preference.ColorPickerPreference
+            android:defaultValue="0xFFFFFF00"
+            android:key="tp_color"
+            android:summary="Choose turnpoint/arrows color "
+            android:title="Turnpoint color" />
         <EditTextPreference
             android:key="playerName"
             android:summary="Your handle to appear in multiplayer games"

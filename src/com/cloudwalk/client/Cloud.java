@@ -77,7 +77,6 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	static final float LIFT_UNIT = 0.08f;
 	// or a fn of site ?
 	public static final int MAX_SIZE = 5;
-	boolean hasShape = false;
 	/**
 	 * Creates a cloud. The cloud will grow from nothing, drift along for a
 	 * period of time and then evaporate. The cloud strength is measured in
@@ -100,9 +99,10 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		// assume life cycle starts from now
 		lifeCycle = new LifeCycle(xcModelViewer.clock.getTime(), lifeSpan);
+		setAge(age);
+		
 		if (!blueThermal)
 			shape3d = new Shape3d();
-		setAge(age);
 
 		xcModelViewer.clock.addObserver(this);
 
@@ -441,7 +441,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		float r0; // radius at base (vertices 0..3)
 		float r1; // radius at top (vertices 3..7)
-		boolean dirty = false;
+		boolean dirty = true;
 
 		static final float SIZE_UNIT = 1.0f;
 
@@ -450,6 +450,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			obj3d = new Obj3d(xcModelViewer); 
 			setRadius();
 			addPolygons();
+			//hasShape = true;			
 		}
 
 		/** If the cloud is changing then change this shape. */
@@ -522,9 +523,8 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		 * Gets the new co-ords for each vertex and passes this data to obj3d.
 		 */
 		private boolean updateShape() {
-			if(!obj3d.visible() && hasShape)
+			if(!obj3d.visible() && !dirty)
 				return false;
-			hasShape = true;
 			for (int i = 0; i < 8; i++) {
 				float[] point = getVert(i);
 				obj3d.ps[pointIndexes[i]] = point[0];
@@ -617,7 +617,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			 * from above).
 			 */
 			obj3d.addPolygon(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color);
-			obj3d.addPolygon(new float[][] { ps[0], ps[3], ps[2], ps[1] }, color, true, true);
+			obj3d.addPolygon(new float[][] { ps[0], ps[3], ps[2], ps[1], }, color_, true, true);
 
 			/*
 			 * Define a mapping from my vertex labels to obj3d's point indexes
@@ -638,7 +638,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 			// fudge for zero age
 			if (age == 0) {
-				age = (float) lifeCycle.grow / 100;
+				age = lifeCycle.grow / 100f;
 			}
 
 			if (lifeCycle.isGrowing()) {
@@ -660,9 +660,9 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			if (!lifeCycle.isDecaying()) {
 				r0 = r1;
 			} else {
-				fn = 2 * (fn - (float) 0.5);
-				if (fn < 0.01)
-					fn = (float) 0.01;
+				fn = 2 * (fn - 0.5f);
+				if (fn < 0.5f)
+					fn = 0.5f;
 				r0 = r1 * fn;
 			}
 		}

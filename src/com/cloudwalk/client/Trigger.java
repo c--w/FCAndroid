@@ -168,33 +168,33 @@ public class Trigger implements ClockObserver, CameraSubject {
 		// quasi random between -2 and 2 leaning to 0
 		float qrandom = get01Value3();
 		qrandom *= qrandom;
-		float a = 3.0f + qrandom * 2;
+		float a = 3.0f + (qrandom-0.5f) * 4;
 		thermalStrength = a;
 		cycleLength = (thermalStrength / 10f + 0.5f * get01Value2()) * 120; // 50% comes from strength and 50% is random
 		duration = 0.5f + thermalStrength / 20f + get01Value4() * 0.25f; // duration at least half the cycle + 25% from strength + 25% random
 		phase = get01Value() * cycleLength;
 		show = get01Value4() > 0.1f; // one of 10 triggers is not visible
-		cloudHeight = cloudHeight + (0.5f - get01Value3()) * .8f;
+		cloudHeight = cloudHeight + (0.5f - get01Value3()) * .6f;
 	}
 
 	float get01Value() {
-		float a = (float) Math.sqrt((x + 1) / (y + 1));
+		float a = (float) Math.sqrt(Math.abs((x + 1) / (y + 1)));
 		return (float) ((a * 10) - Math.floor(a * 10));
 	}
 
 	float get01Value2() {
-		float a = (float) Math.sqrt((x + 2) / (y + 2));
+		float a = (float) Math.sqrt(Math.abs((x + 2) / (y + 2)));
 		return (float) ((a * 10) - Math.floor(a * 10));
 	}
 
 	float get01Value3() {
-		float a = (float) Math.sqrt((x + 11) / (y + 11));
+		float a = (float) Math.sqrt(Math.abs((x + 11) / (y + 11)));
 		// some deep enough decimals
 		return (float) ((a * 1000) - Math.floor(a * 1000));
 	}
 
 	float get01Value4() {
-		float a = (float) Math.sqrt((x + 17) / (y + 17));
+		float a = (float) Math.sqrt(Math.abs((x + 17) / (y + 17)));
 		// some deep enough decimals
 		return (float) ((a * 1000) - Math.floor(a * 1000));
 	}

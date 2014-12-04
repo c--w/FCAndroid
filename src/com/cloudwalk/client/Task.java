@@ -38,6 +38,7 @@ import com.cloudwalk.framework3d.Tools3d;
 public class Task implements CameraSubject {
 	public static int TIME = 0;
 	public static int DISTANCE = 1;
+	public static int TIME_PRECISE = 2;
 	public XCModelViewer xcModelViewer;
 	String taskID;
 	NodeManager nodeManager;
@@ -210,16 +211,16 @@ public class Task implements CameraSubject {
 	}
 
 	private void generateT7Task() {
-		desc = "Closed circuit 50km task with 3 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase varies around 1000m.";
-		CLOUDBASE = 2;
-		NODE_SPACING = CLOUDBASE * 12f;
-		HEXAGON = CLOUDBASE * 7;
+		desc = "Closed circuit 160km task with 3 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase varies around 1200m.";
+		CLOUDBASE = 2.4f;
+		NODE_SPACING = 4 * 12f;
+		HEXAGON = 4 * 7;
 		// turn points
-		float x = CLOUDBASE * 10;
+		float x = 4 * 10;
 		// x /= 5; // tmp - small course for testing gliding around the turn
 		// points
-		float[] xs = { x, x, 2 * x, 2 * x, x };
-		float[] ys = { x, 2 * x, 2 * x, x, x };
+		float[] xs = { x/2, x/2, 2.5f * x, 2.5f * x, x/2 };
+		float[] ys = { x/2, 2.5f * x, 2.5f * x, x/2, x/2 };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// wind

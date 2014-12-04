@@ -111,6 +111,19 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						Log.e("FC", e.getMessage(), e);
 					}
 					landed = true;
+				} else if (glider.finished && !finished && ((XCModelViewer) modelViewerThin).xcModel.task.type == Task.TIME_PRECISE) {
+					try {
+						soundPool.play(soundIds[5], volume, volume, 1, 0, 1);
+						int best_time = prefs.getInt("best_time0" + task + pilotType, 1000000);
+						int current_time = (int) (glider.timeFinished * 100);
+						Log.i("FC StartFlightClub", "currenttime " + current_time + " " + best_time);
+						if (current_time < best_time) {
+							submitScore(pilotType, current_time);
+						}
+					} catch (Exception e) {
+						Log.e("FC", e.getMessage(), e);
+					}
+					finished = true;
 				}
 				View v = findViewById(R.id.startbuttons);
 				if (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.getLanded()) {
@@ -129,14 +142,14 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 					}
 					int rnd = (int) (Math.random() * 3000);
 					if (rnd == 0)
-						soundPool.play(soundIds[2], (float) (volume * Math.random())*.05f, (float) (volume * Math.random())*.05f, 1, 0, 1);
+						soundPool.play(soundIds[2], (float) (volume * Math.random()) * .05f, (float) (volume * Math.random()) * .05f, 1, 0, 1);
 					else if (rnd == 1)
-						soundPool.play(soundIds[3], (float) (volume * Math.random())*.05f, (float) (volume * Math.random())*.05f, 1, 0, 1);
+						soundPool.play(soundIds[3], (float) (volume * Math.random()) * .05f, (float) (volume * Math.random()) * .05f, 1, 0, 1);
 					else if (rnd == 2)
-						soundPool.play(soundIds[6], (float) (volume * Math.random())*.05f, (float) (volume * Math.random())*.05f, 1, 0, 1);
+						soundPool.play(soundIds[6], (float) (volume * Math.random()) * .05f, (float) (volume * Math.random()) * .05f, 1, 0, 1);
 				} else if (glider.racing && !glider.getLanded() && flying == false) {
 					flying = true;
-					if(prefs.getBoolean("ambient_sound", true))
+					if (prefs.getBoolean("ambient_sound", true))
 						streamIDs[1] = soundPool.play(soundIds[1], volume / 2, volume / 2, 1, -1, (float) Math.sqrt(glider.getSpeed() / 1.7));
 				}
 			} catch (Exception e) {
@@ -649,6 +662,11 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	@Override
 	public Context getContext() {
 		return this;
+	}
+
+	@Override
+	public SharedPreferences getPrefs() {
+		return prefs;
 	}
 
 }
