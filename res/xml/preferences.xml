@@ -59,9 +59,8 @@
             android:title="Turnpoint color" />
         <EditTextPreference
             android:key="playerName"
-            android:summary="Your handle to appear in multiplayer games"
+            android:summary="Your handle for multiplayer games"
             android:title="Player name" />
-
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFF0000FF"
             android:key="glider_color"

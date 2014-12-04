@@ -211,6 +211,7 @@ public class Task implements CameraSubject {
 	}
 
 	private void generateT7Task() {
+		type = TIME_PRECISE;
 		desc = "Closed circuit 160km task with 3 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase varies around 1200m.";
 		CLOUDBASE = 2.4f;
 		NODE_SPACING = 4 * 12f;
@@ -224,8 +225,8 @@ public class Task implements CameraSubject {
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// wind
-		wind_x = 0.1f;
-		wind_y = 0.1f;
+		wind_x = 0.05f;
+		wind_y = 0.05f;
 
 		// triggers
 		triggers = new Trigger[4 * 4 * 6];
