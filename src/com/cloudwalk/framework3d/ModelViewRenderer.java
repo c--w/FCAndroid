@@ -16,8 +16,8 @@ import android.opengl.Matrix;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.cloudwalk.client.Task;
 import com.cloudwalk.client.XCModelViewer;
-import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.ErrorHandler.ErrorType;
 
 /**
@@ -104,10 +104,11 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	public float lastFar = 0f;
 	public int width;
 	public int height;
-	public int viewAngle; 
+	public int viewAngle;
 
 	/** The current heightmap object. */
 	private HeightMap heightMap;
+
 	/**
 	 * Initialize the model data.
 	 */
@@ -133,19 +134,19 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		// view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
 		Matrix.setLookAtM(mViewMatrix, 0, -eye[1], eye[2], -eye[0], -focus[1], focus[2], -focus[0], upX, upY, upZ);
 
-		// Position the eye behind the origin.
-		final float eyeX = 0.0f;
-		final float eyeY = 0.0f;
-		final float eyeZ = 2.5f;
+//		// Position the eye behind the origin.
+//		final float eyeX = 0.0f;
+//		final float eyeY = 0.0f;
+//		final float eyeZ = 2.5f;
+//
+//		// We are looking toward the distance
+//		final float lookX = 0.0f;
+//		final float lookY = 0.0f;
+//		final float lookZ = -5.0f;
 
-		// We are looking toward the distance
-		final float lookX = 0.0f;
-		final float lookY = 0.0f;
-		final float lookZ = -5.0f;
-		
-		mLightPosInModelSpace[0] =  ((XCModelViewer) modelViewer).xcModel.task.sun[1];
-		mLightPosInModelSpace[1] =  ((XCModelViewer) modelViewer).xcModel.task.sun[2];
-		mLightPosInModelSpace[2] =  ((XCModelViewer) modelViewer).xcModel.task.sun[0];
+		mLightPosInModelSpace[0] = Task.sun[1];
+		mLightPosInModelSpace[1] = Task.sun[2];
+		mLightPosInModelSpace[2] = Task.sun[0];
 		//
 		// // Set our up vector. This is where our head would be pointing were we holding the camera.
 		// final float upX = 0.0f;
@@ -163,7 +164,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
 		heightMap = new HeightMap();
 		// Set the background clear color to white.
-		GLES20.glClearColor(191f/255f, 251f/255f, 1f, 1);
+		GLES20.glClearColor(191f / 255f, 251f / 255f, 1f, 1);
 
 		updateCamera();
 		final String vertexShader = "uniform mat4 u_MVPMatrix;      \n" // A constant representing the combined model/view/projection matrix.
@@ -187,12 +188,12 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 				+ "   vec3 lightVector = normalize(u_LightPos - position);             \n"
 				// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
 				// pointing in the same direction then it will get max illumination.
-				+ "   float diffuse = max(dot(normal, lightVector), 0.2);              \n" + "   vec4 color = a_Color * pow(diffuse, 0.25);						\n"
+				+ "   float diffuse = max(dot(normal, lightVector), 0.1);              \n" + "   vec4 color = a_Color * pow(diffuse, 0.25);						\n"
 
 				+ "   float distance = abs(position.z);     \n"
 				+ "   float factor = 1.0 - (1.0 / (1.0 + (0.08 * (100.0 / a_FarDist) * distance)));"
-				+ "   vec4 fog_color = vec4(1.0,1.0,1.0,1.0);	     \n" 
-				+ "   v_Color = mix(color, fog_color, factor);     \n" // Pass the color directly through the pipeline.
+				+ "   vec4 fog_color = vec4(1.0,1.0,1.0,1.0);	     \n" + "   v_Color = mix(color, fog_color, factor);     \n" // Pass the color directly through
+																																// the pipeline.
 				+ "   gl_Position = u_MVPMatrix * a_Position;   \n" // gl_Position is a special variable used to store the final position.
 				+ "                 \n" // Multiply the vertex by the matrix to get the final point in
 				+ "}                              \n"; // normalized screen coordinates.
@@ -317,7 +318,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 			Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 			lastFar = far;
-			Log.i("FC MVR", ""+far);
+			Log.i("FC MVR", "" + far);
 		}
 
 	}
@@ -331,7 +332,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		GLES20.glHint(GL10.GL_POLYGON_SMOOTH_HINT, GL10.GL_NICEST);
 		// GLES20.glEnable(GL10.GL_ALPHA_TEST);
 		GLES20.glEnable(GL10.GL_BLEND);
-		//GLES20.glBlendFunc(GL10.GL_SRC_ALPHA_SATURATE, GL10.GL_ONE);
+		// GLES20.glBlendFunc(GL10.GL_SRC_ALPHA_SATURATE, GL10.GL_ONE);
 		// GLES20.glDepthFunc(GL10.GL_LEQUAL);
 		// GLES20.glEnable(GL10.GL_SMOOTH);
 		this.width = width;
@@ -363,10 +364,10 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 		// Pass in the light position in eye space.
 		GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
-		
+
 		GLES20.glVertexAttrib1f(mFarDistanceHandle, far);
 
-		//drawWorld();
+		// drawWorld();
 		heightMap.render();
 		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
 			try {
@@ -378,7 +379,6 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-	
 	/** Additional constants. */
 	private static final int POSITION_DATA_SIZE_IN_ELEMENTS = 3;
 	private static final int NORMAL_DATA_SIZE_IN_ELEMENTS = 3;
@@ -387,8 +387,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	private static final int BYTES_PER_FLOAT = 4;
 	private static final int BYTES_PER_SHORT = 2;
 
-	private static final int STRIDE = (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS)
-			* BYTES_PER_FLOAT;
+	private static final int STRIDE = (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT;
 
 	class HeightMap {
 		static final int SIZE_PER_SIDE = 64;
@@ -402,8 +401,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 		HeightMap() {
 			try {
-				final int floatsPerVertex = POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS
-						+ COLOR_DATA_SIZE_IN_ELEMENTS;
+				final int floatsPerVertex = POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS;
 				final int xLength = SIZE_PER_SIDE;
 				final int yLength = SIZE_PER_SIDE;
 
@@ -415,16 +413,16 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 				for (int y = 0; y < yLength; y++) {
 					for (int x = 0; x < xLength; x++) {
 						final float xRatio = x / (float) (xLength - 1);
-						
+
 						// Build our heightmap from the top down, so that our triangles are counter-clockwise.
 						final float yRatio = 1f - (y / (float) (yLength - 1));
-						
+
 						final float xPosition = MIN_POSITION + (xRatio * POSITION_RANGE);
 						final float yPosition = MIN_POSITION + (yRatio * POSITION_RANGE);
 
 						// Position
 						heightMapVertexData[offset++] = xPosition;
-						heightMapVertexData[offset++] = -0.01f;					
+						heightMapVertexData[offset++] = -0.1f;
 						heightMapVertexData[offset++] = yPosition;
 
 						heightMapVertexData[offset++] = 0f;
@@ -434,7 +432,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 						// Add some fancy colors.
 						heightMapVertexData[offset++] = 1f;
 						heightMapVertexData[offset++] = 1f;
-						heightMapVertexData[offset++] = 225f/255f;
+						heightMapVertexData[offset++] = 225f / 255f;
 						heightMapVertexData[offset++] = 1f;
 					}
 				}
@@ -468,14 +466,12 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 				indexCount = heightMapIndexData.length;
 
-				final FloatBuffer heightMapVertexDataBuffer = ByteBuffer
-						.allocateDirect(heightMapVertexData.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder())
-						.asFloatBuffer();
+				final FloatBuffer heightMapVertexDataBuffer = ByteBuffer.allocateDirect(heightMapVertexData.length * BYTES_PER_FLOAT)
+						.order(ByteOrder.nativeOrder()).asFloatBuffer();
 				heightMapVertexDataBuffer.put(heightMapVertexData).position(0);
 
-				final ShortBuffer heightMapIndexDataBuffer = ByteBuffer
-						.allocateDirect(heightMapIndexData.length * BYTES_PER_SHORT).order(ByteOrder.nativeOrder())
-						.asShortBuffer();
+				final ShortBuffer heightMapIndexDataBuffer = ByteBuffer.allocateDirect(heightMapIndexData.length * BYTES_PER_SHORT)
+						.order(ByteOrder.nativeOrder()).asShortBuffer();
 				heightMapIndexDataBuffer.put(heightMapIndexData).position(0);
 
 				GLES20.glGenBuffers(1, vbo, 0);
@@ -483,12 +479,12 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 				if (vbo[0] > 0 && ibo[0] > 0) {
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
-					GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, heightMapVertexDataBuffer.capacity() * BYTES_PER_FLOAT,
-							heightMapVertexDataBuffer, GLES20.GL_STATIC_DRAW);
+					GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, heightMapVertexDataBuffer.capacity() * BYTES_PER_FLOAT, heightMapVertexDataBuffer,
+							GLES20.GL_STATIC_DRAW);
 
 					GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
-					GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, heightMapIndexDataBuffer.capacity()
-							* BYTES_PER_SHORT, heightMapIndexDataBuffer, GLES20.GL_STATIC_DRAW);
+					GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, heightMapIndexDataBuffer.capacity() * BYTES_PER_SHORT, heightMapIndexDataBuffer,
+							GLES20.GL_STATIC_DRAW);
 
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 					GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -502,20 +498,19 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		}
 
 		void render() {
-			if (vbo[0] > 0 && ibo[0] > 0) {				
+			if (vbo[0] > 0 && ibo[0] > 0) {
 				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
 
 				// Bind Attributes
-				GLES20.glVertexAttribPointer(mPositionHandle, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
-						STRIDE, 0);
+				GLES20.glVertexAttribPointer(mPositionHandle, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, STRIDE, 0);
 				GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-				GLES20.glVertexAttribPointer(mNormalHandle, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
-						STRIDE, POSITION_DATA_SIZE_IN_ELEMENTS * BYTES_PER_FLOAT);
+				GLES20.glVertexAttribPointer(mNormalHandle, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, STRIDE, POSITION_DATA_SIZE_IN_ELEMENTS
+						* BYTES_PER_FLOAT);
 				GLES20.glEnableVertexAttribArray(mNormalHandle);
 
-				GLES20.glVertexAttribPointer(mColorHandle, COLOR_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
-						STRIDE, (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT);
+				GLES20.glVertexAttribPointer(mColorHandle, COLOR_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, STRIDE,
+						(POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT);
 				GLES20.glEnableVertexAttribArray(mColorHandle);
 
 				// Draw

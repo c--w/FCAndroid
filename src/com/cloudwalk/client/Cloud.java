@@ -86,14 +86,14 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	 * 
 	 * TODO: params - thermalStrenth, duration... ?size
 	 */
-	public Cloud(XCModelViewer xcModelViewer, float x, float y, float size, float lifeSpan, float age, boolean blueThermal) {
+	public Cloud(XCModelViewer xcModelViewer, float x, float y, float size, float lifeSpan, float age, boolean blueThermal, float h) {
 		this.xcModelViewer = xcModelViewer;
 		this.size = size;
 		this.setColor();
 
 		this.x = x;
 		this.y = y;
-		this.h = xcModelViewer.xcModel.task.CLOUDBASE;
+		this.h = h;
 
 		myID = nextID++;
 		random = new Random((long) lifeSpan * 1000);

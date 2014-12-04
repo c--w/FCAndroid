@@ -50,7 +50,8 @@ public class GliderAI extends GliderTask {
 		super(xcModelViewer, gliderType, id);
 		moveManager = new MovementManager(xcModelViewer, this);
 		this.color = colors[myID % colors.length];
-		this.obj.setColor(this.color);
+		this.obj.setColor(0, this.color);
+		this.obj.setColor(1, Color.YELLOW);
 	}
 
 	/**

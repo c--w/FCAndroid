@@ -41,6 +41,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	public int mode = SLEEPING;
 	boolean blueThermal = false;
 	boolean show = true;
+	public float cloudHeight;
 
 	// Fixed seed so that model is deterministic (state(T) is same every game
 	// play).
@@ -106,19 +107,23 @@ public class Trigger implements ClockObserver, CameraSubject {
 		// Log.w("FC Trigger", "" + phase);
 		// nextCloudStartTime = phase - cycleLength;
 		myID = nextID++; // unique id (for debugging)
+		//cloudHeight = xcModelViewer.xcModel.task.CLOUDBASE;
 	}
 
 	/** Creates a 'default' trigger at (x, y). */
-	public Trigger(XCModelViewer xcModelViewer, float x, float y, int version) {
+	public Trigger(XCModelViewer xcModelViewer, float x, float y, int version, float cloudHeight) {
 		this.xcModelViewer = xcModelViewer;
 		this.x = x;
 		this.y = y;
+		this.cloudHeight = cloudHeight;
 		if (version == 1)
 			setParamsV1();
 		else if (version == 2)
 			setParamsV2();
 		else if (version == 3)
 			setParamsV3();
+		else if (version == 4)
+			setParamsV4();
 		myID = nextID++;
 		// Log.w("FC Trigger", "id+phase" + myID + " " + phase + " " +
 		// cycleLength + " " + x + " " + y);
@@ -157,6 +162,19 @@ public class Trigger implements ClockObserver, CameraSubject {
 		duration = 0.5f + thermalStrength / 20f + get01Value4() * 0.25f; // duration at least half the cycle + 25% from strength + 25% random
 		phase = get01Value() * cycleLength;
 		show = get01Value4() > 0.1f; // one of 10 triggers is not visible
+	}
+
+	void setParamsV4() {
+		// quasi random between -2 and 2 leaning to 0
+		float qrandom = get01Value3();
+		qrandom *= qrandom;
+		float a = 3.0f + qrandom * 2;
+		thermalStrength = a;
+		cycleLength = (thermalStrength / 10f + 0.5f * get01Value2()) * 120; // 50% comes from strength and 50% is random
+		duration = 0.5f + thermalStrength / 20f + get01Value4() * 0.25f; // duration at least half the cycle + 25% from strength + 25% random
+		phase = get01Value() * cycleLength;
+		show = get01Value4() > 0.1f; // one of 10 triggers is not visible
+		cloudHeight = cloudHeight + (0.5f - get01Value3()) * .8f;
 	}
 
 	float get01Value() {
@@ -207,7 +225,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	// Makes a new cloud start bubbling up
 	private void makeCloud() {
 		if (thermalStrength >= STRENGTH_MIN) {
-			new Cloud(xcModelViewer, x, y, thermalStrength, duration * cycleLength, 0, blueThermal);
+			new Cloud(xcModelViewer, x, y, thermalStrength, duration * cycleLength, 0, blueThermal, cloudHeight);
 		}
 	}
 
@@ -218,7 +236,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 			Task task = xcModelViewer.xcModel.task;
 			float x_ = x + dt * task.wind_x;
 			float y_ = y + dt * task.wind_y;
-			new Cloud(xcModelViewer, x_, y_, thermalStrength, duration * cycleLength, dt, blueThermal);
+			new Cloud(xcModelViewer, x_, y_, thermalStrength, duration * cycleLength, dt, blueThermal, cloudHeight);
 		}
 	}
 

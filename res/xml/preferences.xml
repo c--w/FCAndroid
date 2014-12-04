@@ -58,6 +58,7 @@
             android:key="ambient_sound"
             android:title="Ambient sounds" >
         </CheckBoxPreference>
+        
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="show_controls"

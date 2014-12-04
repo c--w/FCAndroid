@@ -56,7 +56,7 @@ public class Obj3d implements CameraSubject {
 	List<Polywire> polywires = new ArrayList<Polywire>();
 	private int wirenext = 0;
 	boolean noShade = false; // hack for sky
-	int shadowColor = Color.rgb(200, 200, 200);
+	int shadowColor = Color.argb(128, 220, 220, 220);
 
 	/** Bounding box in model space */
 	BB box = new BB();
@@ -106,10 +106,11 @@ public class Obj3d implements CameraSubject {
 		// copy triangles
 		for (int i = 0; i < from.triangles.size(); i++) {
 			Triangle fromTriangle = from.triangles.get(i);
-			Triangle triangle = new Triangle(fromTriangle.c);
+			Triangle triangle = new Triangle();
 			System.arraycopy(fromTriangle.points, 0, triangle.points, 0, fromTriangle.points.length);
 			triangle.updateVertices(true, true);
 			triangle.shadow = fromTriangle.shadow;
+			triangle.part = fromTriangle.part;
 			addTriangle(triangle, false);
 			// triangle.logVerticesData();
 		}
@@ -311,9 +312,11 @@ public class Obj3d implements CameraSubject {
 	}
 
 	/** Gives all triangles the specifed color. */
-	public void setColor(int c) {
-		for (int i = 0; i < npoints; i++) {
-			colors[i] = c;
+	public void setColor(int part, int c) {
+		for (Triangle triangle : triangles) {
+			if (triangle.part == part)
+				for (int i = 0; i < 3; i++)
+					colors[triangle.points[i] / 3] = c;
 		}
 		updateVerticesData(false, true, true);
 	}
@@ -365,12 +368,12 @@ public class Obj3d implements CameraSubject {
 	 * We *flatten* the data once it is encapsulated inside this class; outside this class we want clarity; inside this class we want speed !
 	 */
 	public void addPolygon(float[][] vs, int c, boolean doubleSided, boolean shadow) {
-		Triangle polygon = new Triangle(c);
+		Triangle polygon = new Triangle();
 		int j = 0;
 		for (int i = 0; i < vs.length; i++) {
 			if (j % 3 == 0 && j != 0) {
 				addTriangle(polygon, shadow);
-				polygon = new Triangle(c);
+				polygon = new Triangle();
 				polygon.addPoint(this.addPoint(vs[0][0], vs[0][1], vs[0][2], c));
 				i -= 2;
 				j = 0;
@@ -379,6 +382,8 @@ public class Obj3d implements CameraSubject {
 			}
 			j++;
 		}
+		if (!doubleSided)
+			polygon.part = 1;
 		addTriangle(polygon, shadow);
 
 		// if this was the last polygon then we may now set the
@@ -394,8 +399,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	public void addShadow(Triangle triangle) {
-		int color = Color.rgb(220, 220, 220);
-		Triangle shadow = new Triangle(color);
+		Triangle shadow = new Triangle();
 		shadow.shadow = true;
 
 		System.arraycopy(triangle.points, 0, shadow.points, 0, triangle.points.length);
@@ -635,14 +639,13 @@ public class Obj3d implements CameraSubject {
 		int[] points; // list of indexes for the points that make up this
 						// Polygon
 		int next = 0;
-		int c; // true color
 		boolean shadow;
+		int part = 0;
 
-		public Triangle(int color) {
+		public Triangle() {
 			points = new int[3];
 			verticesData = new float[3 * 3];
 			colorsData = new float[4 * 3];
-			c = color;
 		}
 
 		public void addPoint(int i) {
@@ -652,7 +655,7 @@ public class Obj3d implements CameraSubject {
 			points[next] = i;
 			if (shadow) {
 				verticesData[next * 3 + 0] = -ps[i + 1] - ps[i + 2] * Task.shadowFactors[1];
-				verticesData[next * 3 + 1] = -0.001f;
+				verticesData[next * 3 + 1] = 0.001f;
 				verticesData[next * 3 + 2] = -ps[i + 0] - ps[i + 2] * Task.shadowFactors[0];
 			} else {
 				verticesData[next * 3 + 0] = -ps[i + 1];
@@ -662,7 +665,7 @@ public class Obj3d implements CameraSubject {
 			colorsData[next * 4 + 0] = Color.red(c) / 255f;
 			colorsData[next * 4 + 1] = Color.green(c) / 255f;
 			colorsData[next * 4 + 2] = Color.blue(c) / 255f;
-			colorsData[next * 4 + 3] = 1f;
+			colorsData[next * 4 + 3] = Color.alpha(c) / 255f;
 			next++;
 			if (next == 3) {
 				fillVerticesData(true, true);
@@ -675,7 +678,7 @@ public class Obj3d implements CameraSubject {
 				i = points[next];
 				if (shadow) {
 					verticesData[next * 3 + 0] = -ps[i + 1] - ps[i + 2] * Task.shadowFactors[1];
-					verticesData[next * 3 + 1] = -0.001f;
+					verticesData[next * 3 + 1] = 0.001f;
 					verticesData[next * 3 + 2] = -ps[i + 0] - ps[i + 2] * Task.shadowFactors[0];
 				} else {
 					verticesData[next * 3 + 0] = -ps[i + 1];
@@ -689,7 +692,7 @@ public class Obj3d implements CameraSubject {
 					colorsData[next * 4 + 0] = Color.red(c) / 255f;
 					colorsData[next * 4 + 1] = Color.green(c) / 255f;
 					colorsData[next * 4 + 2] = Color.blue(c) / 255f;
-					colorsData[next * 4 + 3] = 1f;
+					colorsData[next * 4 + 3] = Color.alpha(c) / 255f;
 				}
 
 			}
