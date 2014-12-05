@@ -157,7 +157,7 @@ public class GliderManager implements ClockObserver {
 	}
 
 	/** Returns either user or demo glider. */
-	Glider theGlider() {
+	public Glider theGlider() {
 		if (xcModelViewer.xcModel.mode == XCModel.DEMO) {
 			return gliderAIs[nextGaggle];
 		} else {

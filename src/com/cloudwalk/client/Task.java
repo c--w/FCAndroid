@@ -54,6 +54,8 @@ public class Task implements CameraSubject {
 	static float SUN_DISTANCE = 1000000000f;
 	public static float[] sun = { SUN_DISTANCE / 4, SUN_DISTANCE / 8, SUN_DISTANCE };
 	public static float[] shadowFactors = { 1 / 4f, 1 / 8f };
+	float latitude = 45;
+	String time_of_day = "12";
 
 	// for the default course
 	static float HEXAGON; // 8;
@@ -80,18 +82,24 @@ public class Task implements CameraSubject {
 		Glider.air[1] = wind_y;
 		shadowFactors[0] = sun[0] / sun[2];
 		shadowFactors[1] = sun[1] / sun[2];
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss Z");
-		Date date = null;
-		try {
-			date = dateFormat.parse("21.06.2014 12:00:00 +0000");
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		boolean real_shadows = xcModelViewer.modelEnv.getPrefs().getBoolean("real_shadows", true);
+		AzimuthZenithAngle azimuthZenithAngle = null;
+		if (!real_shadows) {
+			azimuthZenithAngle = new AzimuthZenithAngle(180, 0);
+		} else {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss Z");
+			Date date = null;
+			try {
+				date = dateFormat.parse("21.06.2014 " + time_of_day + ":00:00 +0000");
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			GregorianCalendar calendar = (GregorianCalendar) GregorianCalendar.getInstance(new Locale("en_GB"));
+			calendar.setTime(date);
+			azimuthZenithAngle = PSA.calculateSolarPosition(calendar, latitude, 0.0);
 		}
-		GregorianCalendar calendar = (GregorianCalendar) GregorianCalendar.getInstance(new Locale("en_GB"));
-		calendar.setTime(date);
-		AzimuthZenithAngle azimuthZenithAngle = PSA.calculateSolarPosition(calendar, 45.0, 0.0);
-		Log.i("FC TASK", azimuthZenithAngle.toString() + " " + calendar.toString() + " " + date.toString());
+		Log.i("FC TASK", azimuthZenithAngle.toString());
 		float f1 = (float) Math.tan(Math.toRadians(azimuthZenithAngle.getZenithAngle()));
 		float fx = (float) Math.sin(Math.toRadians(azimuthZenithAngle.getAzimuth() - 180));
 		float fy = (float) Math.cos(Math.toRadians(azimuthZenithAngle.getAzimuth() - 180));
@@ -101,6 +109,8 @@ public class Task implements CameraSubject {
 
 	private void generateT1Task() {
 		desc = "Simple closed circuit 50km task with 2 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase at 1500m.";
+		latitude = 40;
+		time_of_day = "13";
 		CLOUDBASE = 3;
 		NODE_SPACING = CLOUDBASE * 12f;
 		HEXAGON = CLOUDBASE * 7;
@@ -138,6 +148,8 @@ public class Task implements CameraSubject {
 	}
 
 	private void generateT5Task() {
+		latitude = 46;
+		time_of_day = "14";
 		desc = "Massive 150km task with lots of clouds and 6TP.\nWind: weak SW.\nCloudbase at 1500m.";
 		CLOUDBASE = 3;
 		NODE_SPACING = CLOUDBASE * 12f;
@@ -174,6 +186,8 @@ public class Task implements CameraSubject {
 	}
 
 	private void generateT6Task() {
+		latitude = 40;
+		time_of_day = "12";
 		desc = "Free distance task.\nWind: weak W.\nCloudbase at 1500m.";
 		type = DISTANCE;
 		CLOUDBASE = 3;
@@ -211,8 +225,10 @@ public class Task implements CameraSubject {
 	}
 
 	private void generateT7Task() {
+		latitude = 45;
+		time_of_day = "15";
 		type = TIME_PRECISE;
-		desc = "Closed circuit 160km task with 3 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase varies around 1200m.";
+		desc = "Difficult low-cloudbase closed circuit 160km task with 3 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase varies around 1200m.";
 		CLOUDBASE = 2.4f;
 		NODE_SPACING = 4 * 12f;
 		HEXAGON = 4 * 7;
@@ -220,8 +236,8 @@ public class Task implements CameraSubject {
 		float x = 4 * 10;
 		// x /= 5; // tmp - small course for testing gliding around the turn
 		// points
-		float[] xs = { x/2, x/2, 2.5f * x, 2.5f * x, x/2 };
-		float[] ys = { x/2, 2.5f * x, 2.5f * x, x/2, x/2 };
+		float[] xs = { x / 2, x / 2, 2.5f * x, 2.5f * x, x / 2 };
+		float[] ys = { x / 2, 2.5f * x, 2.5f * x, x / 2, x / 2 };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// wind

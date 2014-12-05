@@ -80,14 +80,14 @@ public class Clock implements Runnable {
 		ticker.start();
 		blockStart = currentTick = System.currentTimeMillis();
 		modelTime = getTimeNow();
-		for (int i = 0; i < observers.size(); i++) {
-			ClockObserver observer = (ClockObserver) observers.elementAt(i);
-			if (observer instanceof Trigger) {
-				Trigger t = ((Trigger) observer);
-				if (t.mode == Trigger.SLEEPING)
-					t.wakeUp(modelTime);
-			}
-		}
+//		for (int i = 0; i < observers.size(); i++) {
+//			ClockObserver observer = (ClockObserver) observers.elementAt(i);
+//			if (observer instanceof Trigger) {
+//				Trigger t = ((Trigger) observer);
+//				if (t.mode == Trigger.SLEEPING)
+//					t.wakeUp(modelTime);
+//			}
+//		}
 	}
 
 	public void stop() {
@@ -96,12 +96,12 @@ public class Clock implements Runnable {
 		}
 		ticker = null;
 		modelTime = getTimeNow();
-		for (int i = 0; i < observers.size(); i++) {
-			ClockObserver observer = (ClockObserver) observers.elementAt(i);
-			if (observer instanceof Trigger) {
-				((Trigger) observer).sleep(modelTime);
-			}
-		}
+//		for (int i = 0; i < observers.size(); i++) {
+//			ClockObserver observer = (ClockObserver) observers.elementAt(i);
+//			if (observer instanceof Trigger) {
+//				((Trigger) observer).sleep(modelTime);
+//			}
+//		}
 	}
 	float t, _t = 0, dt;
 	public void oneFrame(ModelViewRenderer renderer) {

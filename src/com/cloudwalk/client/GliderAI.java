@@ -98,7 +98,7 @@ public class GliderAI extends GliderTask {
 		}
 
 		// am i thermalling under a decaying cloud ?
-		if (moveManager.cloud != null && moveManager.cloud.lifeCycle.isDecaying()) {
+		if (moveManager.cloud != null && moveManager.cloud.lifeCycle.isDecaying() && moveManager.cloud.getLift(p) < Cloud.LIFT_UNIT) {
 			if (Glider.filmID == myID) {
 				modelViewer.cameraMan.setSubject(this, true);
 			}

@@ -134,7 +134,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						v.setVisibility(View.GONE);
 				}
 				((TextView) findViewById(R.id.info)).setText(Html.fromHtml(surfaceView.getInfoText()));
-				((SeekBar) findViewById(R.id.vario)).setProgress((int) (50 + glider.getActualSink() / 0.37f * 50));
+				((SeekBar) findViewById(R.id.vario)).setProgress((int) (50 +  ((XCModelViewer) modelViewerThin).xcModel.gliderManager.theGlider().getActualSink() / 0.37f * 50));
 				if (flying == true && prefs.getBoolean("ambient_sound", true)) {
 					if (currentSpeed != glider.getSpeed()) {
 						soundPool.setRate(streamIDs[1], (float) Math.sqrt(glider.getSpeed() / 1.7));

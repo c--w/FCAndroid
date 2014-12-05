@@ -127,7 +127,7 @@
 
         <SeekBar
             android:id="@+id/vario"
-            android:thumb="@drawable/green_dot"
+            android:thumb="@drawable/dot"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

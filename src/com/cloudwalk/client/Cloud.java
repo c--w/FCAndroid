@@ -661,8 +661,8 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 				r0 = r1;
 			} else {
 				fn = 2 * (fn - 0.5f);
-				if (fn < 0.5f)
-					fn = 0.5f;
+				if (fn < 0.3f)
+					fn = 0.3f;
 				r0 = r1 * fn;
 			}
 		}

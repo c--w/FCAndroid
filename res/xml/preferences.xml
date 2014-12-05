@@ -39,6 +39,11 @@
             android:title="View angle" />
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="real_shadows"
+            android:summary="Real sun shadows are not directly beneath for usual mid-latitudes. Shadows depend on latitude and local date/time of day which is now set for each task separately."
+            android:title="Real shadows" />
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="fancy"
             android:summary="Paint ground and sky. (Disable if you have problems starting the race)"
             android:title="Fancy" />
