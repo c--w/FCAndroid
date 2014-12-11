@@ -31,7 +31,7 @@
         android:key="uisettings"
         android:title="UI settings" >
         <ListPreference
-            android:defaultValue="3"
+            android:defaultValue="10"
             android:entries="@array/view_angle_label"
             android:entryValues="@array/view_angle"
             android:key="view_angle"
@@ -43,7 +43,7 @@
             android:summary="Real sun shadows are not directly beneath for usual mid-latitudes. Shadows depend on latitude and local date/time of day which is now set for each task separately."
             android:title="Real shadows" />
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="fancy"
             android:summary="Paint ground and sky. (Disable if you have problems starting the race)"
             android:title="Fancy" />

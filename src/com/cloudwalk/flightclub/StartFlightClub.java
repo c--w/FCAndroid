@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.Arrays;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -14,6 +15,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ConfigurationInfo;
+import android.hardware.SensorEvent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
@@ -43,6 +45,7 @@ import com.cloudwalk.client.GliderUser;
 import com.cloudwalk.client.Task;
 import com.cloudwalk.client.XCCameraMan;
 import com.cloudwalk.client.XCModelViewer;
+import com.cloudwalk.flightclub.GravityListener.OnGravityListener;
 import com.cloudwalk.framework3d.ClockObserver;
 import com.cloudwalk.framework3d.ModelView;
 import com.cloudwalk.framework3d.ModelViewRenderer;
@@ -50,7 +53,7 @@ import com.cloudwalk.server.XCGameServer;
 import com.cloudwalk.startup.ModelEnv;
 import com.cloudwalk.startup.ModelViewerThin;
 
-public class StartFlightClub extends Activity implements ModelEnv, OnTouchListener, ClockObserver {
+public class StartFlightClub extends Activity implements ModelEnv, OnTouchListener, OnGravityListener, ClockObserver {
 
 	String task;
 	int pilotType;
@@ -67,6 +70,9 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	float currentSpeed;
 	ModelView surfaceView;
 	GestureDetector detector;
+	GravityListener mGravity;
+	int control_type;
+
 	boolean finished = false, landed = false, flying = false;
 
 	XCGameServer server;
@@ -203,6 +209,9 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		landed = false;
 		finished = false;
 		wasPaused = false;
+		if(control_type == 1) 
+			mGravity.resume();
+		
 	}
 
 	private void startGameServer(int port) {
@@ -227,6 +236,12 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		pilotType = 0; // 0 = pg, 1 = hg, 2 = sp, 3 = ballon
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		control_type = Integer.parseInt(prefs.getString("control_type", "0"));
+		if(control_type == 1) {
+			Log.i("FC", "Start gravity listener");
+			mGravity = new GravityListener(this);
+			mGravity.setOnEventListener(this);
+		}
 		Intent intent = getIntent();
 		pilotType = intent.getIntExtra("glider", 0);
 		task = intent.getStringExtra("task");
@@ -504,6 +519,8 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	protected void onPause() {
 		super.onPause();
 		soundPool.autoPause();
+		if(control_type == 1) 
+			mGravity.pause();
 		if (modelViewerThin != null && ((XCModelViewer) modelViewerThin).clock != null) {
 			((XCModelViewer) modelViewerThin).clock.paused = true;
 			try {
@@ -517,6 +534,8 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	@Override
 	protected void onResume() {
 		super.onResume();
+		if(control_type == 1) 
+			mGravity.resume();
 		soundPool.autoResume();
 		if (modelViewerThin != null && ((XCModelViewer) modelViewerThin).clock != null)
 			((XCModelViewer) modelViewerThin).clock.paused = false;
@@ -567,6 +586,15 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		((ModelView) findViewById(R.id.xcmodelview)).handleTouch(v, event);
 		detector.onTouchEvent(event);
 		return true;
+	}
+
+	@Override
+	public void onEvent(SensorEvent event) {
+		try {
+			((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.handleGravity(event);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 	}
 
 	@Override
@@ -668,5 +696,6 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	public SharedPreferences getPrefs() {
 		return prefs;
 	}
+
 
 }

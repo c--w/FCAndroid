@@ -9,9 +9,12 @@
  */
 package com.cloudwalk.client;
 
+import java.util.Arrays;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.hardware.SensorEvent;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -36,7 +39,7 @@ public class GliderUser extends GliderTask {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences((Context) xcModelViewer.modelEnv);
 		this.color = prefs.getInt("glider_color", Color.BLUE);
 		this.color2 = prefs.getInt("pilot_color", Color.YELLOW);
-		this.obj.setColor(0 ,this.color);
+		this.obj.setColor(0, this.color);
 		this.obj.setColor(1, this.color2);
 	}
 
@@ -171,6 +174,35 @@ public class GliderUser extends GliderTask {
 					// modelViewer.cameraMan.setSubject(this, false);
 				}
 			}
+		}
+		return;
+	}
+
+	public void handleGravity(SensorEvent event) {
+		if (landed) {
+			return;
+		}
+		float x = event.values[0];
+		float y = event.values[1];
+		if (Math.abs(y) < 2) {
+			setMove(0);
+		} else if (y < -2) {
+			setMove(-1);
+			if (((XCCameraMan) modelViewer.cameraMan).mode != XCCameraMan.USER)
+				modelViewer.cameraMan.setSubject(this, true);
+		} else if (y > 2) {
+			setMove(1);
+			if (((XCCameraMan) modelViewer.cameraMan).mode != XCCameraMan.USER)
+				modelViewer.cameraMan.setSubject(this, true);
+		}
+		if (x < 6) {
+			setPolar(polar.size() - 1);
+		} else if (x < 7.2f) {
+			setPolar(polar.size() - 2);
+		} else if (x < 8.4) {
+			setPolar(polar.size() - 3);
+		} else {
+			setPolar(polar.size() - 4);
 		}
 		return;
 	}

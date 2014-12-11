@@ -107,7 +107,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	public int width;
 	public int height;
 	public int viewAngle;
-	boolean fancy = true;
+	boolean fancy = false;
 	int sky_color = Color.WHITE;
 	int ground_color = Color.WHITE;
 	SharedPreferences prefs;
@@ -121,7 +121,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	public ModelViewRenderer(Context c, ErrorHandler errorHandler) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(c);
 		viewAngle = Integer.parseInt(prefs.getString("view_angle", "10"));
-		fancy = prefs.getBoolean("fancy", true);
+		fancy = prefs.getBoolean("fancy", false);
 		sky_color = prefs.getInt("sky_color", Color.WHITE);
 		ground_color = prefs.getInt("ground_color", Color.WHITE);
 		this.errorHandler = errorHandler;

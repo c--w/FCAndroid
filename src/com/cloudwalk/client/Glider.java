@@ -162,8 +162,12 @@ public class Glider extends MovingBody {
 	 * </pre>
 	 */
 	private void setPolar() {
+		if (iP >= polar.size())
+			iP = polar.size() - 1;
+		if (iP < 0)
+			iP = 0;
 		if (polar.get(iP)[SINK] >= polar.get(iP)[SPEED] || polar.get(iP)[SINK] <= -polar.get(iP)[SPEED]) {
-			Log.i("FC", "Invalid point on polar curve ! Sink must be less than speed.");
+			Log.i("FC", "Invalid point on polar curve ! Sink must be less than speed. " + iP);
 			return;
 		}
 		speed = polar.get(iP)[SPEED];
