@@ -108,7 +108,7 @@ public class Obj3d implements CameraSubject {
 			Triangle fromTriangle = from.triangles.get(i);
 			Triangle triangle = new Triangle();
 			System.arraycopy(fromTriangle.points, 0, triangle.points, 0, fromTriangle.points.length);
-			triangle.updateVertices(true, true);
+			triangle.updateVertices(true);
 			triangle.shadow = fromTriangle.shadow;
 			triangle.part = fromTriangle.part;
 			addTriangle(triangle, false);
@@ -242,9 +242,10 @@ public class Obj3d implements CameraSubject {
 		if (polywires.size() == 0 && !visible())
 			return;
 		try {
-			for (int i = 0; i < triangles.size(); i++) {
-				triangles.get(i).drawTriangle(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
-			}
+			drawTriangles(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
+			// for (int i = 0; i < triangles.size(); i++) {
+			// triangles.get(i).drawTriangle(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
+			// }
 
 			for (int i = 0; i < polywires.size(); i++) {
 				polywires.get(i).drawLines(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
@@ -284,15 +285,17 @@ public class Obj3d implements CameraSubject {
 			ps[i + 1] = ps[i + 1] + dy;
 			ps[i + 2] = ps[i + 2] + dz;
 		}
+		if (!visible())
+			return;
 		// reset bounding box
 		this.box.translateBy(dx, dy, dz);
-		updateVerticesData(dirty_normals, true, false);
+		updateVerticesData(true, false);
 	}
 
-	public void updateVerticesData(boolean dirty_normals, boolean fortriangle, boolean dirty_colors) {
+	public void updateVerticesData(boolean fortriangle, boolean dirty_colors) {
 		if (fortriangle)
 			for (Triangle triangle : triangles) {
-				triangle.updateVertices(dirty_normals, dirty_colors);
+				triangle.updateVertices(dirty_colors);
 			}
 		else
 			for (Polywire polywire : polywires) {
@@ -308,7 +311,7 @@ public class Obj3d implements CameraSubject {
 		}
 		// reset bounding box
 		this.box.scaleBy(s);
-		updateVerticesData(false, true, false);
+		updateVerticesData(true, false);
 	}
 
 	/** Gives all triangles the specifed color. */
@@ -318,7 +321,7 @@ public class Obj3d implements CameraSubject {
 				for (int i = 0; i < 3; i++)
 					colors[triangle.points[i] / 3] = c;
 		}
-		updateVerticesData(false, true, true);
+		updateVerticesData(true, true);
 	}
 
 	/**
@@ -405,11 +408,11 @@ public class Obj3d implements CameraSubject {
 		System.arraycopy(triangle.points, 0, shadow.points, 0, triangle.points.length);
 		if (Tools3d.dot(new float[] { ps[triangle.points[0]] - ps[triangle.points[1]], ps[triangle.points[0] + 1] - ps[triangle.points[1] + 1],
 				ps[triangle.points[0] + 2] - ps[triangle.points[1] + 2] }, new float[] { ps[triangle.points[0]] - ps[triangle.points[2]],
-				ps[triangle.points[0] + 1] - ps[triangle.points[2] + 1], ps[triangle.points[0] + 2] - ps[triangle.points[2] + 2] }) < 0) {
+				ps[triangle.points[0] + 1] - ps[triangle.points[2] + 1], ps[triangle.points[0] + 2] - ps[triangle.points[2] + 2] }) > 0) {
 			shadow.points[0] = triangle.points[2];
 			shadow.points[2] = triangle.points[0];
 		}
-		shadow.updateVertices(true, true);
+		shadow.updateVertices(true);
 		triangles.add(shadow);
 		return;
 	}
@@ -604,6 +607,40 @@ public class Obj3d implements CameraSubject {
 	 * both sides.
 	 */
 
+	private FloatBuffer verticesFB = null;
+	private FloatBuffer colorsFB = null;
+	private FloatBuffer normalsFB = null;
+
+	/** How many bytes per float. */
+	private final int mBytesPerFloat = 4;
+
+	/** How many elements per vertex. */
+	private final int mStrideBytes = 3 * mBytesPerFloat;
+
+	/** Offset of the position data. */
+	private final int mPositionOffset = 0;
+
+	/** Size of the position data in elements. */
+	private final int mPositionDataSize = 3;
+
+	/** Offset of the normal data. */
+	private final int mNormalOffset = 0;
+
+	/** Size of the normal data in elements. */
+	private final int mNormalDataSize = 3;
+
+	/** How many elements per vertex. */
+	private final int mStrideNormalBytes = 3 * mBytesPerFloat;
+
+	/** Offset of the color data. */
+	private final int mColorOffset = 0;
+
+	/** Size of the color data in elements. */
+	private final int mColorDataSize = 4;
+
+	/** How many elements per vertex. */
+	private final int mStrideColorBytes = 4 * mBytesPerFloat;
+
 	class Triangle {
 		private FloatBuffer verticesFB = null;
 		private FloatBuffer colorsFB = null;
@@ -673,12 +710,9 @@ public class Obj3d implements CameraSubject {
 			colorsData[next * 4 + 2] = Color.blue(c) / 255f;
 			colorsData[next * 4 + 3] = Color.alpha(c) / 255f;
 			next++;
-			if (next == 3) {
-				fillVerticesData(true, true);
-			}
 		}
 
-		public void updateVertices(boolean dirty_normals, boolean dirty_colors) {
+		public void updateVertices(boolean dirty_colors) {
 			int i = 0;
 			for (int next = 0; next < 3; next++) {
 				i = points[next];
@@ -702,42 +736,6 @@ public class Obj3d implements CameraSubject {
 				}
 
 			}
-			fillVerticesData(dirty_normals, dirty_colors);
-		}
-
-		public void fillVerticesData(boolean dirty_normals, boolean dirty_colors) {
-			// Log.i("FC", Arrays.toString(verticesData));
-			if (verticesFB == null)
-				verticesFB = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-			else
-				verticesFB.position(0);
-			verticesFB.put(verticesData).position(0);
-			if (dirty_normals) {
-				float va0 = verticesData[3] - verticesData[0];
-				float va1 = verticesData[4] - verticesData[1];
-				float va2 = verticesData[5] - verticesData[2];
-				float vb0 = verticesData[6] - verticesData[0];
-				float vb1 = verticesData[7] - verticesData[1];
-				float vb2 = verticesData[8] - verticesData[2];
-				float n0 = va1 * vb2 - va2 * vb1;
-				float n1 = va2 * vb0 - va0 * vb2;
-				float n2 = va0 * vb1 - va1 * vb0;
-				float[] normal = new float[] { n0, n1, n2, n0, n1, n2, n0, n1, n2 };
-				if (normalsFB == null)
-					normalsFB = ByteBuffer.allocateDirect(normal.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-				else
-					normalsFB.position(0);
-				normalsFB.put(normal);
-			}
-			if (dirty_colors) {
-				if (colorsFB == null)
-					colorsFB = ByteBuffer.allocateDirect(colorsData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-				else
-					colorsFB.position(0);
-				colorsFB.put(colorsData);
-
-			}
-			// Log.w("OBJ3D", Arrays.toString(n));
 		}
 
 		public void logVerticesData() {
@@ -773,6 +771,69 @@ public class Obj3d implements CameraSubject {
 			return "points: " + Arrays.toString(points);
 		}
 
+	}
+
+	float[] normal = new float[9];
+
+	public void fillVerticesData() {
+		// Log.i("FC", Arrays.toString(verticesData));
+		if (verticesFB == null)
+			verticesFB = ByteBuffer.allocateDirect(9 * triangles.size() * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		else
+			verticesFB.position(0);
+		if (colorsFB == null)
+			colorsFB = ByteBuffer.allocateDirect(12 * triangles.size() * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		else
+			colorsFB.position(0);
+		if (normalsFB == null)
+			normalsFB = ByteBuffer.allocateDirect(normal.length * triangles.size() * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		else
+			normalsFB.position(0);
+		for (Triangle triangle : triangles) {
+			verticesFB.put(triangle.verticesData);
+			if (triangle.shadow) {
+				normal[0] = 0;
+				normal[1] = -1;
+				normal[2] = 0;
+			} else {
+				float va0 = triangle.verticesData[3] - triangle.verticesData[0];
+				float va1 = triangle.verticesData[4] - triangle.verticesData[1];
+				float va2 = triangle.verticesData[5] - triangle.verticesData[2];
+				float vb0 = triangle.verticesData[6] - triangle.verticesData[0];
+				float vb1 = triangle.verticesData[7] - triangle.verticesData[1];
+				float vb2 = triangle.verticesData[8] - triangle.verticesData[2];
+				normal[0] = normal[3] = normal[6] = va1 * vb2 - va2 * vb1;
+				normal[1] = normal[4] = normal[7] = va2 * vb0 - va0 * vb2;
+				normal[2] = normal[5] = normal[8] = va0 * vb1 - va1 * vb0;
+			}
+			normalsFB.put(normal);
+			colorsFB.put(triangle.colorsData);
+
+		}
+		// Log.w("OBJ3D", Arrays.toString(n));
+	}
+
+	void drawTriangles(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
+		fillVerticesData();
+		// Pass in the position information
+		verticesFB.position(mPositionOffset);
+		GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, verticesFB);
+
+		GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+		// Pass in the color information
+		colorsFB.position(mColorOffset);
+		GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideColorBytes, colorsFB);
+
+		GLES20.glEnableVertexAttribArray(mColorHandle);
+
+		// Pass in the normal information
+		normalsFB.position(mNormalOffset);
+		GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideNormalBytes, normalsFB);
+
+		GLES20.glEnableVertexAttribArray(mNormalHandle);
+
+		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3 * triangles.size());
 	}
 
 	/**
@@ -862,14 +923,19 @@ public class Obj3d implements CameraSubject {
 		}
 
 		public void fillVerticesData() {
-			vertices = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-			vertices.put(verticesData).position(0);
-			float[] normal = new float[] { 0, 1, 0 };
-			normals = ByteBuffer.allocateDirect(normal.length * n * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-			for (int next = 0; next < n; next++) {
-				normals.put(normal);
-			}
-			normals.position(0);
+			if (vertices == null)
+				vertices = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			else
+				vertices.position(0);
+			vertices.put(verticesData);
+			if (normals == null) {
+				float[] normal = new float[] { 0, 1, 0 };
+				normals = ByteBuffer.allocateDirect(normal.length * n * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+				for (int next = 0; next < n; next++) {
+					normals.put(normal);
+				}
+			} else
+				normals.position(0);
 
 		}
 

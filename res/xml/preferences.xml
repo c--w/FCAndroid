@@ -93,6 +93,13 @@
             android:key="show_task_info"
             android:title="Show task info" >
         </CheckBoxPreference>
+        <ListPreference
+            android:defaultValue="25"
+            android:entries="@array/max_fps"
+            android:entryValues="@array/max_fps"
+            android:key="max_fps"
+            android:summary="Lower this to avoid high CPU usage and overheating"
+            android:title="Max FPS" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="fps"

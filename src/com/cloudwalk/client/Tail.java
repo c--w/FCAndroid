@@ -144,6 +144,6 @@ class Tail extends Obj3d {
 			this.setPoint(vertMap[i * 2], tail[j][0], tail[j][1], tail[j][2]);
 			this.setPoint(vertMap[i * 2 + 1], tail[j + 1][0], tail[j + 1][1], tail[j + 1][2]);
 		}
-		updateVerticesData(false, false, false);
+		updateVerticesData(false, false);
 	}
 }

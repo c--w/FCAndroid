@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -19,7 +22,6 @@ import android.util.Log;
 
 import com.cloudwalk.client.Task;
 import com.cloudwalk.client.XCModelViewer;
-import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.ErrorHandler.ErrorType;
 
 /**
@@ -339,7 +341,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		// Set the OpenGL viewport to the same size as the surface.
 		GLES20.glViewport(0, 0, width, height);
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-		GLES20.glDisable(GLES20.GL_CULL_FACE);
+		GLES20.glEnable(GLES20.GL_CULL_FACE);
 		GLES20.glHint(GL10.GL_POLYGON_SMOOTH_HINT, GL10.GL_NICEST);
 //		GLES20.glEnable(GL10.GL_POLYGON_OFFSET_FILL);
 //		GLES20.glPolygonOffset(-0.1f,0);
@@ -435,9 +437,9 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 						final float yPosition = MIN_POSITION + (yRatio * POSITION_RANGE);
 
 						// Position
-						heightMapVertexData[offset++] = xPosition;
-						heightMapVertexData[offset++] = -0.1f;
 						heightMapVertexData[offset++] = yPosition;
+						heightMapVertexData[offset++] = -0.1f;
+						heightMapVertexData[offset++] = xPosition;
 
 						heightMapVertexData[offset++] = 0f;
 						heightMapVertexData[offset++] = 1f;
@@ -456,7 +458,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 				final int numDegensRequired = 2 * (numStripsRequired - 1);
 				final int verticesPerStrip = 2 * xLength;
 
-				final short[] heightMapIndexData = new short[(verticesPerStrip * numStripsRequired) + numDegensRequired];
+				short[] heightMapIndexData = new short[(verticesPerStrip * numStripsRequired) + numDegensRequired];
 
 				offset = 0;
 
@@ -477,7 +479,6 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 						heightMapIndexData[offset++] = (short) (((y + 1) * yLength) + (xLength - 1));
 					}
 				}
-
 				indexCount = heightMapIndexData.length;
 
 				final FloatBuffer heightMapVertexDataBuffer = ByteBuffer.allocateDirect(heightMapVertexData.length * BYTES_PER_FLOAT)

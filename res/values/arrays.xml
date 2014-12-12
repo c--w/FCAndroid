@@ -8,6 +8,16 @@
         <item>5</item>
     </string-array>
 
+    <string-array name="max_fps">
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>40</item>
+        <item>50</item>
+        <item>60</item>
+    </string-array>
+    
     <string-array name="view_angle_label">
         <item>Wide</item>
         <item>Normal</item>

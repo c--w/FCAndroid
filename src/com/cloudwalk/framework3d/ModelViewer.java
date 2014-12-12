@@ -73,6 +73,7 @@ public class ModelViewer implements ClockObserver, ModelViewerThin {
 	 */
 	protected void createClock() {
 		clock = new Clock(0);
+		Clock.MAX_RATE = Integer.parseInt(modelEnv.getPrefs().getString("max_fps", "25"));
 		clock.addObserver(this);
 		if (pendingStart)
 			start();

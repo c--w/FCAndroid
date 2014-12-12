@@ -106,7 +106,8 @@ public class Glider extends MovingBody {
 		this.v[0] = v[0];
 		this.v[1] = v[1];
 		setPolar();
-		this.tail.reset();
+		if (this.tail != null)
+			this.tail.reset();
 		nextTurn = 0;
 		timeFlying = 0;
 		distanceFlown = 0;
@@ -139,7 +140,8 @@ public class Glider extends MovingBody {
 			this.p[2] = 0; // on the ground
 			this.v[0] = v[0];
 			this.v[1] = v[1];
-			this.tail.reset();
+			if (this.tail != null)
+				this.tail.reset();
 			hitTheSpuds2();
 		}
 	}

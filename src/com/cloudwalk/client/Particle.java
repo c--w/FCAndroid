@@ -93,8 +93,8 @@ class Particle implements ClockObserver, CameraSubject {
 	}
 
 	protected void createTail() {
-		tail = new Tail(modelViewer, this, Color.DKGRAY);
-		tail.init();
+//		tail = new Tail(modelViewer, this, Color.DKGRAY);
+//		tail.init();
 	}
 
 	/**

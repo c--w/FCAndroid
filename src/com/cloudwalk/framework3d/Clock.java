@@ -43,7 +43,7 @@ public class Clock implements Runnable {
 									// factor of 10
 
 	private static final int INIT_RATE = 20;
-	private static final int MAX_RATE = 60;
+	public static int MAX_RATE = 30;
 	private static final int BLOCK = 2; // how often do we review the frame rate
 										// ?
 	private static final float MODEL_TIME_PER_SECOND = 1.0f; // units of model

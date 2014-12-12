@@ -225,10 +225,10 @@ public class Obj3dDir extends Obj3d {
 	public void transform() {
 		if (dirtyR) {
 			updateRotated();
-			updateVerticesData(true, true, false);
+			updateVerticesData(true, false);
 		} else if (dirtyT) {
 			updateTranslated();
-			updateVerticesData(false, true, false);
+			updateVerticesData(true, false);
 		}
 	}
 }
