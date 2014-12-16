@@ -100,7 +100,7 @@ public class XCCameraMan extends CameraMan {
 			Glider.filmID = -1;
 			setDepthOfVision(2000f);
 		} else
-			setDepthOfVision(100f);
+			setDepthOfVision(DEFAULT_DOF);
 
 		this.stayThere = (inMode == STAY_THERE);
 		mode = inMode;

@@ -17,6 +17,7 @@ import java.io.StreamTokenizer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +28,6 @@ import android.opengl.GLES20;
 import android.util.Log;
 
 import com.cloudwalk.client.Task;
-import com.cloudwalk.client.XCModelViewer;
 
 /**
  * This class implements a 3d object made up of triangles. We have a list of points (x, y, z) in model space and a second list of the those points after they
@@ -64,6 +64,7 @@ public class Obj3d implements CameraSubject {
 
 	// I *like* gray
 	public static final int COLOR_DEFAULT = Color.LTGRAY;
+	boolean dirty_object = true;
 
 	/**
 	 * Creates an Obj3d that may or may not be registed with the 3d object manager. Only registered objects are drawn on the screen. This constructor is private
@@ -642,40 +643,6 @@ public class Obj3d implements CameraSubject {
 	private final int mStrideColorBytes = 4 * mBytesPerFloat;
 
 	class Triangle {
-		private FloatBuffer verticesFB = null;
-		private FloatBuffer colorsFB = null;
-		private FloatBuffer normalsFB = null;
-
-		/** How many bytes per float. */
-		private final int mBytesPerFloat = 4;
-
-		/** How many elements per vertex. */
-		private final int mStrideBytes = 3 * mBytesPerFloat;
-
-		/** Offset of the position data. */
-		private final int mPositionOffset = 0;
-
-		/** Size of the position data in elements. */
-		private final int mPositionDataSize = 3;
-
-		/** Offset of the normal data. */
-		private final int mNormalOffset = 0;
-
-		/** Size of the normal data in elements. */
-		private final int mNormalDataSize = 3;
-
-		/** How many elements per vertex. */
-		private final int mStrideNormalBytes = 3 * mBytesPerFloat;
-
-		/** Offset of the color data. */
-		private final int mColorOffset = 0;
-
-		/** Size of the color data in elements. */
-		private final int mColorDataSize = 4;
-
-		/** How many elements per vertex. */
-		private final int mStrideColorBytes = 4 * mBytesPerFloat;
-
 		float[] verticesData = null;
 		float[] colorsData = null;
 
@@ -710,6 +677,7 @@ public class Obj3d implements CameraSubject {
 			colorsData[next * 4 + 2] = Color.blue(c) / 255f;
 			colorsData[next * 4 + 3] = Color.alpha(c) / 255f;
 			next++;
+			dirty_object = true;
 		}
 
 		public void updateVertices(boolean dirty_colors) {
@@ -736,36 +704,13 @@ public class Obj3d implements CameraSubject {
 				}
 
 			}
+			dirty_object = true;
 		}
 
 		public void logVerticesData() {
 			Log.i("FC OBJ3D", Arrays.toString(verticesData));
 		}
 
-		/**
-		 * Draws this triangle on the screen.
-		 */
-		void drawTriangle(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
-			// Pass in the position information
-			verticesFB.position(mPositionOffset);
-			GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, verticesFB);
-
-			GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-			// Pass in the color information
-			colorsFB.position(mColorOffset);
-			GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideColorBytes, colorsFB);
-
-			GLES20.glEnableVertexAttribArray(mColorHandle);
-
-			// Pass in the normal information
-			normalsFB.position(mNormalOffset);
-			GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideNormalBytes, normalsFB);
-
-			GLES20.glEnableVertexAttribArray(mNormalHandle);
-
-			GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
-		}
 
 		public String toString() {
 			return "points: " + Arrays.toString(points);
@@ -810,11 +755,13 @@ public class Obj3d implements CameraSubject {
 			colorsFB.put(triangle.colorsData);
 
 		}
+		dirty_object = false;
 		// Log.w("OBJ3D", Arrays.toString(n));
 	}
 
 	void drawTriangles(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
-		fillVerticesData();
+		if(dirty_object)
+			fillVerticesData();
 		// Pass in the position information
 		verticesFB.position(mPositionOffset);
 		GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, verticesFB);
@@ -840,14 +787,19 @@ public class Obj3d implements CameraSubject {
 	 * This inner class represents a wire. The wire is made from N points (or verticesFB).
 	 */
 	class Polywire {
-		private FloatBuffer vertices = null;
-		private FloatBuffer normals = null;
+		private FloatBuffer verticesFB = null;
+		private FloatBuffer colorsFB = null;
+		private FloatBuffer normalsFB = null;
+		private ShortBuffer lineIndicesSB = null;
 
 		/** How many bytes per float. */
 		private final int mBytesPerFloat = 4;
 
 		/** How many elements per vertex. */
-		private final int mStrideBytes = 7 * mBytesPerFloat;
+		private final int mStrideBytes = 3 * mBytesPerFloat;
+
+		/** How many elements per vertex. */
+		private final int mColorStrideBytes = 4 * mBytesPerFloat;
 
 		/** Offset of the position data. */
 		private final int mPositionOffset = 0;
@@ -856,7 +808,7 @@ public class Obj3d implements CameraSubject {
 		private final int mPositionDataSize = 3;
 
 		/** Offset of the color data. */
-		private final int mColorOffset = 3;
+		private final int mColorOffset = 0;
 
 		/** Size of the color data in elements. */
 		private final int mColorDataSize = 4;
@@ -871,6 +823,7 @@ public class Obj3d implements CameraSubject {
 		private final int mStrideNormalBytes = 3 * mBytesPerFloat;
 
 		float[] verticesData = null;
+		float[] colorsData = null;
 
 		int n; // number of points eg. 4 for a square
 		int[] points; // list of indexes for the points that make up this
@@ -886,20 +839,21 @@ public class Obj3d implements CameraSubject {
 		public Polywire(int n, int color, int thickness) {
 			this.n = n;
 			points = new int[n];
-			verticesData = new float[n * 7];
+			verticesData = new float[n * 3];
+			colorsData = new float[n * 4];
 			this.thickness = thickness;
 			c = color;
 		}
 
 		public void addPoint(int i) {
 			points[next] = i;
-			verticesData[next * 7 + 0] = -ps[i + 1];
-			verticesData[next * 7 + 1] = ps[i + 2];
-			verticesData[next * 7 + 2] = -ps[i + 0];
-			verticesData[next * 7 + 3] = Color.red(colors[i / 3]) / 255f;
-			verticesData[next * 7 + 4] = Color.green(colors[i / 3]) / 255f;
-			verticesData[next * 7 + 5] = Color.blue(colors[i / 3]) / 255f;
-			verticesData[next * 7 + 6] = 1f;
+			verticesData[next * 3 + 0] = -ps[i + 1];
+			verticesData[next * 3 + 1] = ps[i + 2];
+			verticesData[next * 3 + 2] = -ps[i + 0];
+			colorsData[next * 4 + 0] = Color.red(c) / 255f;
+			colorsData[next * 4 + 1] = Color.green(c) / 255f;
+			colorsData[next * 4 + 2] = Color.blue(c) / 255f;
+			colorsData[next * 4 + 3] = 1f;
 			next++;
 			if (next == n) {
 				fillVerticesData();
@@ -910,32 +864,46 @@ public class Obj3d implements CameraSubject {
 			int i = 0;
 			for (int next = 0; next < n; next++) {
 				i = points[next];
-				verticesData[next * 7 + 0] = -ps[i + 1];
-				verticesData[next * 7 + 1] = ps[i + 2];
-				verticesData[next * 7 + 2] = -ps[i + 0];
-				verticesData[next * 7 + 3] = Color.red(colors[i / 3]) / 255f;
-				verticesData[next * 7 + 4] = Color.green(colors[i / 3]) / 255f;
-				verticesData[next * 7 + 5] = Color.blue(colors[i / 3]) / 255f;
-				verticesData[next * 7 + 6] = 1f;
+				verticesData[next * 3 + 0] = -ps[i + 1];
+				verticesData[next * 3 + 1] = ps[i + 2];
+				verticesData[next * 3 + 2] = -ps[i + 0];
+				colorsData[next * 4 + 0] = Color.red(c) / 255f;
+				colorsData[next * 4 + 1] = Color.green(c) / 255f;
+				colorsData[next * 4 + 2] = Color.blue(c) / 255f;
+				colorsData[next * 4 + 3] = 1f;
 
 			}
 			fillVerticesData();
 		}
 
 		public void fillVerticesData() {
-			if (vertices == null)
-				vertices = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			if (verticesFB == null)
+				verticesFB = ByteBuffer.allocateDirect(verticesData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 			else
-				vertices.position(0);
-			vertices.put(verticesData);
-			if (normals == null) {
+				verticesFB.position(0);
+			verticesFB.put(verticesData);
+			if (colorsFB == null)
+				colorsFB = ByteBuffer.allocateDirect(colorsData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			else
+				colorsFB.position(0);
+			colorsFB.put(colorsData);
+			if (normalsFB == null) {
 				float[] normal = new float[] { 0, 1, 0 };
-				normals = ByteBuffer.allocateDirect(normal.length * n * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+				normalsFB = ByteBuffer.allocateDirect(normal.length * n * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 				for (int next = 0; next < n; next++) {
-					normals.put(normal);
+					normalsFB.put(normal);
 				}
 			} else
-				normals.position(0);
+				normalsFB.position(0);
+			if (lineIndicesSB == null) {
+				short[] indices = new short[n * 2];
+				for (int i = 0; i < n - 1; i++) {
+					indices[i * 2] = (short) i;
+					indices[i * 2 + 1] = (short) (i + 1);
+				}
+				lineIndicesSB = ByteBuffer.allocateDirect(indices.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+				lineIndicesSB.put(indices);
+			}
 
 		}
 
@@ -949,25 +917,27 @@ public class Obj3d implements CameraSubject {
 		 */
 		void drawLines(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
 			// Pass in the position information
-			vertices.position(mPositionOffset);
-			GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
+			verticesFB.position(mPositionOffset);
+			GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, verticesFB);
 
 			GLES20.glEnableVertexAttribArray(mPositionHandle);
 
 			// Pass in the color information
-			vertices.position(mColorOffset);
-			GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideBytes, vertices);
+			colorsFB.position(mColorOffset);
+			GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mColorStrideBytes, colorsFB);
 
 			GLES20.glEnableVertexAttribArray(mColorHandle);
 
 			// Pass in the normal information
-			normals.position(mNormalOffset);
-			GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideNormalBytes, normals);
+			normalsFB.position(mNormalOffset);
+			GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideNormalBytes, normalsFB);
 
 			GLES20.glEnableVertexAttribArray(mNormalHandle);
 
+			lineIndicesSB.position(0);
 			GLES20.glLineWidth(thickness);
-			GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, n);
+			GLES20.glDrawElements(GLES20.GL_LINES, n * 2 - 2, GLES20.GL_UNSIGNED_SHORT, lineIndicesSB);
+			// GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, n);
 		}
 
 	}

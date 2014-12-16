@@ -135,7 +135,7 @@ class Road {
 	}
 
 	private Obj3d obj3d = null;
-	static final int COLOR_ROAD = Color.rgb(255, 175, 175); // PINK
+	static final int COLOR_ROAD = Color.rgb(255, 0, 0); // PINK
 
 	void renderMe() {
 		NodeManager nodeManager = xcModelViewer.xcModel.task.nodeManager;

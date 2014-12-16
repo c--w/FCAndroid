@@ -74,6 +74,8 @@ public class Task implements CameraSubject {
 			generateT6Task();
 		} else if (taskID.equals("default7")) {
 			generateT7Task();
+		} else if (taskID.equals("default8")) {
+			generateT8Task();
 		} else {
 			parseFile(taskID);
 		}
@@ -219,9 +221,6 @@ public class Task implements CameraSubject {
 				{ x_ + HEXAGON, y_ + HEXAGON * .3f + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 }, 60f, 25f);
 
-		// hills = new Hill[1];
-		// Hill hill = new Hill(this, x, 1.5f * x);
-		// hills[0] = hill;
 	}
 
 	private void generateT7Task() {
@@ -255,14 +254,44 @@ public class Task implements CameraSubject {
 		// roads - specify start and end points
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x, 0 }, { x, 2 * x, 0 }, { 2 * x, 4 * x, 0 } };
 		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 2 * x, 4 * x + 0.1f, 0 } };
-		float[][] r3 = new float[][] { { 0, x, 0 }, { x, 1.4f * x, 0 }, { 2 * x, 1.2f * x, 0 }, { 3 * x, 2 * x, 0 }, { 4 * x, 2 * x, 0 } };
-		float[][] r4 = new float[][] { { 0, x, 0 }, { x, 1.4f * x + 0.1f, 0 }, { 2 * x, 1.2f * x + 0.1f, 0 }, { 3 * x, 2 * x + 0.1f, 0 },
-				{ 4 * x, 2 * x + 0.1f, 0 } };
-		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2, r3, r4 });
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2});
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
 		// hills[0] = hill;
+	}
+
+	private void generateT8Task() {
+		latitude = 46;
+		time_of_day = "15";
+		type = TIME_PRECISE;
+		desc = "Out and return 160km task.\nWind: weak SW.\nCloudbase varies around 1800m.";
+		CLOUDBASE = 3.6f;
+		NODE_SPACING = CLOUDBASE * 12f;
+		HEXAGON = CLOUDBASE * 7;
+		float x = CLOUDBASE * 10;
+
+		// turn points
+		float[] xs = { x/2f, x * 5.f, x/2f };
+		float[] ys = { x * 0.35f, x * 0.4f, x * 0.45f };
+		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
+
+		// wind
+		wind_x = 0.05f;
+		wind_y = 0.05f;
+
+		// triggers
+		triggers = new Trigger[6 * 1 * 6];
+		for (int i = 1; i < 7; i++) {
+			for (int j = 0; j < 1; j++) {
+				flatLand(i * HEXAGON, j * HEXAGON, 4, CLOUDBASE);
+			}
+		}
+
+		// roads - specify start and end points
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.6f * x, 0 }, { 4 * x, x * .1f, 0 }, { 8 * x, 0.5f * x, 0 } };
+		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { 0.8f * x, 0.6f * x + 0.1f, 0 }, { 4 * x, x * .1f + 0.1f, 0 }, { 8 * x, 0.5f * x + 0.1f, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
 	}
 
 	private void parseFile(String taskID) throws IOException {

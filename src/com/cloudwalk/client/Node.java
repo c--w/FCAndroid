@@ -126,7 +126,7 @@ class Node implements CameraSubject {
 	private Obj3d obj3d;
 	static final int NUM_POINTS = 16;
 	static final int COLOR = Color.rgb(235, 235, 235);
-	boolean flagNoRender = false;
+	boolean flagNoRender = true;
 
 	/**
 	 * Adds a visual representation of this node to the model. We draw a big circle on the ground showing the coverage of the node.

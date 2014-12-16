@@ -190,23 +190,23 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 				+ "attribute float a_FarDist;       \n" // Per-vertex normal information we will pass in.
 
 				+ "varying vec4 v_Color;          \n" // This will be passed into the fragment shader.
-
+				+ "varying vec3 v_Position;          \n" // This will be passed into the fragment shader.
+				+ "varying float v_FarDist;			\n"
 				+ "void main()                    \n" // The entry point for our vertex shader.
 				+ "{                              \n"
 				// Transform the vertex into eye space.
-				+ "   vec3 position = vec3(u_MVMatrix * a_Position);              \n"
+				+ "   v_Position = vec3(u_MVMatrix * a_Position);              \n"
 				// Transform the normal's orientation into eye space.
 				+ "   vec3 normal = vec3(u_MVMatrix * vec4(normalize(a_Normal), 0.0));     \n"
 				// Get a lighting direction vector from the light to the vertex.
-				+ "   vec3 lightVector = normalize(u_LightPos - position);             \n"
+				+ "   vec3 lightVector = normalize(u_LightPos - v_Position);             \n"
 				// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
 				// pointing in the same direction then it will get max illumination.
-				+ "   float diffuse = max(dot(normal, lightVector), 0.1);              \n" + "   vec4 color = a_Color * pow(diffuse, 0.25);						\n"
+				+ "   float diffuse = max(dot(normal, lightVector), 0.1);              \n" 
+				+ "   v_Color = a_Color * pow(diffuse, 0.25);						\n"
+//				+ "   vec4 color = a_Color;						\n"
 
-				+ "   float distance = abs(position.z);     \n"
-				+ "   float factor = 1.0 - (1.0 / (1.0 + (0.08 * (100.0 / a_FarDist) * distance)));"
-				+ "   vec4 fog_color = vec4(1.0,1.0,1.0,1.0);	     \n" + "   v_Color = mix(color, fog_color, factor);     \n" // Pass the color directly through
-																																// the pipeline.
+				+ "   v_FarDist = a_FarDist; "																												// the pipeline.
 				+ "   gl_Position = u_MVPMatrix * a_Position;   \n" // gl_Position is a special variable used to store the final position.
 				+ "                 \n" // Multiply the vertex by the matrix to get the final point in
 				+ "}                              \n"; // normalized screen coordinates.
@@ -216,8 +216,16 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 				+ "varying vec4 v_Color;          \n" // This is the color from the vertex shader interpolated across the
 														// triangle per fragment.
+				+ "varying vec3 v_Position;          \n" // This will be passed into the fragment shader.
+				+ "varying float v_FarDist;       \n" // Per-vertex normal information we will pass in.
+
 				+ "void main()                    \n" // The entry point for our fragment shader.
-				+ "{                              \n" + "   gl_FragColor = v_Color;     \n" // Pass the color directly through the pipeline.
+				+ "{                              \n" 
+				+ "   float distance = length(v_Position);     \n"
+				+ "   float factor = 1.0 - (1.0 / (1.0 + (0.06 * (100.0 / v_FarDist) * distance)));"
+				+ "   vec4 fog_color = vec4(1.0,1.0,1.0,1.0);	     \n"
+				+ "   gl_FragColor = mix(v_Color, fog_color, factor);     \n" // Pass the color directly through
+//				+ "   gl_FragColor = v_Color;     \n" // Pass the color directly through the pipeline.
 				+ "}                              \n";
 
 		// Load in the vertex shader.
@@ -406,8 +414,8 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	private static final int STRIDE = (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT;
 
 	class HeightMap {
-		static final int SIZE_PER_SIDE = 64;
-		static final float MIN_POSITION = -2000f;
+		static final int SIZE_PER_SIDE = 16;
+		static final float MIN_POSITION = -3000f;
 		static final float POSITION_RANGE = 4000f;
 
 		final int[] vbo = new int[1];

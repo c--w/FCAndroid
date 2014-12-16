@@ -40,7 +40,8 @@ public class CameraMan {
 	public static final int STAY_THERE = 6;
 
 	protected ModelViewer modelViewer;
-	private float depthOfVision = 100;
+	public static float DEFAULT_DOF = 100;
+	private float depthOfVision = DEFAULT_DOF;
 	public float dofxdof = depthOfVision * depthOfVision;
 
 	private float[] lightRay;
@@ -127,7 +128,7 @@ public class CameraMan {
 			cutStep();
 		if (track)
 			followSubject();
-		setDepthOfVision(Math.max(eye[2] * 2, 100f));
+		setDepthOfVision(Math.max(eye[2] * 2, DEFAULT_DOF));
 	}
 
 	/**

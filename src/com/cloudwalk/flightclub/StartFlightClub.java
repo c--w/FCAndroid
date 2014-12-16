@@ -107,7 +107,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 					finished = true;
 				} else if (glider.distanceFlown != 0 && glider.getLanded() && !landed && ((XCModelViewer) modelViewerThin).xcModel.task.type == Task.DISTANCE) {
 					try {
-						int best_distance = prefs.getInt("best_distance0" + task + pilotType, 0);
+						int best_distance = prefs.getInt("best_time0" + task + pilotType, 0);
 						int current_distance = (int) (glider.distanceFlown() / 2 * 100);
 						Log.i("FC StartFlightClub", "current_distance " + current_distance + " " + best_distance);
 						if (current_distance > best_distance) {
