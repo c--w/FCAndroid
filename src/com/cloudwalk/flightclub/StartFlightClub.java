@@ -50,6 +50,7 @@ import com.cloudwalk.framework3d.ClockObserver;
 import com.cloudwalk.framework3d.ModelView;
 import com.cloudwalk.framework3d.ModelViewRenderer;
 import com.cloudwalk.server.XCGameServer;
+import com.cloudwalk.server.XCGameServerOnline;
 import com.cloudwalk.startup.ModelEnv;
 import com.cloudwalk.startup.ModelViewerThin;
 
@@ -76,6 +77,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	boolean finished = false, landed = false, flying = false;
 
 	XCGameServer server;
+	XCGameServerOnline serverOnline;
 	boolean broadcasting = false;
 	boolean serving = false;
 	boolean wasPaused;
@@ -214,6 +216,18 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		
 	}
 
+	private void startGameServerOnline(int port) {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				serverOnline = new XCGameServerOnline(Tools.SERVER_PORT, task, pilotType);
+				serving = true;
+				serverOnline.serveClients();
+			}
+		}).start();
+	}
+
 	private void startGameServer(int port) {
 		new Thread(new Runnable() {
 
@@ -267,6 +281,12 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				hostPort = myip + ":" + Tools.SERVER_PORT;
 			}
 			findViewById(R.id.pause).setVisibility(View.GONE);
+		} else if(intent.hasExtra("net_online")) {
+			String myip = Tools.getIPAddress(true);
+			startGameServerOnline(Tools.SERVER_PORT);
+			while (!serving)
+				SystemClock.sleep(10);
+			hostPort = myip + ":" + Tools.SERVER_PORT;
 		}
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		soundPool = new SoundPool(7, AudioManager.STREAM_MUSIC, 0);
@@ -483,6 +503,8 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 			((XCModelViewer) modelViewerThin).stop();
 		if (server != null)
 			server.stop();
+		if (serverOnline != null)
+			serverOnline.stop();
 		broadcasting = false;
 		modelViewerThin = null;
 		super.onBackPressed();
@@ -494,6 +516,8 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 			((XCModelViewer) modelViewerThin).stop();
 		if (server != null)
 			server.stop();
+		if (serverOnline != null)
+			serverOnline.stop();
 		broadcasting = false;
 		modelViewerThin = null;
 		super.onDestroy();

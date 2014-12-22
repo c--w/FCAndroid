@@ -149,7 +149,7 @@ public class GliderManager implements ClockObserver {
 			return null;
 		} else if (gliderAIs.length > 0) {
 			nextGaggle++;
-			nextGaggle%=gliderAIs.length;
+			nextGaggle %= gliderAIs.length;
 			return gliderAIs[nextGaggle];
 		} else {
 			return null;
@@ -159,7 +159,9 @@ public class GliderManager implements ClockObserver {
 	/** Returns either user or demo glider. */
 	public Glider theGlider() {
 		if (xcModelViewer.xcModel.mode == XCModel.DEMO) {
-			return gliderAIs[nextGaggle];
+			if (gliderAIs != null)
+				return gliderAIs[nextGaggle];
+			return null;
 		} else {
 			return gliderUser;
 		}

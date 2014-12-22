@@ -18,6 +18,7 @@ import android.widget.RadioGroup;
 
 public class ChooseActivity extends Activity {
 	boolean net = false;
+	boolean net_online = false;
 	Menu menu;
 	GridView gridView;
 
@@ -27,6 +28,8 @@ public class ChooseActivity extends Activity {
 		setContentView(R.layout.activity_choose);
 		if (getIntent().hasExtra("net"))
 			net = true;
+		if (getIntent().hasExtra("net_online"))
+			net_online = true;
 		
 		List<TaskDesc> tasks = new ArrayList<TaskDesc>();
 		tasks.add(new TaskDesc("default", "Task 1", "D: 50km, TP: 2, CB: 1500m"));
@@ -54,6 +57,8 @@ public class ChooseActivity extends Activity {
 				intent.putExtra("task", task);
 				if (net)
 					intent.putExtra("net", true);
+				if (net_online)
+					intent.putExtra("net_online", true);
 				startActivity(intent);
 			}
 		});

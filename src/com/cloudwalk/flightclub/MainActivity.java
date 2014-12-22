@@ -155,17 +155,8 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = null;
-				intent = new Intent(getApplicationContext(), StartFlightClub.class);
-				intent.putExtra("net", true);
-				InetAddress add;
-				// add = InetAddress.getByName(new
-				// URL("xcserver.herokuapp.com").getHost());
-				String address = "54.243.160.109:80";
-				String glider = "0";
-				String task = "default";
-				intent.putExtra("server", address);
-				intent.putExtra("glider", Integer.parseInt(glider));
-				intent.putExtra("task", task);
+				intent = new Intent(getApplicationContext(), ChooseActivity.class);
+				intent.putExtra("net_online", true);
 				startActivity(intent);
 
 			}

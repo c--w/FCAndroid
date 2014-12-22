@@ -22,6 +22,7 @@ public class Client {
 	static String BASE_URL = "http://hpgf.org/fc/fc.php";
 	static DefaultHttpClient client;
 	static int MY_ID;
+	static String ROOM;
 	static {
 		getHttpClient();
 		MY_ID = new Random(System.currentTimeMillis()).nextInt();
@@ -31,7 +32,9 @@ public class Client {
 		try {
 			String response = null;
 			HttpClient client = getHttpClient();
-			response = Http.get(BASE_URL + "?m=" + MY_ID + " " + message).use(client).header("User-Agent", "HttpClient Wrapper").charset("UTF-8").asString();
+			response = Http.get(BASE_URL + "?id=" + MY_ID + "&r=" + ROOM + "&m=" + message).use(client).header("User-Agent", "HttpClient Wrapper")
+					.charset("UTF-8").asString();
+			Log.i(TAG, response);
 			return response;
 		} catch (Exception e) {
 			reset();

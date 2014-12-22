@@ -13,10 +13,10 @@
     <Button
         android:id="@+id/startNetwork"
         style="@style/start_button_text"
-        android:text="Multiplayer (local WIFI)" />
+        android:text="Multiplayer (WIFI)" />
 
     <Button
         android:id="@+id/startNetworkOnline"
         style="@style/start_button_text"
-        android:text="Multiplayer (online)" android:visibility="gone"/>
+        android:text="Multiplayer (online)" android:visibility="visible"/>
 </LinearLayout>

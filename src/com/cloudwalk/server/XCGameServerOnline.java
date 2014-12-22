@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class XCGameServerOnline {
 		SERVER_PORT = port;
 		this.task = task;
 		this.glider_type = glider_type;
-		xcClient = new XCHandlerOnline(0);
+		Client.ROOM = glider_type + task;
 		xcClientThread = new Thread();
 		onlinePlayersId2Num = new LinkedHashMap<String, Integer>();
 		onlinePlayersNum2Id = new LinkedHashMap<Integer, String>();
@@ -81,53 +82,64 @@ public class XCGameServerOnline {
 
 	public void disconnectXCClient() {
 		if (xcClient != null) {
-			xcClient= null;
-			xcClientThread= null;
+			xcClient = null;
+			xcClientThread = null;
 		}
 	}
 
 	public void ConnectXCClient(Socket clientSocket) {
-			if (xcClient == null) {
-				xcClient = new XCHandlerOnline(clientSocket, this);
-				xcClientThread = new Thread(xcClient);
-				xcClientThread.start();
-				return;
-			}
+		if (xcClient == null) {
+			xcClient = new XCHandlerOnline(clientSocket, this);
+			xcClientThread = new Thread(xcClient);
+			xcClientThread.start();
+			return;
+		}
 		return;
 	}
 
 	public void sendToAll(String message) {
-		int ind = message.indexOf(' ');
+		int ind = message.indexOf("_");
+
+		if (ind == -1) {
+			Log.w("FC problem with message", message);
+			return;
+		}
 		String id = message.substring(0, ind);
-		String message2 = message.substring(ind+1);
+		String message2 = message.substring(ind + 1);
 		Integer num = null;
-		if(onlinePlayersId2Num.containsKey(id)) {
+		if (onlinePlayersId2Num.containsKey(id)) {
 			num = onlinePlayersId2Num.get(id);
 		} else {
 			num = onlinePlayerIdCounter++;
 			onlinePlayersId2Num.put(id, num);
-			onlinePlayersNum2Id.put(num,  id);
+			onlinePlayersNum2Id.put(num, id);
 		}
 		sendToAll(num, message2);
 	}
 
 	public void sendToAll(int from, String message) {
 		for (int index = 0; index < MAX_CLIENTS; index++) {
-			xcClient.send(from + "> " + message);
+			try {
+				xcClient.send(from + "> " + message);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 		}
 	}
 
 	public void sendTime(float time) {
-		String msg = "Time: " + time;
-		for (int index = 0; index < MAX_CLIENTS; index++) {
-			if (xcClient != null) {
+		String msg = "TIME: " + time;
+		if (xcClient != null) {
+			try {
 				xcClient.send(msg);
+			} catch (Exception e) {
+				// TODO: handle exception
 			}
 		}
 	}
 
 	public void disconnectAllXCClient() {
-			disconnectXCClient();
+		disconnectXCClient();
 	}
 
 	public void stop() {
@@ -337,10 +349,10 @@ class XCClockOnline implements Runnable {
 			String onlineMessages = pingOnline();
 			processOnlineMessages(onlineMessages);
 			try {
-				Thread.sleep(0);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 			}
-			ticker = null;
+			// ticker = null;
 		}
 	}
 
@@ -349,7 +361,7 @@ class XCClockOnline implements Runnable {
 	}
 
 	public void processOnlineMessages(String onlineMessages) {
-		String[] messages = onlineMessages.split("\t");
+		String[] messages = onlineMessages.substring(1).split("#");
 		for (String message : messages) {
 			server.sendToAll(message);
 		}
