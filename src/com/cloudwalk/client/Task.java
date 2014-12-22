@@ -265,7 +265,7 @@ public class Task implements CameraSubject {
 		latitude = 46;
 		time_of_day = "15";
 		type = TIME_PRECISE;
-		desc = "Out and return 160km task.\nWind: weak SW.\nCloudbase varies around 1800m.";
+		desc = "Out and return 160km task.\nWind: weak WSW.\nCloudbase varies around 1800m.";
 		CLOUDBASE = 3.6f;
 		NODE_SPACING = CLOUDBASE * 12f;
 		HEXAGON = CLOUDBASE * 7;
@@ -277,7 +277,7 @@ public class Task implements CameraSubject {
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// wind
-		wind_x = 0.05f;
+		wind_x = 0.1f;
 		wind_y = 0.05f;
 
 		// triggers
