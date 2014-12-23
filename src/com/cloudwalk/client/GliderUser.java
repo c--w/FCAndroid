@@ -105,7 +105,7 @@ public class GliderUser extends GliderTask {
 	void hitTheSpuds() {
 		super.hitTheSpuds();
 		if (xcModelViewer.xcNet != null) {
-			xcModelViewer.xcNet.send("Landed");
+			xcModelViewer.xcNet.send("LANDED");
 		}
 	}
 

@@ -343,7 +343,8 @@ class XCClockOnline implements Runnable {
 			long currentTick = System.currentTimeMillis();
 
 			if (currentTick - lastSendTime > TICK_LEN * 1000) {
-				server.sendTime(getModelTime());
+				long modelTime = (long) (Float.parseFloat(Client.send("TIME")) * 1000);
+				server.sendTime(modelTime);
 				lastSendTime = currentTick;
 			}
 			String onlineMessages = pingOnline();
@@ -361,7 +362,11 @@ class XCClockOnline implements Runnable {
 	}
 
 	public void processOnlineMessages(String onlineMessages) {
-		String[] messages = onlineMessages.substring(1).split("#");
+		String[] messages = null;
+		if(onlineMessages.startsWith(";"))
+			messages = onlineMessages.substring(1).split(";");
+		else 
+			messages = onlineMessages.split(";");
 		for (String message : messages) {
 			server.sendToAll(message);
 		}

@@ -243,9 +243,15 @@ public class GliderManager implements ClockObserver {
 	 * @see XCGameNetConnector
 	 */
 	void addUser(int index, int type) {
+		Log.i("FC GM", "Adding new user at: " + index);
 		netGliders[index] = new GliderTask(xcModelViewer, types[type], index);
 		netType[index] = type;
 		numNet++;
+	}
+
+	void addUserIfNecessary(int index, int type) {
+		if (netGliders[index] == null)
+			addUser(index, type);
 	}
 
 	int[] netType = new int[MAX_USERS];

@@ -88,6 +88,7 @@ public class XCNet implements Runnable {
 					String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
 					float t = Tools3d.parseFloat(tmp);
 					xcModelViewer.clock.synchTime(t);
+					continue;
 				}
 
 				if (nextLine.indexOf("+") == 0) { // server.sendWelcomeMessage
@@ -154,22 +155,19 @@ public class XCNet implements Runnable {
 					 */
 
 				} else { // server.sendToAll
-					String cmdLine = nextLine.substring(3, nextLine.length()); // todo:
-																				// >
-																				// 9
-																				// !
+					String cmdLine = nextLine.substring(nextLine.indexOf(" ") + 1, nextLine.length()); // todo:
+					int id = parseId2(nextLine);
 					if (cmdLine.indexOf("CONNECTED") == 0) {
 						String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
 						int wingType = Tools3d.parseInt(tmp);
-						gliderManager.addUser(parseId2(nextLine), wingType);
+						gliderManager.addUserIfNecessary(id, wingType);
 					}
 
 					if (cmdLine.indexOf("UNCONNECTED") == 0) {
-						gliderManager.removeUser(parseId2(nextLine));
+						gliderManager.removeUser(id);
 					}
 
 					if (cmdLine.indexOf("LAUNCHED") == 0) {
-						int id = parseId2(nextLine);
 						StringTokenizer st = new StringTokenizer(cmdLine, ":");
 						st.nextToken();
 						String wingTypeString = st.nextToken();
@@ -186,11 +184,13 @@ public class XCNet implements Runnable {
 					}
 
 					if (cmdLine.indexOf("LANDED") == 0) {
-						gliderManager.landNetUser(parseId2(nextLine));
+						gliderManager.landNetUser(id);
 					}
 
 					if (cmdLine.indexOf("#") == 0) {
-						gliderManager.changeUser(parseId2(nextLine), cmdLine.substring(1, cmdLine.length()));
+						gliderManager.changeUser(id, cmdLine.substring(1, cmdLine.length()));
+					} else {
+						gliderManager.addUserIfNecessary(id, xcModelViewer.modelEnv.getPilotType());
 					}
 
 				}

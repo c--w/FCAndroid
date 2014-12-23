@@ -215,8 +215,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 	/** Make a cloud every <code>cycle</code> period of time. */
 	public void tick(float t, float dt) {
 		if (t >= nextCloudStartTime) {
-			makeCloud();
-			nextCloudStartTime += cycleLength;
+			nextCloudStartTime += cycleLength * (Math.floor((t-nextCloudStartTime)/cycleLength)+1);
+			existingClouds(t);
 		}
 	}
 

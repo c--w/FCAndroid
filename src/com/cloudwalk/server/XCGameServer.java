@@ -105,7 +105,7 @@ public class XCGameServer {
 	}
 
 	public void sendTime(float time) {
-		String msg = "Time: " + time;
+		String msg = "TIME: " + time;
 		for (int index = 0; index < MAX_CLIENTS; index++) {
 			if (XCClient[index] != null) {
 				XCClient[index].send(msg);

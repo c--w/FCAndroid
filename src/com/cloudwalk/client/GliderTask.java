@@ -125,7 +125,7 @@ public class GliderTask extends Glider {
 		String distance = " D: " + (round1(distanceFlown() / 2f)) + "km";
 		String hexColor = String.format("#%06X", (0xFFFFFF & color));
 		String ret = "<font color=\"" + hexColor + "\">" + playerName + "</font> - " + currentFlightValues + height + distance;
-		Log.i("FC GT", ret);
+		//Log.i("FC GT", ret);
 		return ret;
 	}
 

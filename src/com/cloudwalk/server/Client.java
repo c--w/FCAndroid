@@ -1,5 +1,6 @@
 package com.cloudwalk.server;
 
+import java.net.URLEncoder;
 import java.util.Random;
 
 import org.apache.http.client.HttpClient;
@@ -25,16 +26,17 @@ public class Client {
 	static String ROOM;
 	static {
 		getHttpClient();
-		MY_ID = new Random(System.currentTimeMillis()).nextInt();
+		MY_ID = new Random(System.currentTimeMillis()).nextInt(Integer.MAX_VALUE);
 	}
 
 	public static String send(String message) {
 		try {
+			Log.i(TAG, "OUT:" + message);
 			String response = null;
 			HttpClient client = getHttpClient();
-			response = Http.get(BASE_URL + "?id=" + MY_ID + "&r=" + ROOM + "&m=" + message).use(client).header("User-Agent", "HttpClient Wrapper")
-					.charset("UTF-8").asString();
-			Log.i(TAG, response);
+			response = Http.get(BASE_URL + "?id=" + MY_ID + "&r=" + ROOM + "&m=" + URLEncoder.encode(message, "UTF-8")).use(client)
+					.header("User-Agent", "HttpClient Wrapper").charset("UTF-8").asString();
+			Log.i(TAG, "IN:" + response);
 			return response;
 		} catch (Exception e) {
 			reset();
