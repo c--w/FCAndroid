@@ -1,7 +1,11 @@
 package com.cloudwalk.flightclub;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,11 +20,23 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.RadioGroup;
 
+import com.cloudwalk.server.Client;
+
 public class ChooseActivity extends Activity {
 	boolean net = false;
 	boolean net_online = false;
 	Menu menu;
 	GridView gridView;
+	List<TaskDesc> tasks;
+	String[] gliders = { "PG", "HG", "SP" };
+
+	private TaskDesc findTask(String id) {
+		for (TaskDesc taskDesc : tasks) {
+			if (taskDesc.id.equals(id))
+				return taskDesc;
+		}
+		return null;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +46,8 @@ public class ChooseActivity extends Activity {
 			net = true;
 		if (getIntent().hasExtra("net_online"))
 			net_online = true;
-		
-		List<TaskDesc> tasks = new ArrayList<TaskDesc>();
+
+		tasks = new ArrayList<TaskDesc>();
 		tasks.add(new TaskDesc("default", "Task 1", "D: 50km, TP: 2, CB: 1500m"));
 		tasks.add(new TaskDesc("t001", "Task 2", "D: 100km, CB: 1500m"));
 		tasks.add(new TaskDesc("t002", "Task 3", "D: 70km, CB: 1600m"));
@@ -62,6 +78,25 @@ public class ChooseActivity extends Activity {
 				startActivity(intent);
 			}
 		});
+
+		if (net_online) {
+			try {
+				String info = "\n";
+				JSONObject rooms = new JSONObject(Client.send("ROOMS"));
+				for (Iterator<String> iterator = rooms.keys(); iterator.hasNext();) {
+					String key = (String) iterator.next();
+					int type = Integer.parseInt(key.substring(0, 1));
+					String task = key.substring(1);
+					TaskDesc taskDesc = findTask(task);
+					info += taskDesc.title + ", Glider: " + gliders[type] + ", Players: " + rooms.getInt(key)+"\n";
+				}
+				if (info.length() > 5)
+					Tools.showInfoDialog("Active Online Tasks", info, this);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
 	}
 

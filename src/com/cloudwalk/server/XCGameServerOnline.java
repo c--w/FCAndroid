@@ -7,9 +7,10 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.util.Log;
@@ -97,14 +98,45 @@ public class XCGameServerOnline {
 		return;
 	}
 
-	public void sendToAll(String message) {
+	public void checkDisconnected(List<String> ids) {
+		List<String> todelete = new ArrayList<String>();
+		for (Map.Entry<String, Integer> entry : onlinePlayersId2Num.entrySet()) {
+			String id = entry.getKey();
+			boolean exists = false;
+			for (String eid : ids) {
+				if(id.equals(eid)) {
+					exists = true;
+					break;
+				}
+			}
+			if(!exists)
+				todelete.add(id);
+		}
+		for (String delete : todelete) {
+			Integer localId = onlinePlayersId2Num.get(delete); 
+			onlinePlayersId2Num.remove(delete);
+			onlinePlayersId2Num.remove(localId);
+			sendToAll(localId, "UNCONNECTED");
+		}
+	}
+
+	public static String getId(String message) {
 		int ind = message.indexOf("_");
 
 		if (ind == -1) {
 			Log.w("FC problem with message", message);
+			return null;
+		}
+		return message.substring(0, ind);
+	}
+
+	public void sendToAll(String message) {
+		int ind = message.indexOf("_");
+		String id = getId(message);
+		if (id == null) {
+			Log.w("FC problem with message", message);
 			return;
 		}
-		String id = message.substring(0, ind);
 		String message2 = message.substring(ind + 1);
 		Integer num = null;
 		if (onlinePlayersId2Num.containsKey(id)) {
@@ -343,7 +375,7 @@ class XCClockOnline implements Runnable {
 			long currentTick = System.currentTimeMillis();
 
 			if (currentTick - lastSendTime > TICK_LEN * 1000) {
-				long modelTime = (long) (Float.parseFloat(Client.send("TIME")) * 1000);
+				long modelTime = (long) (Float.parseFloat(Client.send("TIME")));
 				server.sendTime(modelTime);
 				lastSendTime = currentTick;
 			}
@@ -362,13 +394,16 @@ class XCClockOnline implements Runnable {
 	}
 
 	public void processOnlineMessages(String onlineMessages) {
+		List<String> ids = new ArrayList<String>();
 		String[] messages = null;
-		if(onlineMessages.startsWith(";"))
+		if (onlineMessages.startsWith(";"))
 			messages = onlineMessages.substring(1).split(";");
-		else 
+		else
 			messages = onlineMessages.split(";");
 		for (String message : messages) {
 			server.sendToAll(message);
+			ids.add(XCGameServerOnline.getId(message));
 		}
+		server.checkDisconnected(ids);
 	}
 }

@@ -360,7 +360,7 @@ public class GliderManager implements ClockObserver {
 												// index
 		if (netGliders[index].landed) {
 			Log.e("FC", "Does this ever happen?");
-			netGliders[index].takeOff(true);
+			launchNetUser(index);
 		}
 
 		StringTokenizer tokens = new StringTokenizer(line, ":");

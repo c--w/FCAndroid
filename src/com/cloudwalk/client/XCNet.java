@@ -189,7 +189,7 @@ public class XCNet implements Runnable {
 
 					if (cmdLine.indexOf("#") == 0) {
 						gliderManager.changeUser(id, cmdLine.substring(1, cmdLine.length()));
-					} else {
+					} else if (cmdLine.indexOf("UNCONNECTED") == -1) {
 						gliderManager.addUserIfNecessary(id, xcModelViewer.modelEnv.getPilotType());
 					}
 
