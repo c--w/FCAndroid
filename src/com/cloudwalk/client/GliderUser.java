@@ -57,7 +57,7 @@ public class GliderUser extends GliderTask {
 		currentGlideSpeed();
 		groundGlideRatio = ((int) (groundGlideRatio * 10)) / 10f;
 
-		if (!landed) {
+		if (!onGround) {
 			vario.tick(t);
 			netSend(t);
 		}
@@ -102,16 +102,16 @@ public class GliderUser extends GliderTask {
 		return Math.round(x * 10000f) / 10000f;
 	}
 
-	void hitTheSpuds() {
+	public void hitTheSpuds() {
 		super.hitTheSpuds();
 		if (xcModelViewer.xcNet != null) {
 			xcModelViewer.xcNet.send("LANDED");
 		}
 	}
 
-	public void takeOff(boolean really, boolean send) {
+	public void launch(boolean takeoff, boolean send) {
 		Log.w("FC takeOff", "gliderUser takeoff" + myID);
-		super.takeOff(really);
+		super.launch(takeoff);
 		if (xcModelViewer.xcNet != null && send) {
 			xcModelViewer.xcNet.send("LAUNCHED: " + this.typeID + ":" + this.color + ":" + this.playerName);
 		}
@@ -145,7 +145,7 @@ public class GliderUser extends GliderTask {
 	}
 
 	public void handleTouch(View v, MotionEvent event) {
-		if (landed) {
+		if (onGround) {
 			return;
 		}
 		if (event.getActionMasked() == MotionEvent.ACTION_UP) {
@@ -179,7 +179,7 @@ public class GliderUser extends GliderTask {
 	}
 
 	public void handleGravity(SensorEvent event) {
-		if (landed) {
+		if (onGround) {
 			return;
 		}
 		float x = event.values[0];

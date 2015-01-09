@@ -18,6 +18,13 @@
         <item>60</item>
     </string-array>
     
+    <string-array name="wait_online">
+        <item>5</item>
+        <item>10</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+    
     <string-array name="view_angle_label">
         <item>Wide</item>
         <item>Normal</item>

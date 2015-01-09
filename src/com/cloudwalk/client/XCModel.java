@@ -208,7 +208,7 @@ public class XCModel extends Model {
 
 		// frame rate for when testing etc
 		if (PreferenceManager.getDefaultSharedPreferences(modelViewer.modelEnv.getContext()).getBoolean("fps", false)) {
-			String status = "FPS: " + modelViewer.clock.getFrameRate()+ " TIME: "+modelViewer.clock.getTime(); // tmp
+			String status = "FPS: " + modelViewer.clock.getFrameRate();//+ " TIME: "+modelViewer.clock.getTime(); // tmp
 			modelViewer.modelView.setText(status, 0);
 		}
 	}

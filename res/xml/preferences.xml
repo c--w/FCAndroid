@@ -28,6 +28,21 @@
             android:title="Sailplanes" />
     </PreferenceCategory>
     <PreferenceCategory
+        android:key="multiplayersettings"
+        android:title="Multiplayer settings" >
+        <EditTextPreference
+            android:key="playerName"
+            android:summary="Your handle for multiplayer games"
+            android:title="Player name" />
+        <ListPreference
+            android:defaultValue="10"
+            android:entries="@array/wait_online"
+            android:entryValues="@array/wait_online"
+            android:key="wait_online"
+            android:summary="How long to actively wait for online players (uses processor time)"
+            android:title="Wait duration" />
+        </PreferenceCategory>
+        <PreferenceCategory
         android:key="uisettings"
         android:title="UI settings" >
         <ListPreference
@@ -62,10 +77,6 @@
             android:key="tp_color"
             android:summary="Choose turnpoint/arrows color "
             android:title="Turnpoint color" />
-        <EditTextPreference
-            android:key="playerName"
-            android:summary="Your handle for multiplayer games"
-            android:title="Player name" />
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFF0000FF"
             android:key="glider_color"

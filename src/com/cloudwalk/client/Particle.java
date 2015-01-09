@@ -26,7 +26,7 @@ import com.cloudwalk.framework3d.Tools3d;
 class Particle implements ClockObserver, CameraSubject {
 	protected ModelViewer modelViewer;
 	float[] p = new float[3];
-	float[] v = new float[3];
+	public float[] v = new float[3];
 	float nextTurn;
 	float speed = 1;
 	float turnRadius = 1;

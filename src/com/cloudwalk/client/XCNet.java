@@ -81,10 +81,12 @@ public class XCNet implements Runnable {
 			GliderManager gliderManager = xcModelViewer.xcModel.gliderManager;
 
 			while ((nextLine = in.readLine()) != null) {
+				String nextLineUpper = nextLine.toUpperCase();
+
 				// nextLine = nextLine.toUpperCase();
 				Log.w("FC XCNET", "IN: " + nextLine); // debug
 
-				if (nextLine.indexOf("TIME:") == 0) { // what's the model time
+				if (nextLineUpper.indexOf("TIME:") == 0) { // what's the model time
 					String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
 					float t = Tools3d.parseFloat(tmp);
 					xcModelViewer.clock.synchTime(t);
@@ -94,7 +96,7 @@ public class XCNet implements Runnable {
 				if (nextLine.indexOf("+") == 0) { // server.sendWelcomeMessage
 					// String cmdLine = nextLine.substring(4,nextLine.length());
 
-					if (nextLine.indexOf("+HELLO:") == 0) { // what player id am
+					if (nextLineUpper.indexOf("+HELLO:") == 0) { // what player id am
 															// i ?
 						String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
 						String[] parts = tmp.split("#");
@@ -120,7 +122,7 @@ public class XCNet implements Runnable {
 					}
 
 					// first time we have model time
-					if (nextLine.indexOf("+TIME:") == 0) { // what's the model
+					if (nextLineUpper.indexOf("+TIME:") == 0) { // what's the model
 															// time
 						String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
 						float t = Tools3d.parseFloat(tmp);
@@ -130,7 +132,7 @@ public class XCNet implements Runnable {
 						xcModelViewer.netTimeFlag = true;
 					}
 
-					if (nextLine.indexOf("CONNECTED") > 0) {
+					if (nextLineUpper.indexOf("CONNECTED") > 0) {
 						String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
 						int wingType = Tools3d.parseInt(tmp);
 						gliderManager.addUser(parseId(nextLine), wingType);
@@ -156,18 +158,29 @@ public class XCNet implements Runnable {
 
 				} else { // server.sendToAll
 					String cmdLine = nextLine.substring(nextLine.indexOf(" ") + 1, nextLine.length()); // todo:
+					String cmdLineUpper = cmdLine.toUpperCase();
 					int id = parseId2(nextLine);
-					if (cmdLine.indexOf("CONNECTED") == 0) {
-						String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
-						int wingType = Tools3d.parseInt(tmp);
-						gliderManager.addUserIfNecessary(id, wingType);
-					}
-
-					if (cmdLine.indexOf("UNCONNECTED") == 0) {
+					if (cmdLineUpper.indexOf("UNCONNECTED") == 0) {
 						gliderManager.removeUser(id);
+					} else {
+						gliderManager.addUserIfNecessary(id, xcModelViewer.modelEnv.getPilotType());
 					}
 
-					if (cmdLine.indexOf("LAUNCHED") == 0) {
+					if (cmdLineUpper.indexOf("CONNECTED") == 0) {
+						String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.length());
+						StringTokenizer st = new StringTokenizer(tmp, ",");
+						String s = st.nextToken();
+						int wingType = Tools3d.parseInt(s);
+						gliderManager.addUserIfNecessary(id, wingType);
+						try {
+							String playerName = st.nextToken();
+							int playerColor = Integer.parseInt(st.nextToken());
+							gliderManager.changeNetGlider(id, wingType, playerColor);
+							gliderManager.nameNetUser(id, playerName);
+						} catch (Exception e) {
+							Log.e("FC XCNET", e.getMessage(), e);
+						}
+					} else if (cmdLineUpper.indexOf("LAUNCHED") == 0) {
 						StringTokenizer st = new StringTokenizer(cmdLine, ":");
 						st.nextToken();
 						String wingTypeString = st.nextToken();
@@ -181,17 +194,11 @@ public class XCNet implements Runnable {
 						} catch (Exception e) {
 						}
 						gliderManager.launchNetUser(id);
-					}
-
-					if (cmdLine.indexOf("LANDED") == 0) {
+					} else if (cmdLineUpper.indexOf("LANDED") == 0) {
 						gliderManager.landNetUser(id);
-					}
-
-					if (cmdLine.indexOf("#") == 0) {
+					} else if (cmdLine.indexOf("#") == 0) {
 						gliderManager.changeUser(id, cmdLine.substring(1, cmdLine.length()));
-					} else if (cmdLine.indexOf("UNCONNECTED") == -1) {
-						gliderManager.addUserIfNecessary(id, xcModelViewer.modelEnv.getPilotType());
-					}
+					} 
 
 				}
 			}

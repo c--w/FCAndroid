@@ -711,7 +711,6 @@ public class Obj3d implements CameraSubject {
 			Log.i("FC OBJ3D", Arrays.toString(verticesData));
 		}
 
-
 		public String toString() {
 			return "points: " + Arrays.toString(points);
 		}
@@ -722,15 +721,15 @@ public class Obj3d implements CameraSubject {
 
 	public void fillVerticesData() {
 		// Log.i("FC", Arrays.toString(verticesData));
-		if (verticesFB == null)
+		if (verticesFB == null || verticesFB.capacity() < 9 * triangles.size() * mBytesPerFloat)
 			verticesFB = ByteBuffer.allocateDirect(9 * triangles.size() * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		else
 			verticesFB.position(0);
-		if (colorsFB == null)
+		if (colorsFB == null || colorsFB.capacity() < 12 * triangles.size() * mBytesPerFloat)
 			colorsFB = ByteBuffer.allocateDirect(12 * triangles.size() * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		else
 			colorsFB.position(0);
-		if (normalsFB == null)
+		if (normalsFB == null || normalsFB.capacity() < normal.length * triangles.size() * mBytesPerFloat)
 			normalsFB = ByteBuffer.allocateDirect(normal.length * triangles.size() * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		else
 			normalsFB.position(0);
@@ -760,7 +759,7 @@ public class Obj3d implements CameraSubject {
 	}
 
 	void drawTriangles(float[] mMVPMatrix, int mMVPMatrixHandle, int mPositionHandle, int mColorHandle, int mNormalHandle) {
-		if(dirty_object)
+		if (dirty_object)
 			fillVerticesData();
 		// Pass in the position information
 		verticesFB.position(mPositionOffset);

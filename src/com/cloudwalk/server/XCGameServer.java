@@ -220,22 +220,22 @@ class XCHandler implements Runnable {
 			server.sendToAll(myID, "CONNECTED: " + server.glider_type);
 
 			while ((nextLine = clientReceive.readLine()) != null) {
-				nextLine = nextLine.toUpperCase();
+				String nextLineUpper = nextLine.toUpperCase();
 
 				if (!server.getKeepRunning()) {
 					break;
-				} else if (nextLine.indexOf("QUIT") == 0) {
+				} else if (nextLineUpper.indexOf("QUIT") == 0) {
 					break;
-				} else if (nextLine.indexOf("TEST") == 0) {
+				} else if (nextLineUpper.indexOf("TEST") == 0) {
 					clientSend.println("+OK ");
 					clientSend.flush();
-				} else if (nextLine.indexOf("KILLALL") == 0) {
+				} else if (nextLineUpper.indexOf("KILLALL") == 0) {
 					server.disconnectAllXCClient();
-				} else if (nextLine.indexOf("LAUNCH") == 0) {
+				} else if (nextLineUpper.indexOf("LAUNCH") == 0) {
 					String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.indexOf(":") + 3);
 					gliderType = parseInt(tmp);
 					server.sendToAll(myID, nextLine);
-				} else if (nextLine.indexOf("WARM_FRONT") == 0) { // secret code
+				} else if (nextLineUpper.indexOf("WARM_FRONT") == 0) { // secret code
 																	// to shut
 																	// down the
 																	// server

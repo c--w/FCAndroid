@@ -35,8 +35,7 @@ import com.cloudwalk.framework3d.Tools3d;
  * 	--------------
  * </pre>
  * 
- * Inside the inner class Shape3d we work in spherical polars. Four quadrants
- * are defined as follows:
+ * Inside the inner class Shape3d we work in spherical polars. Four quadrants are defined as follows:
  * 
  * <pre>
  * 
@@ -77,11 +76,10 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	static final float LIFT_UNIT = 0.08f;
 	// or a fn of site ?
 	public static final int MAX_SIZE = 5;
+
 	/**
-	 * Creates a cloud. The cloud will grow from nothing, drift along for a
-	 * period of time and then evaporate. The cloud strength is measured in
-	 * multiples of a glider's sink rate. Stronger clouds are bigger and darker
-	 * than weaker clouds.
+	 * Creates a cloud. The cloud will grow from nothing, drift along for a period of time and then evaporate. The cloud strength is measured in multiples of a
+	 * glider's sink rate. Stronger clouds are bigger and darker than weaker clouds.
 	 * 
 	 * TODO: params - thermalStrenth, duration... ?size
 	 */
@@ -100,7 +98,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		// assume life cycle starts from now
 		lifeCycle = new LifeCycle(xcModelViewer.clock.getTime(), lifeSpan);
 		setAge(age);
-		
+
 		if (!blueThermal)
 			shape3d = new Shape3d();
 
@@ -125,12 +123,11 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	}
 
 	/**
-	 * Destroys refences to this cloud and its child objects so it will be
-	 * garbage collected.
+	 * Destroys refences to this cloud and its child objects so it will be garbage collected.
 	 */
 	public void destroyMe() {
-		//Log.i("FC Cloud", "destroying");
-		//asString();
+		// Log.i("FC Cloud", "destroying");
+		// asString();
 		if (shape3d != null)
 			shape3d.obj3d.destroyMe();
 		xcModelViewer.clock.removeObserver(this);
@@ -143,8 +140,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	private int numNodes = 0; // registered with n nodes
 
 	/**
-	 * (un)registers cloud with the currently *loaded* nodes. When removing we
-	 * skip the <code>contains</code> test for speed.
+	 * (un)registers cloud with the currently *loaded* nodes. When removing we skip the <code>contains</code> test for speed.
 	 * 
 	 * NB. Wind drift means a cloud may move from one node to another over time.
 	 */
@@ -179,8 +175,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	}
 
 	/**
-	 * Returns true if the point is 'under' the cloud. By 'under' we mean within
-	 * the sloping column of rising air that is feeding this cloud.
+	 * Returns true if the point is 'under' the cloud. By 'under' we mean within the sloping column of rising air that is feeding this cloud.
 	 */
 	public boolean contains(float[] p) {
 		float cx, cy;
@@ -228,16 +223,15 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			shape3d.updateMe(t, dt);
 
 		/*
-		 * May have drifted into another node's zone. Also, if no longer in an
-		 * area covered by a loaded node then bye bye. (NB. perhaps my origional
-		 * node as now been unloaded.) 
+		 * May have drifted into another node's zone. Also, if no longer in an area covered by a loaded node then bye bye. (NB. perhaps my origional node as now
+		 * been unloaded.)
 		 */
 		// No need for this - clouds just disappear without warning
-//		registerWithNodes(false);
-//		if (!registerWithNodes(true)) {
-//			destroyMe();
-//			Log.w("FC Cloud", "Destroy registerWithNodes");
-//		}
+		// registerWithNodes(false);
+		// if (!registerWithNodes(true)) {
+		// destroyMe();
+		// Log.w("FC Cloud", "Destroy registerWithNodes");
+		// }
 	}
 
 	/**
@@ -286,8 +280,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	}
 
 	/**
-	 * Returns lift at a point. The lift is a function of r, the distance from
-	 * the thermal center:
+	 * Returns lift at a point. The lift is a function of r, the distance from the thermal center:
 	 * 
 	 * <pre>
 	 * 
@@ -336,7 +329,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		// bigger clouds are darker
 		int c = COLOR;
 		if (size > 1) {
-			c -= ((size-1)/5) * DARKEST_CLOUD;
+			c -= ((size - 1) / 5) * DARKEST_CLOUD;
 		}
 		color = Color.rgb(c, c, c);
 
@@ -345,8 +338,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	}
 
 	/**
-	 * The thermal slope is a function of the wind. A thermal gets blown
-	 * downwind as it climbs.
+	 * The thermal slope is a function of the wind. A thermal gets blown downwind as it climbs.
 	 * 
 	 * <pre>
 	 *                 .--.
@@ -366,9 +358,8 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		this.wind_y = task.wind_y;
 
 		/*
-		 * When the wind strength equals the lift we have a 1:1 slope. Well,
-		 * that would be the case IF the thermal had no inertia. In fact the
-		 * thermal rises closer to vertical.
+		 * When the wind strength equals the lift we have a 1:1 slope. Well, that would be the case IF the thermal had no inertia. In fact the thermal rises
+		 * closer to vertical.
 		 * 
 		 * This model gives a 1:1 slope when wind reaches WIND_MAX.
 		 */
@@ -386,19 +377,10 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			slope_y = 1;
 	}
 
-	/*
-	 * Keep the cloud in its mature stage so that its size does not change.
-	 */
-	public void freeze() {
-		lifeCycle.freeze();
-	}
-
 	/**
 	 * This inner class implements a 3d shape for the cloud.
 	 * 
-	 * The cloud is represented using a cube like shape made from 6 triangles.
-	 * The 'cube' is distorted - the points to lie on the surface of a
-	 * hemi-sphere.
+	 * The cloud is represented using a cube like shape made from 6 triangles. The 'cube' is distorted - the points to lie on the surface of a hemi-sphere.
 	 * 
 	 * We label the vertices as follows:
 	 * 
@@ -424,8 +406,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	 * 	       p3 .---------.  p0
 	 * </pre>
 	 * 
-	 * Ok, so it doesn't look much like a cloud ! But it looks a bit like one
-	 * cell of a cloud.
+	 * Ok, so it doesn't look much like a cloud ! But it looks a bit like one cell of a cloud.
 	 */
 	public class Shape3d {
 		double[] theta = new double[4];
@@ -447,10 +428,10 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		public Shape3d() {
 			setAngles();
-			obj3d = new Obj3d(xcModelViewer); 
+			obj3d = new Obj3d(xcModelViewer);
 			setRadius();
 			addPolygons();
-			//hasShape = true;			
+			// hasShape = true;
 		}
 
 		/** If the cloud is changing then change this shape. */
@@ -459,8 +440,8 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			if (lifeCycle.isGrowing() || lifeCycle.isDecaying() || dirty) {
 				setRadius();
 				dirty_normals = updateShape();
-			} 
-				// no change in shape but we do have wind drift
+			}
+			// no change in shape but we do have wind drift
 			float dx = wind_x * dt;
 			float dy = wind_y * dt;
 			obj3d.translateBy(dx, dy, 0, dirty_normals);
@@ -523,20 +504,19 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		 * Gets the new co-ords for each vertex and passes this data to obj3d.
 		 */
 		private boolean updateShape() {
-			if(!obj3d.visible() && !dirty)
+			if (!obj3d.visible() && !dirty)
 				return false;
 			for (int i = 0; i < 8; i++) {
 				float[] point = getVert(i);
 				obj3d.ps[pointIndexes[i]] = point[0];
-				obj3d.ps[pointIndexes[i]+1] = point[1];
-				obj3d.ps[pointIndexes[i]+2] = point[2];
+				obj3d.ps[pointIndexes[i] + 1] = point[1];
+				obj3d.ps[pointIndexes[i] + 2] = point[2];
 			}
 			return true;
 		}
 
 		/**
-		 * Return co-ords of a vertex. See the *class* comments for an
-		 * explanation of the vertex labelling.
+		 * Return co-ords of a vertex. See the *class* comments for an explanation of the vertex labelling.
 		 */
 		private float[] getVert(int index) {
 
@@ -600,8 +580,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			}
 
 			/*
-			 * Add the 6 triangles. See the class comments above for an
-			 * explanation of the vertex labelling.
+			 * Add the 6 triangles. See the class comments above for an explanation of the vertex labelling.
 			 */
 
 			// front, back, left, right
@@ -612,16 +591,13 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 			// top, bottom
 			/*
-			 * The top is bent (the four vertices do not lie in a plane). The
-			 * bottom is a lighter color (because the cloud lets light thru'
-			 * from above).
+			 * The top is bent (the four vertices do not lie in a plane). The bottom is a lighter color (because the cloud lets light thru' from above).
 			 */
 			obj3d.addPolygon(new float[][] { ps[4], ps[5], ps[6], ps[7] }, color);
 			obj3d.addPolygon(new float[][] { ps[0], ps[3], ps[2], ps[1], }, color_, true, true);
 
 			/*
-			 * Define a mapping from my vertex labels to obj3d's point indexes
-			 * so we can update the points later.
+			 * Define a mapping from my vertex labels to obj3d's point indexes so we can update the points later.
 			 */
 		}
 
@@ -629,16 +605,14 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			/*
 			 * The clouds radius is a function of it's age. here's the model...
 			 * 
-			 * - volume of rising air, dv, is constant. - decay ~ surface area.
-			 * - dynamic equilibrium, dv = decay, at maturity. - dv = 0 at old
-			 * age.
+			 * - volume of rising air, dv, is constant. - decay ~ surface area. - dynamic equilibrium, dv = decay, at maturity. - dv = 0 at old age.
 			 */
 			float fn;
 			float age = lifeCycle.age;
 
 			// fudge for zero age
-			if (age == 0) {
-				age = lifeCycle.grow / 100f;
+			if (age <= 0) {
+				age = lifeCycle.grow / 1000f;
 			}
 
 			if (lifeCycle.isGrowing()) {
@@ -653,9 +627,8 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			r1 = fn * size * SIZE_UNIT;
 
 			/*
-			 * The base radius equals the top radius except when the cloud is
-			 * decaying. We make the base decay quicker than top of cloud;
-			 * clouds evaporate from the bottom (warmest) up.
+			 * The base radius equals the top radius except when the cloud is decaying. We make the base decay quicker than top of cloud; clouds evaporate from
+			 * the bottom (warmest) up.
 			 */
 			if (!lifeCycle.isDecaying()) {
 				r0 = r1;
@@ -669,8 +642,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	}
 
 	/**
-	 * This class holds data for when things happen to the cloud. A cloud has
-	 * three stages in this model: growth, maturity and decay.
+	 * This class holds data for when things happen to the cloud. A cloud has three stages in this model: growth, maturity and decay.
 	 * 
 	 * <pre>
 	 * 
@@ -686,13 +658,11 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		float t0;
 		float age = 0;
 		float grow, mature, decay, lastTic;
-		boolean frozen = false;
 
 		static final int TIME_UNIT = 15;
 
 		/**
-		 * Sets time from birth until the end of each stage. The times are a
-		 * linear fn of the cloud size.
+		 * Sets time from birth until the end of each stage. The times are a linear fn of the cloud size.
 		 */
 		public LifeCycle(float t, float lifeSpan) {
 			// note when this cloud was created
@@ -721,7 +691,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		}
 
 		boolean notBorn() {
-			return (age < 0);
+			return (age < -1);
 		}
 
 		// once half decayed we have no more lift
@@ -729,17 +699,9 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 			return (age < mature + (decay - mature) / 2);
 		}
 
-		void freeze() {
-			// stop the ageing process + goto the mature stage !
-			age = 0.99f * grow;
-			frozen = true;
-		}
-
 		void tick(float t, float dt) {
-			if (!frozen) {
-				age = t - t0;
-				lastTic = t;
-			}
+			age = t - t0;
+			lastTic = t;
 		}
 
 		/**

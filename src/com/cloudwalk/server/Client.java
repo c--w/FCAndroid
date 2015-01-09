@@ -22,11 +22,10 @@ public class Client {
 	final static boolean DEV = false;
 	static String BASE_URL = "http://hpgf.org/fc/fc.php";
 	static DefaultHttpClient client;
-	static int MY_ID;
-	static String ROOM;
+	public static int MY_ID;
+	public static String ROOM;
 	static {
 		getHttpClient();
-		MY_ID = new Random(System.currentTimeMillis()).nextInt(Integer.MAX_VALUE);
 	}
 
 	public static String send(String message) {

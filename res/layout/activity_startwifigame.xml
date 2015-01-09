@@ -22,11 +22,59 @@
         android:text="-"
         android:textColor="@color/black" />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="@dimen/controls_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <FrameLayout
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical" >
+
+            <LinearLayout
+                android:layout_width="100dp"
+                android:layout_height="1dp"
+                android:layout_gravity="center"
+                android:background="#000000" />
+
+            <LinearLayout
+                android:layout_width="1dp"
+                android:layout_height="10dp"
+                android:layout_gravity="center"
+                android:background="#000000" />
+
+            <SeekBar
+                android:id="@+id/vario"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:enabled="false"
+                android:focusable="false"
+                android:indeterminate="false"
+                android:max="100"
+                android:padding="5dp"
+                android:progress="100"
+                android:progressDrawable="@android:color/transparent"
+                android:thumb="@drawable/dot" />
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/imageViewCompass"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="5dp"
+            android:src="@drawable/notched_compass" />
+    </LinearLayout>
+    
     <FrameLayout
         android:id="@+id/overlay"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="com.cloudwalk.flightclub.MainActivity" >
+        android:layout_height="match_parent" >
 
         <LinearLayout
             android:id="@+id/otherbuttons"
@@ -105,40 +153,6 @@
         </LinearLayout>
 
         <include layout="@layout/controls" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_marginBottom="@dimen/controls_padding" >
-
-        <LinearLayout
-            android:layout_width="100dp"
-            android:layout_height="1dp"
-            android:layout_gravity="center"
-            android:background="#000000" />
-
-        <LinearLayout
-            android:layout_width="1dp"
-            android:layout_height="10dp"
-            android:layout_gravity="center"
-            android:background="#000000" />
-
-        <SeekBar
-            android:id="@+id/vario"
-            android:thumb="@drawable/dot"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:clickable="false"
-            android:enabled="false"
-            android:focusable="false"
-            android:indeterminate="false"
-            android:max="100"
-            android:progress="100"
-            android:padding="5dp"
-            android:progressDrawable="@android:color/transparent" />
     </FrameLayout>
 
 </FrameLayout>

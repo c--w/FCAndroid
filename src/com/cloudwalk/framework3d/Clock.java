@@ -80,14 +80,14 @@ public class Clock implements Runnable {
 		ticker.start();
 		blockStart = currentTick = System.currentTimeMillis();
 		modelTime = getTimeNow();
-//		for (int i = 0; i < observers.size(); i++) {
-//			ClockObserver observer = (ClockObserver) observers.elementAt(i);
-//			if (observer instanceof Trigger) {
-//				Trigger t = ((Trigger) observer);
-//				if (t.mode == Trigger.SLEEPING)
-//					t.wakeUp(modelTime);
-//			}
-//		}
+		// for (int i = 0; i < observers.size(); i++) {
+		// ClockObserver observer = (ClockObserver) observers.elementAt(i);
+		// if (observer instanceof Trigger) {
+		// Trigger t = ((Trigger) observer);
+		// if (t.mode == Trigger.SLEEPING)
+		// t.wakeUp(modelTime);
+		// }
+		// }
 	}
 
 	public void stop() {
@@ -96,14 +96,16 @@ public class Clock implements Runnable {
 		}
 		ticker = null;
 		modelTime = getTimeNow();
-//		for (int i = 0; i < observers.size(); i++) {
-//			ClockObserver observer = (ClockObserver) observers.elementAt(i);
-//			if (observer instanceof Trigger) {
-//				((Trigger) observer).sleep(modelTime);
-//			}
-//		}
+		// for (int i = 0; i < observers.size(); i++) {
+		// ClockObserver observer = (ClockObserver) observers.elementAt(i);
+		// if (observer instanceof Trigger) {
+		// ((Trigger) observer).sleep(modelTime);
+		// }
+		// }
 	}
+
 	float t, _t = 0, dt;
+
 	public void oneFrame(ModelViewRenderer renderer) {
 		if (ticker != null) {
 			if (((XCModelViewer) observers.elementAt(0)).netFlag && !((XCModelViewer) observers.elementAt(0)).netTimeFlag) {
@@ -114,9 +116,13 @@ public class Clock implements Runnable {
 			tickCount++;
 
 			modelTime = t = getTimeNow();
-			
-			 if (_t == 0) { dt = modelTimePerFrame; } else { dt = t - _t; }
-			
+
+			if (_t == 0) {
+				dt = modelTimePerFrame;
+			} else {
+				dt = t - _t;
+			}
+
 			for (int i = 0; i < observers.size(); i++) {
 				// when paused still tick the modelviewer so
 				// we can change our POV and *un*pause !
@@ -182,8 +188,11 @@ public class Clock implements Runnable {
 	 * Synchronises this client's copy of the model time with the master time held on the game server.
 	 */
 	public void synchTime(float t) {
+		if (Math.abs(t - getTimeNow()) > 1)
+			modelTimeAtSync = t;
+		else
+			modelTimeAtSync = t * .1f + getTimeNow() * .9f;
 		realTimeAtSync = System.currentTimeMillis();
-		modelTimeAtSync = t;
 		Log.w("FC Clock", "Synctime:" + t + " Modeltime diff:" + (getTimeNow() - modelTime));
 		modelTime = getTimeNow();
 	}

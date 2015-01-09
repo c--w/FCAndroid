@@ -28,7 +28,6 @@ public class GliderAI extends GliderTask {
 	MovementManager moveManager;
 	private boolean tryLater = false; // no lift found yet so glide for a bit on
 										// track
-	LiftSource currentLS;
 	// vars for delayed camera cuts
 	boolean cutPending = false;
 	float cutWhen = 0;
@@ -57,8 +56,9 @@ public class GliderAI extends GliderTask {
 	/**
 	 * Start flying the task.
 	 */
-	public void takeOff(boolean really) {
-		super.takeOff(really);
+	public void launch() {
+		super.launch(false);
+		super.launch(true);
 		makeDecision(xcModelViewer.clock.getTime());
 	}
 
@@ -257,7 +257,7 @@ public class GliderAI extends GliderTask {
 	}
 
 	public void tick(float t, float dt) {
-		if (!landed) {
+		if (!onGround) {
 			nextTurn = moveManager.nextMove();
 			tickAI(t);
 		}

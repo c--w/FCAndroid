@@ -32,5 +32,6 @@ public interface ModelEnv {
 	void play(float sound, int index, int loop);
 	Context getContext();
 	SharedPreferences getPrefs();
+	void sendMessage(String msg);
 }
    

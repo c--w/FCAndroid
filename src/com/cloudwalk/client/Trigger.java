@@ -38,7 +38,6 @@ public class Trigger implements ClockObserver, CameraSubject {
 	float phase;
 	float nextCloudStartTime; // when will next cloud be created
 	float lastTick;
-	public int mode = SLEEPING;
 	boolean blueThermal = false;
 	boolean show = true;
 	public float cloudHeight;
@@ -49,9 +48,6 @@ public class Trigger implements ClockObserver, CameraSubject {
 	// unique id for each instance of this class
 	static int nextID = 0;
 	int myID;
-
-	public static final int SLEEPING = 0;
-	public static final int AWAKE = 1;
 
 	/**
 	 * Creates a trigger at (x, y). t is the current time and t0 is the time that the trigger creates its first bubble.
@@ -107,7 +103,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 		// Log.w("FC Trigger", "" + phase);
 		// nextCloudStartTime = phase - cycleLength;
 		myID = nextID++; // unique id (for debugging)
-		//cloudHeight = xcModelViewer.xcModel.task.CLOUDBASE;
+		// cloudHeight = xcModelViewer.xcModel.task.CLOUDBASE;
 	}
 
 	/** Creates a 'default' trigger at (x, y). */
@@ -142,7 +138,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	}
 
 	void setParamsV2() {
-		// quasi random between -2 and 2 but leaning towards 2
+		// quasi random between 1 and 5 but leaning towards 5
 		float qrandom = (float) (Math.sqrt(get01Value3() * 16f) - 2f);
 		float a = 3.0f + qrandom;
 		thermalStrength = a;
@@ -153,7 +149,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	}
 
 	void setParamsV3() {
-		// quasi random between -2 and 2 leaning to 0
+		// quasi random between 3 and 5 leaning to 3
 		float qrandom = get01Value3();
 		qrandom *= qrandom;
 		float a = 3.0f + qrandom * 2;
@@ -165,10 +161,10 @@ public class Trigger implements ClockObserver, CameraSubject {
 	}
 
 	void setParamsV4() {
-		// quasi random between -2 and 2 leaning to 0
+		// quasi random between 1 and 5 leaning to 1
 		float qrandom = get01Value3();
 		qrandom *= qrandom;
-		float a = 3.0f + (qrandom-0.5f) * 4;
+		float a = 3.0f + (qrandom - 0.5f) * 4;
 		thermalStrength = a;
 		cycleLength = (thermalStrength / 10f + 0.5f * get01Value2()) * 120; // 50% comes from strength and 50% is random
 		duration = 0.5f + thermalStrength / 20f + get01Value4() * 0.25f; // duration at least half the cycle + 25% from strength + 25% random
@@ -215,19 +211,13 @@ public class Trigger implements ClockObserver, CameraSubject {
 	/** Make a cloud every <code>cycle</code> period of time. */
 	public void tick(float t, float dt) {
 		if (t >= nextCloudStartTime) {
-			nextCloudStartTime += cycleLength * (Math.floor((t-nextCloudStartTime)/cycleLength)+1);
+			nextCloudStartTime += cycleLength * (Math.floor((t - nextCloudStartTime) / cycleLength) + 1);
 			existingClouds(t);
 		}
 	}
 
 	private static float STRENGTH_MIN = 0.1f;
 
-	// Makes a new cloud start bubbling up
-	private void makeCloud() {
-		if (thermalStrength >= STRENGTH_MIN) {
-			new Cloud(xcModelViewer, x, y, thermalStrength, duration * cycleLength, 0, blueThermal, cloudHeight);
-		}
-	}
 
 	/** Makes a cloud that bubbled up at time dt *before* now. */
 	private void makeCloud(float dt) {
@@ -240,38 +230,14 @@ public class Trigger implements ClockObserver, CameraSubject {
 		}
 	}
 
-	private float sleepT = -1;
-
-	/**
-	 * Makes the trigger sleep. When asleep the trigger will not be rendered and does not produce any clouds.
-	 */
-	public void sleep(float t) {
-		if (mode == SLEEPING) {
-			return;
-		}
-		xcModelViewer.clock.removeObserver(this);
-		mode = SLEEPING;
-		renderMe();
-		sleepT = t;
-		Log.i("FC Trigger", "Sleep:" + myID);
-	}
-
 	/**
 	 * Wakes up this trigger. One fiddly bit - if the wake up comes immediately after sleep was called then we do not need to create existing clouds. Triggers
 	 * on overlapping nodes get a sleep call from one node followed by a wake call from another.
 	 */
 	public void wakeUp(float t) {
-		if (mode == AWAKE) {
-			return;
-		}
 		xcModelViewer.clock.addObserver(this);
-		if (t != sleepT) {
 			initNextCycle(t);
 			existingClouds(t);
-		} else {
-			// Log.i("FC", "Waking up immediately after a sleep");
-		}
-		mode = AWAKE;
 		renderMe();
 	}
 
@@ -298,13 +264,13 @@ public class Trigger implements ClockObserver, CameraSubject {
 	/**
 	 * Add a visual representation of this trigger to the model.
 	 * 
-	 * We draw a square on the ground whose shade varys from white to black as a fn of thermalStrength.
+	 * We draw a hexagon on the ground whose shade varys from white to black as a fn of thermalStrength.
 	 */
 	private Obj3d obj3d;
 	private static final int NUM_POINTS = 7;
 
 	private void renderMe() {
-		if (mode == AWAKE && show) {
+		if (show) {
 			obj3d = new Obj3d(xcModelViewer);
 			float radius = thermalStrength * 0.5f;
 			float[][] ps = Tools3d.circleXY(NUM_POINTS, radius, new float[] { x, y, 0 });
@@ -317,7 +283,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 
 	/** Prints a debug string. */
 	void asString() {
-		Log.i("FC", "Trigger(" + myID + "): x=" + Tools3d.round(x) + ", y=" + Tools3d.round(y) + ", mode=" + mode);
+		Log.i("FC", "Trigger(" + myID + "): x=" + Tools3d.round(x) + ", y=" + Tools3d.round(y));
 	}
 
 }

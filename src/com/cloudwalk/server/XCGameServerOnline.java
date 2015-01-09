@@ -33,12 +33,15 @@ public class XCGameServerOnline {
 	public boolean started = false;
 	String task;
 	int glider_type;
-	int onlinePlayerIdCounter = 1;
+	String playerName;
+	int playerColor;
 
-	public XCGameServerOnline(int port, String task, int glider_type) {
+	public XCGameServerOnline(int port, String task, int glider_type, String playerName, int playerColor) {
 		SERVER_PORT = port;
 		this.task = task;
 		this.glider_type = glider_type;
+		this.playerName = playerName;
+		this.playerColor = playerColor;
 		Client.ROOM = glider_type + task;
 		xcClientThread = new Thread();
 		onlinePlayersId2Num = new LinkedHashMap<String, Integer>();
@@ -104,18 +107,18 @@ public class XCGameServerOnline {
 			String id = entry.getKey();
 			boolean exists = false;
 			for (String eid : ids) {
-				if(id.equals(eid)) {
+				if (id.equals(eid)) {
 					exists = true;
 					break;
 				}
 			}
-			if(!exists)
+			if (!exists)
 				todelete.add(id);
 		}
 		for (String delete : todelete) {
-			Integer localId = onlinePlayersId2Num.get(delete); 
+			Integer localId = onlinePlayersId2Num.get(delete);
 			onlinePlayersId2Num.remove(delete);
-			onlinePlayersId2Num.remove(localId);
+			onlinePlayersNum2Id.remove(localId);
 			sendToAll(localId, "UNCONNECTED");
 		}
 	}
@@ -130,6 +133,14 @@ public class XCGameServerOnline {
 		return message.substring(0, ind);
 	}
 
+	int findFreeNum() {
+		for (int i = 1; i < 20; i++) {
+			if (!onlinePlayersNum2Id.containsKey(i))
+				return i;
+		}
+		return 0;
+	}
+
 	public void sendToAll(String message) {
 		int ind = message.indexOf("_");
 		String id = getId(message);
@@ -142,7 +153,7 @@ public class XCGameServerOnline {
 		if (onlinePlayersId2Num.containsKey(id)) {
 			num = onlinePlayersId2Num.get(id);
 		} else {
-			num = onlinePlayerIdCounter++;
+			num = findFreeNum();
 			onlinePlayersId2Num.put(id, num);
 			onlinePlayersNum2Id.put(num, id);
 		}
@@ -252,25 +263,25 @@ class XCHandlerOnline implements Runnable {
 			clientSend.println("+TIME: " + XCGameServerOnline.clock.getModelTime());
 			clientSend.flush();
 
-			Client.send("CONNECTED: " + server.glider_type);
+			Client.send("CONNECTED: " + server.glider_type + "," + server.playerName + "," + server.playerColor);
 
 			while ((nextLine = clientReceive.readLine()) != null) {
-				nextLine = nextLine.toUpperCase();
+				String nextLineUpper = nextLine.toUpperCase();
 
 				if (!server.getKeepRunning()) {
 					break;
-				} else if (nextLine.indexOf("QUIT") == 0) {
+				} else if (nextLineUpper.indexOf("QUIT") == 0) {
 					break;
-				} else if (nextLine.indexOf("TEST") == 0) {
+				} else if (nextLineUpper.indexOf("TEST") == 0) {
 					clientSend.println("+OK ");
 					clientSend.flush();
-				} else if (nextLine.indexOf("KILLALL") == 0) {
+				} else if (nextLineUpper.indexOf("KILLALL") == 0) {
 					server.disconnectAllXCClient();
-				} else if (nextLine.indexOf("LAUNCH") == 0) {
+				} else if (nextLineUpper.indexOf("LAUNCH") == 0) {
 					String tmp = nextLine.substring(nextLine.indexOf(":") + 2, nextLine.indexOf(":") + 3);
 					gliderType = parseInt(tmp);
 					Client.send(nextLine);
-				} else if (nextLine.indexOf("WARM_FRONT") == 0) { // secret code
+				} else if (nextLineUpper.indexOf("WARM_FRONT") == 0) { // secret code
 																	// to shut
 																	// down the
 																	// server
@@ -323,7 +334,7 @@ class XCClockOnline implements Runnable {
 	long startTick, sleepTime;
 	XCGameServerOnline server;
 
-	static final int TICK_LEN = 10; // how many seconds between heartbeats to
+	static final int TICK_LEN = 3; // how many seconds between heartbeats to
 									// clients
 	static final int DAY_LEN = 60 * 60 * 24; // how many seconds in the loop
 	static final int LOG_BEAT = 60 * 60; // every hour
@@ -371,6 +382,7 @@ class XCClockOnline implements Runnable {
 	long lastSendTime = 0;
 
 	public void run() {
+		pingOnline();
 		while (ticker != null) {
 			long currentTick = System.currentTimeMillis();
 
@@ -382,7 +394,7 @@ class XCClockOnline implements Runnable {
 			String onlineMessages = pingOnline();
 			processOnlineMessages(onlineMessages);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 			// ticker = null;

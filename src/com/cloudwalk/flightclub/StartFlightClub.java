@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Arrays;
+import java.util.Random;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -15,6 +15,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ConfigurationInfo;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.hardware.SensorEvent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -26,6 +29,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
@@ -37,10 +41,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cloudwalk.client.Glider;
 import com.cloudwalk.client.GliderUser;
 import com.cloudwalk.client.Task;
 import com.cloudwalk.client.XCCameraMan;
@@ -49,6 +56,7 @@ import com.cloudwalk.flightclub.GravityListener.OnGravityListener;
 import com.cloudwalk.framework3d.ClockObserver;
 import com.cloudwalk.framework3d.ModelView;
 import com.cloudwalk.framework3d.ModelViewRenderer;
+import com.cloudwalk.server.Client;
 import com.cloudwalk.server.XCGameServer;
 import com.cloudwalk.server.XCGameServerOnline;
 import com.cloudwalk.startup.ModelEnv;
@@ -73,6 +81,9 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	GestureDetector detector;
 	GravityListener mGravity;
 	int control_type;
+	float compassSize;
+	int glider_color;
+	String playerName;
 
 	boolean finished = false, landed = false, flying = false;
 
@@ -81,13 +92,19 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	boolean broadcasting = false;
 	boolean serving = false;
 	boolean wasPaused;
+	boolean net = false;
 	Menu menu;
 	SharedPreferences prefs;
+	ImageView compass = null;
 
 	Handler h = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			try {
+				if (msg != null && msg.getData() != null && msg.getData().getString("msg") != null) {
+					Toast.makeText(getApplicationContext(), msg.getData().getString("msg"), Toast.LENGTH_LONG).show();
+					return;
+				}
 				GliderUser glider = ((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser;
 				if (flying == true && glider.getLanded()) {
 					flying = false;
@@ -134,7 +151,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 					finished = true;
 				}
 				View v = findViewById(R.id.startbuttons);
-				if (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.getLanded()) {
+				if (((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.getOnGround()) {
 					if (v.getVisibility() == View.GONE)
 						v.setVisibility(View.VISIBLE);
 				} else {
@@ -142,7 +159,8 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						v.setVisibility(View.GONE);
 				}
 				((TextView) findViewById(R.id.info)).setText(Html.fromHtml(surfaceView.getInfoText()));
-				((SeekBar) findViewById(R.id.vario)).setProgress((int) (50 +  ((XCModelViewer) modelViewerThin).xcModel.gliderManager.theGlider().getActualSink() / 0.37f * 50));
+				((SeekBar) findViewById(R.id.vario)).setProgress((int) (50 + ((XCModelViewer) modelViewerThin).xcModel.gliderManager.theGlider()
+						.getActualSink() / 0.37f * 50));
 				if (flying == true && prefs.getBoolean("ambient_sound", true)) {
 					if (currentSpeed != glider.getSpeed()) {
 						soundPool.setRate(streamIDs[1], (float) Math.sqrt(glider.getSpeed() / 1.7));
@@ -155,11 +173,28 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 						soundPool.play(soundIds[3], (float) (volume * Math.random()) * .05f, (float) (volume * Math.random()) * .05f, 1, 0, 1);
 					else if (rnd == 2)
 						soundPool.play(soundIds[6], (float) (volume * Math.random()) * .05f, (float) (volume * Math.random()) * .05f, 1, 0, 1);
+
 				} else if (glider.racing && !glider.getLanded() && flying == false) {
 					flying = true;
 					if (prefs.getBoolean("ambient_sound", true))
 						streamIDs[1] = soundPool.play(soundIds[1], volume / 2, volume / 2, 1, -1, (float) Math.sqrt(glider.getSpeed() / 1.7));
 				}
+				Glider active_glider = ((XCModelViewer) modelViewerThin).xcModel.gliderManager.theGlider();
+				if (active_glider != null) {
+					float angle = (float) Math.toDegrees(Math.atan2(active_glider.v[0], active_glider.v[1]));
+
+					if (angle < 0) {
+						angle += 360;
+					}
+
+					Matrix matrix = new Matrix();
+					compass.setScaleType(ScaleType.MATRIX); // required
+					matrix.postRotate((float) angle, compass.getDrawable().getBounds().width() / 2, compass.getDrawable().getBounds().height() / 2);
+					float scale = compassSize / compass.getDrawable().getBounds().width();
+					matrix.postScale(scale, scale);
+					compass.setImageMatrix(matrix);
+				}
+
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
@@ -211,9 +246,9 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		landed = false;
 		finished = false;
 		wasPaused = false;
-		if(control_type == 1) 
+		if (control_type == 1)
 			mGravity.resume();
-		
+
 	}
 
 	private void startGameServerOnline(int port) {
@@ -221,7 +256,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 
 			@Override
 			public void run() {
-				serverOnline = new XCGameServerOnline(Tools.SERVER_PORT, task, pilotType);
+				serverOnline = new XCGameServerOnline(Tools.SERVER_PORT, task, pilotType, playerName, glider_color);
 				serving = true;
 				serverOnline.serveClients();
 			}
@@ -244,14 +279,17 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_startwifigame);
+		compass = (ImageView) findViewById(R.id.imageViewCompass);
 
+		Resources r = getResources();
+		compassSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, r.getDisplayMetrics());
 		task = "default";
 
 		pilotType = 0; // 0 = pg, 1 = hg, 2 = sp, 3 = ballon
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		control_type = Integer.parseInt(prefs.getString("control_type", "0"));
-		if(control_type == 1) {
+		if (control_type == 1) {
 			Log.i("FC", "Start gravity listener");
 			mGravity = new GravityListener(this);
 			mGravity.setOnEventListener(this);
@@ -259,6 +297,9 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		Intent intent = getIntent();
 		pilotType = intent.getIntExtra("glider", 0);
 		task = intent.getStringExtra("task");
+		glider_color = prefs.getInt("glider_color", Color.BLUE);
+		playerName = prefs.getString("playerName", "Player");
+
 		int numpg = Integer.parseInt(prefs.getString("numpg", "3"));
 		int numhg = Integer.parseInt(prefs.getString("numhg", "3"));
 		int numsp = Integer.parseInt(prefs.getString("numsp", "3"));
@@ -280,13 +321,17 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				startBroadcast(pilotType, task);
 				hostPort = myip + ":" + Tools.SERVER_PORT;
 			}
-			findViewById(R.id.pause).setVisibility(View.GONE);
-		} else if(intent.hasExtra("net_online")) {
+			((TextView) findViewById(R.id.pause)).setText("x");
+			net = true;
+		} else if (intent.hasExtra("net_online")) {
 			String myip = Tools.getIPAddress(true);
+			Client.MY_ID = prefs.getInt("online_id", new Random(System.currentTimeMillis()).nextInt(Integer.MAX_VALUE));
 			startGameServerOnline(Tools.SERVER_PORT);
 			while (!serving)
 				SystemClock.sleep(10);
 			hostPort = myip + ":" + Tools.SERVER_PORT;
+			((TextView) findViewById(R.id.pause)).setText("x");
+			net = true;
 		}
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		soundPool = new SoundPool(7, AudioManager.STREAM_MUSIC, 0);
@@ -412,8 +457,12 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 
 			@Override
 			public void onClick(View v) {
-				((XCModelViewer) modelViewerThin).xcModel.togglePause();
-				wasPaused = true;
+				if (net == true) {
+					((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser.hitTheSpuds();
+				} else {
+					((XCModelViewer) modelViewerThin).xcModel.togglePause();
+					wasPaused = true;
+				}
 			}
 		});
 		if (!prefs.getBoolean("show_controls", true)) {
@@ -482,6 +531,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 			@Override
 			public boolean onDoubleTap(MotionEvent e) {
 				View v = findViewById(R.id.overlay);
+				View info = findViewById(R.id.info);
 				float x = e.getX();
 				float y = e.getY();
 				if (x > v.getWidth() * 2 / 7 && x < v.getWidth() * 5 / 7 && y > v.getHeight() * 2 / 7 && y < v.getHeight() * 5 / 7) {
@@ -490,6 +540,13 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 					else
 						v.setVisibility(View.GONE);
 					return false;
+				} else if (x < v.getWidth() * 2 / 7 && y > v.getHeight() * 5 / 7) {
+					if (info.getVisibility() == View.GONE)
+						info.setVisibility(View.VISIBLE);
+					else
+						info.setVisibility(View.GONE);
+					return false;
+
 				}
 				return false;
 			}
@@ -543,7 +600,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	protected void onPause() {
 		super.onPause();
 		soundPool.autoPause();
-		if(control_type == 1) 
+		if (control_type == 1)
 			mGravity.pause();
 		if (modelViewerThin != null && ((XCModelViewer) modelViewerThin).clock != null) {
 			((XCModelViewer) modelViewerThin).clock.paused = true;
@@ -558,7 +615,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if(control_type == 1) 
+		if (control_type == 1)
 			mGravity.resume();
 		soundPool.autoResume();
 		if (modelViewerThin != null && ((XCModelViewer) modelViewerThin).clock != null)
@@ -721,5 +778,13 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		return prefs;
 	}
 
+	@Override
+	public void sendMessage(String msg) {
+		Bundle bundle = new Bundle();
+		bundle.putString("msg", msg);
+		Message message = h.obtainMessage();
+		message.setData(bundle);
+		h.sendMessage(message);
+	}
 
 }

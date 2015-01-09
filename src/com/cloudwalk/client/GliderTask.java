@@ -9,11 +9,6 @@
  */
 package com.cloudwalk.client;
 
-import java.util.Arrays;
-
-import android.graphics.Color;
-import android.util.Log;
-
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
@@ -28,15 +23,6 @@ public class GliderTask extends Glider {
 	public GliderTask(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
 		super(xcModelViewer, gliderType, id);
 		nextTP = xcModelViewer.xcModel.task.turnPointManager.turnPoints[1];
-	}
-
-	/**
-	 * Start flying the task.
-	 */
-	public void takeOff(boolean really) {
-		super.takeOff(really);
-		nextTP = xcModelViewer.xcModel.task.turnPointManager.turnPoints[1];
-		finished = false;
 	}
 
 	public void tick(float t, float dt) {
@@ -66,13 +52,11 @@ public class GliderTask extends Glider {
 		}
 	}
 
-	public boolean finished = false;
-	public float timeFinished = 0;
-
 	private void finishedTask() {
 		if (!finished) {
 			finished = true;
 			timeFinished = timeFlying;
+			modelViewer.modelEnv.sendMessage("Player: " + this.getPlayerName() + " in GOAL!");
 		}
 	}
 
@@ -125,7 +109,7 @@ public class GliderTask extends Glider {
 		String distance = " D: " + (round1(distanceFlown() / 2f)) + "km";
 		String hexColor = String.format("#%06X", (0xFFFFFF & color));
 		String ret = "<font color=\"" + hexColor + "\">" + playerName + "</font> - " + currentFlightValues + height + distance;
-		//Log.i("FC GT", ret);
+		// Log.i("FC GT", ret);
 		return ret;
 	}
 

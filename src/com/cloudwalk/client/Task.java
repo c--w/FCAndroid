@@ -16,17 +16,15 @@ import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.Random;
 
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.PSA;
-import android.graphics.Color;
 import android.util.Log;
 
-import com.cloudwalk.data.Building;
 import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.CameraSubject;
 import com.cloudwalk.framework3d.FileFormatException;
@@ -76,6 +74,8 @@ public class Task implements CameraSubject {
 			generateT7Task();
 		} else if (taskID.equals("default8")) {
 			generateT8Task();
+		} else if (taskID.equals("default9")) {
+			generateT9Task();
 		} else {
 			parseFile(taskID);
 		}
@@ -144,9 +144,6 @@ public class Task implements CameraSubject {
 				{ 4 * x, 2 * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2, r3, r4 });
 
-		// hills = new Hill[1];
-		// Hill hill = new Hill(this, x, 1.5f * x);
-		// hills[0] = hill;
 	}
 
 	private void generateT5Task() {
@@ -254,7 +251,7 @@ public class Task implements CameraSubject {
 		// roads - specify start and end points
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x, 0 }, { x, 2 * x, 0 }, { 2 * x, 4 * x, 0 } };
 		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 2 * x, 4 * x + 0.1f, 0 } };
-		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2});
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
 
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
@@ -262,17 +259,17 @@ public class Task implements CameraSubject {
 	}
 
 	private void generateT8Task() {
+		desc = "Out and return 160km task.\nWind: weak WSW.\nCloudbase varies around 1800m.";
 		latitude = 46;
 		time_of_day = "15";
 		type = TIME_PRECISE;
-		desc = "Out and return 160km task.\nWind: weak WSW.\nCloudbase varies around 1800m.";
 		CLOUDBASE = 3.6f;
 		NODE_SPACING = CLOUDBASE * 12f;
 		HEXAGON = CLOUDBASE * 7;
 		float x = CLOUDBASE * 10;
 
 		// turn points
-		float[] xs = { x/2f, x * 5.f, x/2f };
+		float[] xs = { x / 2f, x * 5.f, x / 2f };
 		float[] ys = { x * 0.35f, x * 0.4f, x * 0.45f };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
@@ -292,6 +289,44 @@ public class Task implements CameraSubject {
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.6f * x, 0 }, { 4 * x, x * .1f, 0 }, { 8 * x, 0.5f * x, 0 } };
 		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { 0.8f * x, 0.6f * x + 0.1f, 0 }, { 4 * x, x * .1f + 0.1f, 0 }, { 8 * x, 0.5f * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+	}
+
+	private void generateT9Task() {
+		desc = "Closed circuit 50km task with 2 turnpoints and GOAL = START.\nDifferent triggers every day!\nFirst point to N. \nWind SW. \nCloudbase around 1500m.";
+		type = TIME_PRECISE;
+		latitude = 45;
+		time_of_day = "13";
+		CLOUDBASE = 3;
+		NODE_SPACING = CLOUDBASE * 12f;
+		HEXAGON = CLOUDBASE * 7;
+		// turn points
+		float x = CLOUDBASE * 10;
+		// x /= 5; // tmp - small course for testing gliding around the turn
+		// points
+		float[] xs = { x, x, 2 * x, x };
+		float[] ys = { x, 2 * x, 1.5f * x, x };
+		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
+
+		// wind
+		wind_x = 0.1f;
+		wind_y = 0.1f;
+
+		// triggers
+		triggers = new Trigger[4 * 4 * 6];
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				flatLandRandom(i * HEXAGON, j * HEXAGON, 4, CLOUDBASE);
+			}
+		}
+
+		// roads - specify start and end points
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x, 0 }, { x, 2 * x, 0 }, { 2 * x, 4 * x, 0 } };
+		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 2 * x, 4 * x + 0.1f, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+
+		// hills = new Hill[1];
+		// Hill hill = new Hill(this, x, 1.5f * x);
+		// hills[0] = hill;
 	}
 
 	private void parseFile(String taskID) throws IOException {
@@ -479,6 +514,35 @@ public class Task implements CameraSubject {
 		trigger = new Trigger(xcModelViewer, x1 - dh, y0 + 2 * dh, version, cloudHeight);
 		triggers[next++] = trigger;
 
+		trigger = new Trigger(xcModelViewer, x1 - dh, y1 - 2 * dh, version, cloudHeight);
+		triggers[next++] = trigger;
+	}
+
+	void flatLandRandom(float x0, float y0, int version, float cloudHeight) {
+		Trigger trigger;
+		float y1, x1;
+
+		y1 = y0 + HEXAGON;
+		x1 = x0 + HEXAGON;
+		Random r = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
+		float dhh = HEXAGON / 6;
+		// Log.i("FC TASK", "X:" + x1 + " Y:" + y1 + " dH:" + dh);
+		float dh = dhh + (r.nextFloat() - 0.5f) * 2;
+		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y0 + dh, version, cloudHeight);
+		triggers[next++] = trigger;
+		dh = dhh + (r.nextFloat() - 0.5f) * 2;
+		trigger = new Trigger(xcModelViewer, x0 + HEXAGON / 2, y1 - dh, version, cloudHeight);
+		triggers[next++] = trigger;
+		dh = dhh + (r.nextFloat() - 0.5f) * 2;
+		trigger = new Trigger(xcModelViewer, x0 + dh, y0 + 2 * dh, version, cloudHeight);
+		triggers[next++] = trigger;
+		dh = dhh + (r.nextFloat() - 0.5f) * 2;
+		trigger = new Trigger(xcModelViewer, x0 + dh, y1 - 2 * dh, version, cloudHeight);
+		triggers[next++] = trigger;
+		dh = dhh + (r.nextFloat() - 0.5f) * 2;
+		trigger = new Trigger(xcModelViewer, x1 - dh, y0 + 2 * dh, version, cloudHeight);
+		triggers[next++] = trigger;
+		dh = dhh + (r.nextFloat() - 0.5f) * 2;
 		trigger = new Trigger(xcModelViewer, x1 - dh, y1 - 2 * dh, version, cloudHeight);
 		triggers[next++] = trigger;
 	}
