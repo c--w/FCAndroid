@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string-array name="birds_label">
+        <item>None</item>
+        <item>Few</item>
+        <item>Moderate</item>
+        <item>Many</item>
+    </string-array>
+    
+    <string-array name="birds_amount">
+        <item>0</item>
+        <item>2</item>
+        <item>3</item>
+        <item>6</item>
+    </string-array>
+    
     <string-array name="glider_number">
         <item>0</item>
         <item>1</item>

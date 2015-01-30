@@ -109,6 +109,7 @@ public class XCModel extends Model {
 				task.nodeManager.loadNodes(0, xcModelViewer.clock.getTime());
 			}
 		}
+		gliderManager.launchBirds();
 
 		if (!userPlay_) {
 			if (xcModelViewer.xcNet == null) {

@@ -54,8 +54,6 @@ public class GliderUser extends GliderTask {
 
 	public void tick(float t, float dt) {
 		super.tick(t, dt);
-		currentGlideSpeed();
-		groundGlideRatio = ((int) (groundGlideRatio * 10)) / 10f;
 
 		if (!onGround) {
 			vario.tick(t);

@@ -57,7 +57,6 @@ public class GliderAI extends GliderTask {
 	 * Start flying the task.
 	 */
 	public void launch() {
-		super.launch(false);
 		super.launch(true);
 		makeDecision(xcModelViewer.clock.getTime());
 	}
@@ -107,7 +106,7 @@ public class GliderAI extends GliderTask {
 		}
 
 		// am i at base ?
-		if (this.obj.getZmax() >= xcModelViewer.xcModel.task.CLOUDBASE && t > t_ + T_LATER) {
+		if (moveManager.cloud != null && this.p[2] >= moveManager.cloud.h && t > t_ + T_LATER) {
 			if (Glider.filmID == myID) {
 				modelViewer.cameraMan.setSubject(this, true);
 			}

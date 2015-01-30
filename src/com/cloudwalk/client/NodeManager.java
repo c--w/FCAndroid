@@ -12,8 +12,7 @@ package com.cloudwalk.client;
 import android.util.Log;
 
 /**
- * Managers a list of nodes for a task. A task is 'covered' using N nodes (cf
- * mobile phone transmitters).
+ * Managers a list of nodes for a task. A task is 'covered' using N nodes (cf mobile phone transmitters).
  */
 class NodeManager {
 	XCModelViewer xcModelViewer;
@@ -38,16 +37,14 @@ class NodeManager {
 	}
 
 	/**
-	 * Breaks the task down into nodes. We start from the first turn point and
-	 * create a node every distance d along the course until we reach the last
-	 * turn point.
+	 * Breaks the task down into nodes. We start from the first turn point and create a node every distance d along the course until we reach the last turn
+	 * point.
 	 * 
-	 * If a node falls 'near' the next turn point we increase its radius and
-	 * locate it at the turn point.
+	 * If a node falls 'near' the next turn point we increase its radius and locate it at the turn point.
 	 */
 	private void carveUpTask() {
 		float dTotal = task.getTotalDistance();
-		Log.i("FC NM", "Total distance: "+dTotal);
+		Log.i("FC NM", "Total distance: " + dTotal);
 		int numNodes = (int) Math.floor(dTotal / nodeSpacing) + 1;
 		if (dTotal % nodeSpacing != 0) {
 			numNodes++;
@@ -77,8 +74,7 @@ class NodeManager {
 		}
 
 		/*
-		 * Register the triggers with nodes that contain them. Beware ! This
-		 * nested loop is a potential performance bottleneck.
+		 * Register the triggers with nodes that contain them. Beware ! This nested loop is a potential performance bottleneck.
 		 */
 		for (int i = 0; i < task.triggers.length; i++) {
 			Trigger trigger = task.triggers[i];
@@ -104,20 +100,18 @@ class NodeManager {
 	/**
 	 * Loads this node (and the next one or two along the task route).
 	 * 
-	 * We do the sleeping before the waking so that a trigger that occurs on
-	 * both a sleeping node and a waking node ends up awake.
 	 */
 	void loadNodes(int pNode, float t) {
 		if (pNode == currentNode || allLoad)
 			return;
-
-		for (int i = 0; i < nodes.length; i++) {
-			if (i < pNode - 1 || i >= pNode + UPFRONT_NODES) {
-				nodes[i].sleep();
-			} else {
-				// wake up - see below loop
-			}
-		}
+		// no sleeping
+		// for (int i = 0; i < nodes.length; i++) {
+		// if (i < pNode - 1 || i >= pNode + UPFRONT_NODES) {
+		// nodes[i].sleep();
+		// } else {
+		// // wake up - see below loop
+		// }
+		// }
 
 		for (int i = 0; i < nodes.length; i++) {
 			if (i < pNode - 1 || i >= pNode + UPFRONT_NODES) {
@@ -137,22 +131,14 @@ class NodeManager {
 	 * 
 	 * TODO: do not include clouds in this view (too slow ?).
 	 */
-	void loadAllNodes(boolean flag) {
+	void loadAllNodes() {
 		float t = xcModelViewer.clock.getTime();
-		if (flag) {
-			for (int i = 0; i < nodes.length; i++) {
-				nodes[i].wakeUp(t);
-			}
-			xcModelViewer.xcModel.task.turnPointManager.renderMe();
-			xcModelViewer.xcModel.task.roadManager.renderMe();
-			allLoad = true;
-		} else {
-			allLoad = false;
-			// toggle current node to force reloading
-			int tmp = currentNode;
-			currentNode = -1;
-			loadNodes(tmp, t);
+		for (int i = 0; i < nodes.length; i++) {
+			nodes[i].wakeUp(t);
 		}
+		xcModelViewer.xcModel.task.turnPointManager.renderMe();
+		xcModelViewer.xcModel.task.roadManager.renderMe();
+		allLoad = true;
 	}
 
 	/**
@@ -162,7 +148,7 @@ class NodeManager {
 		Node[] loadedNodes = new Node[this.countLoadedNodes()];
 		int n = 0;
 		for (int i = 0; i < nodes.length; i++) {
-			if (nodes[i].mode == Node.AWAKE) {
+			if (nodes[i].awake) {
 				loadedNodes[n++] = nodes[i];
 			}
 		}
@@ -173,7 +159,7 @@ class NodeManager {
 	private int countLoadedNodes() {
 		int n = 0;
 		for (int i = 0; i < nodes.length; i++) {
-			if (nodes[i].mode == Node.AWAKE) {
+			if (nodes[i].awake) {
 				n++;
 			}
 		}

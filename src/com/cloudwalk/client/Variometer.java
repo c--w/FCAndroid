@@ -54,7 +54,7 @@ public class Variometer {
 		float lift = glider.getActualSink();
 		if (lift > 0) {
 			xcModelViewer.modelEnv.play(0.8f+lift/liftMax*1.2f, 0, 0);
-		}
+		} 
 	}
 
 	private int whichStep(float lift) {

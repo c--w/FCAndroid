@@ -16,7 +16,7 @@ public class Building {
 	public final static int NUM_POLYGONS = 5;
 	final static float scale = 0.05f;
 
-	public static void createBuilding(ModelViewer modelViewer, int a, int b, int c, float x, float y, float z, int color) {
+	public static void createBuilding(ModelViewer modelViewer, float a, float b, float c, float x, float y, float z, int color) {
 		Obj3d o = new Obj3d(modelViewer);
 
 		float[][] pol;
@@ -52,7 +52,7 @@ public class Building {
 		return;
 	}
 
-	public static void createPyramid(ModelViewer modelViewer, int a, int b, int c, float x, float y, float z, int color) {
+	public static void createPyramid(ModelViewer modelViewer, float a, float b, float c, float x, float y, float z, int color) {
 		Obj3d o = new Obj3d(modelViewer);
 
 		float[][] pol;
@@ -86,13 +86,13 @@ public class Building {
 		return;
 	}
 
-	public static void createHouse(ModelViewer modelViewer, int a, int b, int c, float x, float y, float z, int color) {
+	public static void createHouse(ModelViewer modelViewer, float a, float b, float c, float x, float y, float z, int color) {
 		createBuilding(modelViewer, a, b, c, x, y, z, color);
-		createPyramid(modelViewer, a, b, c / 3, x, y, z + c * scale, color);
+		createPyramid(modelViewer, a, b, c / 3f, x, y, z + c * scale, color);
 	}
 
-	public static void createTree(ModelViewer modelViewer, int a, int b, int c, float x, float y, float z, int color) {
-		createBuilding(modelViewer, a, b, c, x, y, z + c * scale, color);
-		createBuilding(modelViewer, a / 5, b / 5, c, x + a * .4f * scale, y + b * .4f * scale, z, color);
+	public static void createTree(ModelViewer modelViewer, float a, float b, float c, float x, float y, float z, int color, int color2) {
+		createBuilding(modelViewer, a, b, c, x, y, z + c / 1.5f * scale, color);
+		createBuilding(modelViewer, a / 5f, b / 5f, c / 1.5f, x + a * .4f * scale, y + b * .4f * scale, z, color2);
 	}
 }

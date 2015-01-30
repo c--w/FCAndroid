@@ -21,7 +21,7 @@ import com.cloudwalk.framework3d.Tools3d;
  */
 public class Glider extends MovingBody {
 	static float[] air = new float[] { 0, 0 }; // air movement - common to all gliders
-	float airv = 0; // vertical air movement - specific to glider
+	public float airv = 0; // vertical air movement - specific to glider
 	XCModelViewer xcModelViewer;
 	private String typeName;
 	protected int typeID; // 0 - para, 1 - hang, 2 -sail
@@ -147,6 +147,7 @@ public class Glider extends MovingBody {
 	}
 
 	public void launch(boolean takeOff) {
+		finished = false;
 		if (takeOff)
 			takeOff();
 		else {

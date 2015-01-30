@@ -48,11 +48,6 @@ public class XCCameraMan extends CameraMan {
 			xcModel = ((XCModelViewer) modelViewer).xcModel;
 		}
 
-		// if *leaving* TASK view then switch off load all
-		if (mode == TASK && inMode != TASK) {
-			xcModel.task.nodeManager.loadAllNodes(false);
-		}
-
 		if (inMode == USER) {
 			Glider x = xcModel.gliderManager.gliderUser;
 			((GliderUser) x).setCameraMode(USER);
@@ -95,7 +90,7 @@ public class XCCameraMan extends CameraMan {
 		}
 
 		if (inMode == TASK) {
-			xcModel.task.nodeManager.loadAllNodes(true);
+			xcModel.task.nodeManager.loadAllNodes();
 			setSubject((CameraSubject) xcModel.task, false);
 			Glider.filmID = -1;
 			setDepthOfVision(2000f);

@@ -23,8 +23,10 @@ import java.util.Random;
 
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.PSA;
+import android.graphics.Color;
 import android.util.Log;
 
+import com.cloudwalk.data.Building;
 import com.cloudwalk.flightclub.Tools;
 import com.cloudwalk.framework3d.CameraSubject;
 import com.cloudwalk.framework3d.FileFormatException;
@@ -76,6 +78,8 @@ public class Task implements CameraSubject {
 			generateT8Task();
 		} else if (taskID.equals("default9")) {
 			generateT9Task();
+		} else if (taskID.equals("default10")) {
+			generateT10Task();
 		} else {
 			parseFile(taskID);
 		}
@@ -253,9 +257,6 @@ public class Task implements CameraSubject {
 		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 2 * x, 4 * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
 
-		// hills = new Hill[1];
-		// Hill hill = new Hill(this, x, 1.5f * x);
-		// hills[0] = hill;
 	}
 
 	private void generateT8Task() {
@@ -274,7 +275,7 @@ public class Task implements CameraSubject {
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// wind
-		wind_x = 0.1f;
+		wind_x = 0.075f;
 		wind_y = 0.05f;
 
 		// triggers
@@ -327,6 +328,47 @@ public class Task implements CameraSubject {
 		// hills = new Hill[1];
 		// Hill hill = new Hill(this, x, 1.5f * x);
 		// hills[0] = hill;
+	}
+
+	private void generateT10Task() {
+		latitude = 45;
+		time_of_day = "15";
+		type = TIME_PRECISE;
+		desc = "Epic blue day! Lots of high blue thermals but only 50% of triggers are visible! 80km task with 3 turnpoints and GOAL = START.\nFirst point to N. \nWind SW. \nCloudbase varies around 2000m.\nDifferent triggers every day!";
+		CLOUDBASE = 4f;
+		NODE_SPACING = 4 * 9f;
+		HEXAGON = 4 * 5;
+		// turn points
+		float x = 4 * 5;
+		// x /= 5; // tmp - small course for testing gliding around the turn
+		// points
+		float[] xs = { x / 2, x / 2, 2.5f * x, 2.5f * x, x / 2 };
+		float[] ys = { x / 2, 2.5f * x, 2.5f * x, x / 2, x / 2 };
+		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
+
+		// wind
+		wind_x = 0.05f;
+		wind_y = 0.05f;
+
+		// triggers
+		triggers = new Trigger[4 * 4 * 6];
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				flatLandRandom(i * HEXAGON, j * HEXAGON, 5, CLOUDBASE);
+			}
+		}
+
+		// roads - specify start and end points
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x, 0 }, { x, 2 * x, 0 }, { 3 * x, 3 * x, 0 } };
+		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 3 * x, 3 * x + 0.1f, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+
+		Random r = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
+		for (int i = 0; i < 100; i++) {
+			Building.createTree(xcModelViewer, (4 + r.nextFloat()), (4 + r.nextFloat()), (4 + r.nextFloat()), r.nextFloat()
+					* 3f * x, r.nextFloat() * 3f * x, 0, Color.rgb(200, 240, 200), Color.rgb(240, 240, 200));
+		}
+
 	}
 
 	private void parseFile(String taskID) throws IOException {

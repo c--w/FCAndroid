@@ -339,7 +339,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 			Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 			lastFar = far;
-			Log.i("FC MVR", "" + far);
+			//Log.i("FC MVR", "" + far);
 		}
 
 	}

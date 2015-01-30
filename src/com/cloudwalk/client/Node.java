@@ -9,7 +9,6 @@
  */
 package com.cloudwalk.client;
 
-import java.util.Arrays;
 import java.util.Vector;
 
 import android.graphics.Color;
@@ -26,7 +25,7 @@ class Node implements CameraSubject {
 	float x, y;
 	Trigger[] triggers;
 	int next = 0;
-	int mode = SLEEPING;
+	boolean awake = false;
 	float radius, radiusSqd;
 	Vector liftSources;
 	XCModelViewer xcModelViewer;
@@ -34,9 +33,6 @@ class Node implements CameraSubject {
 
 	// unique id for each instance of this class
 	int myID;
-
-	static final int SLEEPING = 0;
-	static final int AWAKE = 1;
 
 	public Node(XCModelViewer xcModelViewer, float x, float y, float radius, int id) {
 		this.xcModelViewer = xcModelViewer;
@@ -83,14 +79,14 @@ class Node implements CameraSubject {
 	 * triggers. Why ? An overlapping* node may have sent one of the triggers to sleep.
 	 */
 	void wakeUp(float t) {
-		// Log.i("FC Node", "Wakeup:" + myID);
+		if (awake) {
+			return;
+		}
+		Log.i("FC Node", "Wakeup:" + myID);
 		for (int i = 0; i < next; i++) {
 			triggers[i].wakeUp(t);
 		}
-		if (mode == AWAKE) {
-			return;
-		}
-		mode = AWAKE;
+		awake = true;
 		renderMe();
 	}
 
@@ -135,7 +131,7 @@ class Node implements CameraSubject {
 		if (flagNoRender) {
 			return;
 		}
-		if (mode == AWAKE) {
+		if (awake) {
 			obj3d = new Obj3d(xcModelViewer);
 			float[][] ps = Tools3d.circleXY(NUM_POINTS, radius, new float[] { x, y, 0 });
 			obj3d.addPolywireClosed(ps, COLOR);
@@ -147,7 +143,7 @@ class Node implements CameraSubject {
 
 	/** Prints debug info. */
 	void asString() {
-		Log.i("FC", "Node(" + myID + "): x=" + Tools3d.round(x) + ", y=" + Tools3d.round(y) + ", mode=" + mode + ", nTriggers=" + next);
+		Log.i("FC", "Node(" + myID + "): x=" + Tools3d.round(x) + ", y=" + Tools3d.round(y) + ", awake=" + awake + ", nTriggers=" + next);
 	}
 
 	/**
@@ -222,6 +218,38 @@ class Node implements CameraSubject {
 		if (bestLS != null) {
 			return new LiftSourceGlide(bestLS, bestIP);
 		} else {
+			return null;
+		}
+	}
+
+	public LiftSource getRandomLS(Bird bird) {
+		try {
+			if (liftSources == null || liftSources.size() == 0)
+				return null;
+			float[] r = new float[3];
+			float[] p = bird.p;
+			int size = liftSources.size();
+			int pos = (int) (Math.random() * size);
+			int counter = 0;
+			while (counter < size) {
+				LiftSource ls = (LiftSource) liftSources.elementAt(pos);
+				if (ls instanceof Hill)
+					continue;
+				Tools3d.subtract(ls.getP(), p, r);
+				r[2] = 0; // work in a horizontal plane
+				float d = Tools3d.length(r);
+				float speed = bird.getSpeed();
+				float t = d / speed;
+				if (ls.isActive(t)) {
+					return ls;
+				}
+				counter++;
+				pos++;
+				if (pos == size)
+					pos = 0;
+			}
+			return null;
+		} catch (Exception e) {
 			return null;
 		}
 	}

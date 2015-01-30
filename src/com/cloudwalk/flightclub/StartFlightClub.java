@@ -76,6 +76,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	float volume = 0;
 	int[] soundIds;
 	int[] streamIDs;
+	boolean sinking = false;
 	float currentSpeed;
 	ModelView surfaceView;
 	GestureDetector detector;
@@ -108,6 +109,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				GliderUser glider = ((XCModelViewer) modelViewerThin).xcModel.gliderManager.gliderUser;
 				if (flying == true && glider.getLanded()) {
 					flying = false;
+					sinking = false;
 					soundPool.stop(streamIDs[1]);
 					soundPool.play(soundIds[4], volume, volume, 1, 0, 1);
 				}
@@ -161,6 +163,18 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				((TextView) findViewById(R.id.info)).setText(Html.fromHtml(surfaceView.getInfoText()));
 				((SeekBar) findViewById(R.id.vario)).setProgress((int) (50 + ((XCModelViewer) modelViewerThin).xcModel.gliderManager.theGlider()
 						.getActualSink() / 0.37f * 50));
+				if (flying && glider.airv < 0 && !sinking && prefs.getBoolean("sink_tone", true)) {
+					Log.w("FC", "startsink");
+					streamIDs[7] = soundPool.play(soundIds[7], volume, volume, 1, -1, 1f + glider.airv * 3);
+					sinking = true;
+				} else if (flying && glider.airv >= 0) {
+					//Log.w("FC", "stopsink");
+					soundPool.stop(streamIDs[7]);
+					sinking = false;
+				}
+				if (flying && sinking) {
+					soundPool.setRate(streamIDs[7], 1f + glider.airv * 3);
+				}
 				if (flying == true && prefs.getBoolean("ambient_sound", true)) {
 					if (currentSpeed != glider.getSpeed()) {
 						soundPool.setRate(streamIDs[1], (float) Math.sqrt(glider.getSpeed() / 1.7));
@@ -334,9 +348,9 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 			net = true;
 		}
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-		soundPool = new SoundPool(7, AudioManager.STREAM_MUSIC, 0);
-		soundIds = new int[7];
-		streamIDs = new int[7];
+		soundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
+		soundIds = new int[8];
+		streamIDs = new int[8];
 		soundIds[0] = soundPool.load(this, R.raw.beep0, 1);
 		soundIds[1] = soundPool.load(this, R.raw.wind, 1);
 		soundIds[2] = soundPool.load(this, R.raw.hawk, 1);
@@ -344,6 +358,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		soundIds[4] = soundPool.load(this, R.raw.landed, 1);
 		soundIds[5] = soundPool.load(this, R.raw.finish, 1);
 		soundIds[6] = soundPool.load(this, R.raw.hawk2, 1);
+		soundIds[7] = soundPool.load(this, R.raw.sink, 1);
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);

@@ -10,6 +10,8 @@
 package com.cloudwalk.client;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import android.content.SharedPreferences;
@@ -25,6 +27,7 @@ import com.cloudwalk.framework3d.Tools3d;
 public class GliderManager implements ClockObserver {
 	XCModelViewer xcModelViewer;
 	GliderAI[] gliderAIs;
+	List<Bird> birds; 
 	public GliderUser gliderUser = null;
 	private int pNode_ = 0;
 	private int n = 1; // count as we create gliders (user glider is always
@@ -35,9 +38,9 @@ public class GliderManager implements ClockObserver {
 	boolean raceStarted = false;
 
 	static final int MAX_USERS = 20; // Max number of Connected Users
-	static final int NUM_TYPES = 4; // how many glider types
-	static GliderType[] types = new GliderType[4]; // array of glider types (pg, hg, sp)
-	static final String[] typeNames = new String[] { "paraglider", "hang-glider", "sailplane", "balloon" };
+	static final int NUM_TYPES = 5; // how many glider types
+	static GliderType[] types = new GliderType[5]; // array of glider types (pg, hg, sp)
+	static final String[] typeNames = new String[] { "paraglider", "hang-glider", "sailplane", "balloon", "vulture" };
 
 	public GliderManager(XCModelViewer xcModelViewer, int pilotType) {
 		this.xcModelViewer = xcModelViewer;
@@ -47,7 +50,8 @@ public class GliderManager implements ClockObserver {
 			createUser(pilotType);
 		if (xcModelViewer.netFlag) {
 			netGliders = new GliderTask[MAX_USERS];
-		}
+		} 
+		birds = new ArrayList<Bird>();
 	}
 
 	/**
@@ -59,6 +63,7 @@ public class GliderManager implements ClockObserver {
 			types[1] = new GliderType(xcModelViewer, "hangglider", 1);
 			types[2] = new GliderType(xcModelViewer, "sailplane", 2);
 			types[3] = new GliderType(xcModelViewer, "balloon", 3);
+			types[4] = new GliderType(xcModelViewer, "vulture", 4);
 		} catch (IOException e) {
 			Log.e("FC", e.getMessage(), e);
 			System.exit(1);
@@ -102,6 +107,15 @@ public class GliderManager implements ClockObserver {
 				gliderAIs[next++] = new GliderAI(xcModelViewer, types[type], n++);
 			}
 		}
+	}
+	
+	public void addBird(float x, float y, float z) {
+		Bird bird = new Bird(xcModelViewer, types[4], n++);
+		birds.add(bird);
+		bird.p[0] = x;
+		bird.p[1] = y;
+		bird.p[2] = z;
+		Log.i("FC Bird", "Total birds: " + birds.size());
 	}
 
 	/**
@@ -197,6 +211,10 @@ public class GliderManager implements ClockObserver {
 			}
 		}
 
+		for (int i = 0; i < birds.size(); i++) {
+			this.setLift(birds.get(i), nodes);
+		}
+
 		if ((t - t_) > T_INTERVAL) {
 			this.loadNodes(t);
 		}
@@ -277,6 +295,11 @@ public class GliderManager implements ClockObserver {
 		pNode_ = 0;
 	}
 
+	public void launchBirds() {
+		for (Bird bird : birds) {
+			bird.launch();
+		}
+	}
 	/**
 	 * Take off - puts gliders near start point and heading towards next turn point.
 	 */

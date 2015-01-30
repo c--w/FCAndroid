@@ -9,6 +9,8 @@
  */
 package com.cloudwalk.client;
 
+import android.util.Log;
+
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
@@ -25,9 +27,16 @@ public class GliderTask extends Glider {
 		nextTP = xcModelViewer.xcModel.task.turnPointManager.turnPoints[1];
 	}
 
+	public void launch(boolean takeoff) {
+		Log.w("FC takeOff", "GliderTask takeoff" + myID);
+		nextTP = xcModelViewer.xcModel.task.turnPointManager.turnPoints[1];
+		super.launch(takeoff);
+	}
+
 	public void tick(float t, float dt) {
 		super.tick(t, dt);
 		checkSector(t);
+		currentGlideSpeed();
 	}
 
 	/**
@@ -82,6 +91,7 @@ public class GliderTask extends Glider {
 		u[1] += air[1];
 		groundSpeed = (float) Math.sqrt(u[0] * u[0] + u[1] * u[1]);
 		groundGlideRatio = groundSpeed / -(this.getSink() + airv);
+		groundGlideRatio = ((int) (groundGlideRatio * 10)) / 10f;
 	}
 
 	/**

@@ -290,7 +290,7 @@ class XCHandlerOnline implements Runnable {
 					server.stop();
 				} else {
 					Client.send(nextLine);
-					server.log("User " + myID + ": " + nextLine);
+					//server.log("User " + myID + ": " + nextLine);
 				}
 				lastReceived = nextLine;
 			} // end while

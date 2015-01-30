@@ -41,6 +41,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	boolean blueThermal = false;
 	boolean show = true;
 	public float cloudHeight;
+	boolean awake = false;
 
 	// Fixed seed so that model is deterministic (state(T) is same every game
 	// play).
@@ -48,6 +49,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 	// unique id for each instance of this class
 	static int nextID = 0;
 	int myID;
+	static Random random = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
 
 	/**
 	 * Creates a trigger at (x, y). t is the current time and t0 is the time that the trigger creates its first bubble.
@@ -120,6 +122,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 			setParamsV3();
 		else if (version == 4)
 			setParamsV4();
+		else if (version == 5)
+			setParamsV5();
 		myID = nextID++;
 		// Log.w("FC Trigger", "id+phase" + myID + " " + phase + " " +
 		// cycleLength + " " + x + " " + y);
@@ -173,6 +177,12 @@ public class Trigger implements ClockObserver, CameraSubject {
 		cloudHeight = cloudHeight + (0.5f - get01Value3()) * .6f;
 	}
 
+	void setParamsV5() {
+		setParamsV4();
+		show = get01Value4() > 0.5f; // one of 10 triggers is not visible
+		blueThermal = true;
+	}
+
 	float get01Value() {
 		float a = (float) Math.sqrt(Math.abs((x + 1) / (y + 1)));
 		return (float) ((a * 10) - Math.floor(a * 10));
@@ -218,7 +228,6 @@ public class Trigger implements ClockObserver, CameraSubject {
 
 	private static float STRENGTH_MIN = 0.1f;
 
-
 	/** Makes a cloud that bubbled up at time dt *before* now. */
 	private void makeCloud(float dt) {
 		// Log.i("FC Trigger", "make cloud of age:"+dt);
@@ -231,14 +240,24 @@ public class Trigger implements ClockObserver, CameraSubject {
 	}
 
 	/**
-	 * Wakes up this trigger. One fiddly bit - if the wake up comes immediately after sleep was called then we do not need to create existing clouds. Triggers
-	 * on overlapping nodes get a sleep call from one node followed by a wake call from another.
+	 * Wakes up this trigger.
 	 */
 	public void wakeUp(float t) {
+		if (awake)
+			return;
+		//Log.i("FC Trigger", "Wakeup:" + myID);
+
 		xcModelViewer.clock.addObserver(this);
-			initNextCycle(t);
-			existingClouds(t);
+		initNextCycle(t);
+		existingClouds(t);
 		renderMe();
+		awake = true;
+		
+		int birds = Integer.parseInt(xcModelViewer.modelEnv.getPrefs().getString("birds", "0"));
+		if (birds == 0)
+			return;
+		if (random.nextFloat() * birds > 1.5f)
+			xcModelViewer.xcModel.gliderManager.addBird(x, y, cloudHeight / 3f);
 	}
 
 	/**

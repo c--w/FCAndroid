@@ -7,6 +7,7 @@
         android:title="Game settings" >
         <ListPreference
             android:defaultValue="3"
+            android:dialogTitle="Number of paragliders"
             android:entries="@array/glider_number"
             android:entryValues="@array/glider_number"
             android:key="numpg"
@@ -14,6 +15,7 @@
             android:title="Paragliders" />
         <ListPreference
             android:defaultValue="3"
+            android:dialogTitle="Number of hanggliders"
             android:entries="@array/glider_number"
             android:entryValues="@array/glider_number"
             android:key="numhg"
@@ -21,11 +23,20 @@
             android:title="Hanggliders" />
         <ListPreference
             android:defaultValue="3"
+            android:dialogTitle="Number of sailplanes"
             android:entries="@array/glider_number"
             android:entryValues="@array/glider_number"
             android:key="numsp"
             android:summary="Number of sailplane AIs in solo game"
             android:title="Sailplanes" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="Amount of birds"
+            android:entries="@array/birds_label"
+            android:entryValues="@array/birds_amount"
+            android:key="birds"
+            android:summary="Some birds will randomly fly from trigger to trigger. Birds can help in spotting hidden triggers but this can affect performance."
+            android:title="Birds?" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="multiplayersettings"
@@ -34,6 +45,7 @@
             android:key="playerName"
             android:summary="Your handle for multiplayer games"
             android:title="Player name" />
+
         <ListPreference
             android:defaultValue="10"
             android:entries="@array/wait_online"
@@ -41,8 +53,8 @@
             android:key="wait_online"
             android:summary="How long to actively wait for online players (uses processor time)"
             android:title="Wait duration" />
-        </PreferenceCategory>
-        <PreferenceCategory
+    </PreferenceCategory>
+    <PreferenceCategory
         android:key="uisettings"
         android:title="UI settings" >
         <ListPreference
@@ -52,6 +64,7 @@
             android:key="view_angle"
             android:summary="View angle of the camera"
             android:title="View angle" />
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="real_shadows"
@@ -62,18 +75,19 @@
             android:key="fancy"
             android:summary="Paint ground and sky. (Disable if you have problems starting the race)"
             android:title="Fancy" />
+
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFFC0FBFF"
             android:key="sky_color"
-            android:summary="Choose color of the sky (if 'Fancy' is on)"
+            android:summary="Choose color of the sky (if &apos;Fancy&apos; is on)"
             android:title="Sky color" />
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFFFFFFE0"
             android:key="ground_color"
-            android:summary="Choose ground color (if 'Fancy' is on)"
+            android:summary="Choose ground color (if &apos;Fancy&apos; is on)"
             android:title="Ground color" />
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
-            android:defaultValue="0xFFFFFF00"
+            android:defaultValue="0xFFAAAA00"
             android:key="tp_color"
             android:summary="Choose turnpoint/arrows color "
             android:title="Turnpoint color" />
@@ -90,10 +104,14 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="sink_tone"
+            android:title="Sink tone" >
+        </CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="ambient_sound"
             android:title="Ambient sounds" >
         </CheckBoxPreference>
-        
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="show_controls"
@@ -104,13 +122,16 @@
             android:key="show_task_info"
             android:title="Show task info" >
         </CheckBoxPreference>
+
         <ListPreference
             android:defaultValue="25"
+            android:dialogTitle="Maximum FPS"
             android:entries="@array/max_fps"
             android:entryValues="@array/max_fps"
             android:key="max_fps"
             android:summary="Lower this to avoid high CPU usage and overheating"
             android:title="Max FPS" />
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="fps"

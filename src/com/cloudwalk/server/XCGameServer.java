@@ -244,7 +244,7 @@ class XCHandler implements Runnable {
 					server.stop();
 				} else {
 					server.sendToAll(myID, nextLine);
-					server.log("User " + myID + ": "+nextLine);
+					//server.log("User " + myID + ": "+nextLine);
 				}
 				lastReceived = nextLine;
 			}

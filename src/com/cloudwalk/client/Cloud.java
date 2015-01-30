@@ -691,7 +691,10 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		}
 
 		boolean notBorn() {
-			return (age < -1);
+			if(xcModelViewer.netFlag)
+				return (age < -1);
+			else
+				return (age < 0);
 		}
 
 		// once half decayed we have no more lift

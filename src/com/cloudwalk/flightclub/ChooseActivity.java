@@ -68,6 +68,7 @@ public class ChooseActivity extends Activity {
 			tasks.add(new TaskDesc("default7", "Task 7", "D: 160km, TP: 3, CB: 1200m+-"));
 			tasks.add(new TaskDesc("default8", "Task 8", "D: 160km, TP: 1, CB: 1800m+-"));
 			tasks.add(new TaskDesc("default9", "Task 9", "D: 50km, TP: 2, CB: 1500m+-"));
+			tasks.add(new TaskDesc("default10", "Task 10", "D: 80km, TP: 3, CB: 2000m+-"));
 			gridView = (GridView) findViewById(R.id.gridview);
 			gridView.setAdapter(new TasksAdapter(ChooseActivity.this, tasks, gridView));
 			gridView.setOnItemClickListener(new OnItemClickListener() {

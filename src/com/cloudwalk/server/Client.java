@@ -30,12 +30,12 @@ public class Client {
 
 	public static String send(String message) {
 		try {
-			Log.i(TAG, "OUT:" + message);
+			//Log.i(TAG, "OUT:" + message);
 			String response = null;
 			HttpClient client = getHttpClient();
 			response = Http.get(BASE_URL + "?id=" + MY_ID + "&r=" + ROOM + "&m=" + URLEncoder.encode(message, "UTF-8")).use(client)
 					.header("User-Agent", "HttpClient Wrapper").charset("UTF-8").asString();
-			Log.i(TAG, "IN:" + response);
+			//Log.i(TAG, "IN:" + response);
 			return response;
 		} catch (Exception e) {
 			reset();

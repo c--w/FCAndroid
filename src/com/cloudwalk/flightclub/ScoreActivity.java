@@ -164,6 +164,22 @@ public class ScoreActivity extends BaseGameActivity {
 				break;
 			}
 
+		} else if ("default10".equals(task)) {
+			switch (pilot_type) {
+			case 0:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_10__pg);
+				break;
+			case 1:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_10__hg);
+				break;
+			case 2:
+				LEADERBOARD = getResources().getString(R.string.leaderboard_task_10__sailplane);
+				break;
+
+			default:
+				break;
+			}
+
 		}
 	}
 
