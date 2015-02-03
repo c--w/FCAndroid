@@ -393,6 +393,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		// drawWorld();
 		if (fancy)
 			heightMap.render();
+		Obj3dStatic.draw(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
 		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
 			try {
 				Obj3d o = modelViewer.obj3dManager.obj(i);

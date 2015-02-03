@@ -290,6 +290,7 @@ public class Task implements CameraSubject {
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.6f * x, 0 }, { 4 * x, x * .1f, 0 }, { 8 * x, 0.5f * x, 0 } };
 		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { 0.8f * x, 0.6f * x + 0.1f, 0 }, { 4 * x, x * .1f + 0.1f, 0 }, { 8 * x, 0.5f * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
+		
 	}
 
 	private void generateT9Task() {
@@ -325,9 +326,11 @@ public class Task implements CameraSubject {
 		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 2 * x, 4 * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
 
-		// hills = new Hill[1];
-		// Hill hill = new Hill(this, x, 1.5f * x);
-		// hills[0] = hill;
+//		Random r = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
+//		for (int i = 0; i < 100; i++) {
+//			Building.createTree(xcModelViewer, (4 + r.nextFloat()), (4 + r.nextFloat()), (4 + r.nextFloat()), r.nextFloat()
+//					* 3f * x, r.nextFloat() * 3f * x, 0, Color.rgb(200, 240, 200), Color.rgb(240, 240, 200));
+//		}
 	}
 
 	private void generateT10Task() {

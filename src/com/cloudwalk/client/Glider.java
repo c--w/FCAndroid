@@ -169,7 +169,7 @@ public class Glider extends MovingBody {
 	 * 	           ----.
 	 * </pre>
 	 */
-	private void setPolar() {
+	protected void setPolar() {
 		if (iP >= polar.size())
 			iP = polar.size() - 1;
 		if (iP < 0)

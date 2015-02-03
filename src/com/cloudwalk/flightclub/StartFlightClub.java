@@ -56,6 +56,7 @@ import com.cloudwalk.flightclub.GravityListener.OnGravityListener;
 import com.cloudwalk.framework3d.ClockObserver;
 import com.cloudwalk.framework3d.ModelView;
 import com.cloudwalk.framework3d.ModelViewRenderer;
+import com.cloudwalk.framework3d.Obj3dStatic;
 import com.cloudwalk.server.Client;
 import com.cloudwalk.server.XCGameServer;
 import com.cloudwalk.server.XCGameServerOnline;
@@ -168,7 +169,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 					streamIDs[7] = soundPool.play(soundIds[7], volume, volume, 1, -1, 1f + glider.airv * 3);
 					sinking = true;
 				} else if (flying && glider.airv >= 0) {
-					//Log.w("FC", "stopsink");
+					// Log.w("FC", "stopsink");
 					soundPool.stop(streamIDs[7]);
 					sinking = false;
 				}
@@ -252,6 +253,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 
 	private void startWorldIfNeeded() {
 		if (((XCModelViewer) modelViewerThin).xcModel == null) {
+			Obj3dStatic.init();
 			modelViewerThin.stop();
 			modelViewerThin.init((ModelEnv) StartFlightClub.this);
 			((XCModelViewer) modelViewerThin).start();
@@ -360,37 +362,18 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 		soundIds[6] = soundPool.load(this, R.raw.hawk2, 1);
 		soundIds[7] = soundPool.load(this, R.raw.sink, 1);
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-		float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-		float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-		volume = actualVolume / maxVolume;
+		volume = 1;
 		/*
 		 * } else { if (s[2].indexOf(":") > 0) { hostPort = s[2]; typeNums = null; } else { hostPort = null; try { for (int i = 0; i < 3; i++) { typeNums[i] =
 		 * parseInt(s[i + 2]); } } catch (Exception e) { Log.i("FC", "Error reading AI glider numbers: " + e); typeNums = new int[] {2, 5, 2}; } } }
 		 */
 		final ModelView modelView = (ModelView) findViewById(R.id.xcmodelview);
 		((SeekBar) findViewById(R.id.vario)).setEnabled(false);
-		// Check if the system supports OpenGL ES 2.0.
-		final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-		final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
-		final boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x20000;
-
-		if (supportsEs2) {
-			// Request an OpenGL ES 2.0 compatible context.
-			modelView.setEGLContextClientVersion(2);
-			// Set the renderer to our demo renderer, defined below.
-			renderer = new ModelViewRenderer(this, modelView);
-			modelView.setRenderer(renderer);
-		} else {
-			// This is where you could create an OpenGL ES 1.x compatible
-			// renderer if you wanted to support both ES 1 and ES 2.
-			return;
-		}
 
 		surfaceView = modelView;
 		modelViewerThin = new XCModelViewer(modelView);
 		modelView.modelViewer = (XCModelViewer) modelViewerThin;
 		modelView.setOnTouchListener(StartFlightClub.this);
-		renderer.modelViewer = (XCModelViewer) modelViewerThin;
 
 		modelView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
@@ -401,6 +384,22 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				// modify the layout from within this method.
 				modelView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
 				startWorldIfNeeded();
+				// Check if the system supports OpenGL ES 2.0.
+				final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+				final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
+				final boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x20000;
+
+				if (supportsEs2) {
+					// Request an OpenGL ES 2.0 compatible context.
+					modelView.setEGLContextClientVersion(2);
+					// Set the renderer to our demo renderer, defined below.
+					renderer = new ModelViewRenderer(StartFlightClub.this, modelView);
+					renderer.modelViewer = (XCModelViewer) modelViewerThin;
+					modelView.setRenderer(renderer);
+				} else {
+					Tools.showInfoDialog("Problem", "It seems your device doesn't support OpenGL 2.0", StartFlightClub.this);
+					return;
+				}
 			}
 		});
 		findViewById(R.id.start_race).setOnClickListener(new OnClickListener() {
@@ -614,6 +613,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	@Override
 	protected void onPause() {
 		super.onPause();
+		surfaceView.onPause();
 		soundPool.autoPause();
 		if (control_type == 1)
 			mGravity.pause();
@@ -630,6 +630,11 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	@Override
 	protected void onResume() {
 		super.onResume();
+		if (surfaceView != null)
+			try {
+				surfaceView.onResume();
+			} catch (Exception e) {
+			}
 		if (control_type == 1)
 			mGravity.resume();
 		soundPool.autoResume();

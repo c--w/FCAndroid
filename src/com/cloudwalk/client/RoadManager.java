@@ -17,6 +17,7 @@ import android.util.Log;
 
 import com.cloudwalk.framework3d.FileFormatException;
 import com.cloudwalk.framework3d.Obj3d;
+import com.cloudwalk.framework3d.Obj3dStatic;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
@@ -138,6 +139,8 @@ class Road {
 	static final int COLOR_ROAD = Color.rgb(255, 0, 0); // PINK
 
 	void renderMe() {
+		boolean no_vbo = xcModelViewer.modelEnv.getPrefs().getBoolean("no_vbo", false);
+
 		NodeManager nodeManager = xcModelViewer.xcModel.task.nodeManager;
 
 		// start afresh
@@ -156,11 +159,15 @@ class Road {
 				n++;
 			}
 		}
-
-		obj3d = new Obj3d(xcModelViewer);
-
-		for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
-			obj3d.addPolywire(pss[i], COLOR_ROAD);
+		if (no_vbo) {
+			obj3d = new Obj3d(xcModelViewer);
+			for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
+				obj3d.addPolywire(pss[i], COLOR_ROAD);
+			}
+		} else {
+			for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
+				Obj3dStatic.addPolywire(pss[i], COLOR_ROAD);
+			}
 		}
 	}
 

@@ -56,7 +56,7 @@
     </PreferenceCategory>
     <PreferenceCategory
         android:key="uisettings"
-        android:title="UI settings" >
+        android:title="Graphics settings" >
         <ListPreference
             android:defaultValue="10"
             android:entries="@array/view_angle_label"
@@ -76,6 +76,12 @@
             android:summary="Paint ground and sky. (Disable if you have problems starting the race)"
             android:title="Fancy" />
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="no_vbo"
+            android:summary="Use if you have problems starting the race"
+            android:title="Safe mode" />
+        
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFFC0FBFF"
             android:key="sky_color"

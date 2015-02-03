@@ -232,6 +232,7 @@ class Node implements CameraSubject {
 			int pos = (int) (Math.random() * size);
 			int counter = 0;
 			while (counter < size) {
+				counter++;
 				LiftSource ls = (LiftSource) liftSources.elementAt(pos);
 				if (ls instanceof Hill)
 					continue;
@@ -243,7 +244,6 @@ class Node implements CameraSubject {
 				if (ls.isActive(t)) {
 					return ls;
 				}
-				counter++;
 				pos++;
 				if (pos == size)
 					pos = 0;

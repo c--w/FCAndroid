@@ -109,13 +109,14 @@ public class GliderManager implements ClockObserver {
 		}
 	}
 	
-	public void addBird(float x, float y, float z) {
+	public Bird addBird(float x, float y, float z) {
 		Bird bird = new Bird(xcModelViewer, types[4], n++);
 		birds.add(bird);
 		bird.p[0] = x;
 		bird.p[1] = y;
 		bird.p[2] = z;
 		Log.i("FC Bird", "Total birds: " + birds.size());
+		return bird;
 	}
 
 	/**

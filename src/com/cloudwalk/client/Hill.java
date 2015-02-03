@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.cloudwalk.framework3d.CameraSubject;
 import com.cloudwalk.framework3d.Obj3d;
+import com.cloudwalk.framework3d.Obj3dStatic;
 
 /*
  a spine running // to x axis or y axis (orientation 0 or 1)
@@ -86,7 +87,9 @@ class Hill implements LiftSource, CameraSubject {
 				frontFace = 2;
 			numTiles = 2 * numSlices * (2 * Math.round(frontFace / tileWidth));
 			Log.i("FC Hill", "numTiles:" + numTiles);
-			obj3d = new Obj3d(theApp.xcModelViewer);
+			boolean no_vbo = app.xcModelViewer.modelEnv.getPrefs().getBoolean("no_vbo", false);
+			if(no_vbo)
+				obj3d = new Obj3d(theApp.xcModelViewer);
 			tileHill();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -117,7 +120,9 @@ class Hill implements LiftSource, CameraSubject {
 		else
 			frontFace = 2;
 		numTiles = 2 * (numSlices * (2 * Math.round(frontFace / tileWidth)));
-		obj3d = new Obj3d(theApp.xcModelViewer);
+		boolean no_vbo = app.xcModelViewer.modelEnv.getPrefs().getBoolean("no_vbo", false);
+		if(no_vbo)
+			obj3d = new Obj3d(theApp.xcModelViewer);
 		tileHill();
 		// registerWithNodes(true);
 	}
@@ -185,12 +190,20 @@ class Hill implements LiftSource, CameraSubject {
 			corners[3] = new float[] { x1, y2, getZ(i + tileWidth, j - tileWidth) };
 		}
 		//int pol_color = getTileColor(corners);
+		boolean no_vbo = app.xcModelViewer.modelEnv.getPrefs().getBoolean("no_vbo", false);		
+		
 		for (float[] corner : corners) {
 			int cdiff = (int) (corner[2] * 100); 
 			int color = Color.rgb(255-cdiff, 255-cdiff, 225-cdiff);
-			obj3d.addPoint(corner[0], corner[1], corner[2], color);
+			if(no_vbo)
+				obj3d.addPoint(corner[0], corner[1], corner[2], color);
+			else
+				Obj3dStatic.addPoint(corner[0], corner[1], corner[2], color);
 		}
-		obj3d.addPolygon(corners, 0); 
+		if(no_vbo)
+			obj3d.addPolygon(corners, 0);
+		else
+			Obj3dStatic.addPolygon(corners, 0);
 		// object3d.addTile(corners, color, false, false);
 	}
 

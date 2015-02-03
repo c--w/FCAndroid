@@ -387,9 +387,13 @@ class XCClockOnline implements Runnable {
 			long currentTick = System.currentTimeMillis();
 
 			if (currentTick - lastSendTime > TICK_LEN * 1000) {
-				long modelTime = (long) (Float.parseFloat(Client.send("TIME")));
-				server.sendTime(modelTime);
-				lastSendTime = currentTick;
+				try {
+					long modelTime = (long) (Float.parseFloat(Client.send("TIME")));
+					server.sendTime(modelTime);
+					lastSendTime = currentTick;
+				} catch (Exception e) {
+					server.log("Failed TIME UPDATE: " + e);
+				}
 			}
 			String onlineMessages = pingOnline();
 			processOnlineMessages(onlineMessages);

@@ -1,6 +1,7 @@
 package com.cloudwalk.client;
 
 import android.graphics.Color;
+import android.util.Log;
 
 public class Bird extends GliderAI {
 
@@ -9,6 +10,17 @@ public class Bird extends GliderAI {
 		this.color = Color.BLACK;
 		this.obj.setColor(0, this.color);
 		this.obj.setColor(1, Color.RED);
+	}
+
+	public void launch() {
+		Log.w("FC takeOff", "Bird takeoff" + myID);
+		finished = false;
+		onGround = false;
+		launchPending = false;
+		landed = false;
+		nextTurn = 0;
+		setPolar();
+		makeDecision(xcModelViewer.clock.getTime());
 	}
 
 	protected void tickAI(float t) {
@@ -59,7 +71,7 @@ public class Bird extends GliderAI {
 			}
 			return;
 		} catch (Exception e) {
-			;
+			Log.e("FC Bird", e.getMessage(), e);
 		}
 
 	}

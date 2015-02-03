@@ -18,6 +18,7 @@ import android.util.Log;
 import com.cloudwalk.framework3d.CameraSubject;
 import com.cloudwalk.framework3d.ClockObserver;
 import com.cloudwalk.framework3d.Obj3d;
+import com.cloudwalk.framework3d.Obj3dStatic;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
@@ -106,6 +107,8 @@ public class Trigger implements ClockObserver, CameraSubject {
 		// nextCloudStartTime = phase - cycleLength;
 		myID = nextID++; // unique id (for debugging)
 		// cloudHeight = xcModelViewer.xcModel.task.CLOUDBASE;
+		renderMe();
+
 	}
 
 	/** Creates a 'default' trigger at (x, y). */
@@ -127,6 +130,23 @@ public class Trigger implements ClockObserver, CameraSubject {
 		myID = nextID++;
 		// Log.w("FC Trigger", "id+phase" + myID + " " + phase + " " +
 		// cycleLength + " " + x + " " + y);
+		renderMe();
+
+	}
+
+	public void addBird() {
+		try {
+			int birds = Integer.parseInt(xcModelViewer.modelEnv.getPrefs().getString("birds", "0"));
+			if (birds == 0)
+				return;
+			if (random.nextFloat() * birds > 1.5f) {
+				Bird bird = xcModelViewer.xcModel.gliderManager.addBird(x, y, cloudHeight / 3f);
+				bird.launch();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 
 	// original used in task1
@@ -245,19 +265,14 @@ public class Trigger implements ClockObserver, CameraSubject {
 	public void wakeUp(float t) {
 		if (awake)
 			return;
-		//Log.i("FC Trigger", "Wakeup:" + myID);
+		// Log.i("FC Trigger", "Wakeup:" + myID);
 
 		xcModelViewer.clock.addObserver(this);
 		initNextCycle(t);
 		existingClouds(t);
-		renderMe();
 		awake = true;
-		
-		int birds = Integer.parseInt(xcModelViewer.modelEnv.getPrefs().getString("birds", "0"));
-		if (birds == 0)
-			return;
-		if (random.nextFloat() * birds > 1.5f)
-			xcModelViewer.xcModel.gliderManager.addBird(x, y, cloudHeight / 3f);
+		addBird();
+
 	}
 
 	/**
@@ -289,11 +304,16 @@ public class Trigger implements ClockObserver, CameraSubject {
 	private static final int NUM_POINTS = 7;
 
 	private void renderMe() {
+		boolean no_vbo = xcModelViewer.modelEnv.getPrefs().getBoolean("no_vbo", false);		
 		if (show) {
-			obj3d = new Obj3d(xcModelViewer);
 			float radius = thermalStrength * 0.5f;
 			float[][] ps = Tools3d.circleXY(NUM_POINTS, radius, new float[] { x, y, 0 });
-			obj3d.addPolywireClosed(ps, Obj3d.COLOR_DEFAULT);
+			if (no_vbo) {
+				obj3d = new Obj3d(xcModelViewer);
+				obj3d.addPolywireClosed(ps, Obj3d.COLOR_DEFAULT);
+			} else {
+				Obj3dStatic.addPolywireClosed(ps, Obj3dStatic.COLOR_DEFAULT);
+			}
 		} else if (obj3d != null) {
 			obj3d.destroyMe();
 			obj3d = null;

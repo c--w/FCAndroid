@@ -56,7 +56,7 @@ public class Obj3d implements CameraSubject {
 	List<Polywire> polywires = new ArrayList<Polywire>();
 	private int wirenext = 0;
 	boolean noShade = false; // hack for sky
-	int shadowColor = Color.argb(128, 220, 220, 220);
+	static int COLOR_SHADOW = Color.argb(128, 220, 220, 220);
 
 	/** Bounding box in model space */
 	BB box = new BB();
@@ -612,6 +612,10 @@ public class Obj3d implements CameraSubject {
 	private FloatBuffer colorsFB = null;
 	private FloatBuffer normalsFB = null;
 
+	private int verticesFBIdx = 0;
+	private int colorsFBIdx = 0;
+	private int normalsFBIdx = 0;
+
 	/** How many bytes per float. */
 	private final int mBytesPerFloat = 4;
 
@@ -661,7 +665,7 @@ public class Obj3d implements CameraSubject {
 		public void addPoint(int i) {
 			int c = colors[i / 3];
 			if (shadow)
-				c = shadowColor;
+				c = COLOR_SHADOW;
 			points[next] = i;
 			if (shadow) {
 				verticesData[next * 3 + 0] = -ps[i + 1] - ps[i + 2] * Task.shadowFactors[1];
@@ -696,7 +700,7 @@ public class Obj3d implements CameraSubject {
 				if (dirty_colors) {
 					int c = colors[i / 3];
 					if (shadow)
-						c = shadowColor;
+						c = COLOR_SHADOW;
 					colorsData[next * 4 + 0] = Color.red(c) / 255f;
 					colorsData[next * 4 + 1] = Color.green(c) / 255f;
 					colorsData[next * 4 + 2] = Color.blue(c) / 255f;
