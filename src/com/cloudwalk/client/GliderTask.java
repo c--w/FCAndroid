@@ -59,6 +59,8 @@ public class GliderTask extends Glider {
 		if (Glider.filmID == myID) {
 			modelViewer.cameraMan.setSubject(this, true);
 		}
+		if (this instanceof Bird)
+			Log.w("FC", "Bird " + this.myID + " reached turnpoint, heading for:" + nextTP.myID);
 	}
 
 	private void finishedTask() {

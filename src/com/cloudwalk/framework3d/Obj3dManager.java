@@ -14,8 +14,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import android.util.Log;
-
 /**
  * This class manages a list of 3d objects - the model.
  */

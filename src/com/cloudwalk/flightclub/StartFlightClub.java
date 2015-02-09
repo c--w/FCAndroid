@@ -247,14 +247,14 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 				// Do nothing
 				dialog.dismiss();
 			}
-		}).show();
+		}).setCancelable(false).show();
 
 	}
 
 	private void startWorldIfNeeded() {
 		if (((XCModelViewer) modelViewerThin).xcModel == null) {
-			Obj3dStatic.init();
 			modelViewerThin.stop();
+			Obj3dStatic.init();
 			modelViewerThin.init((ModelEnv) StartFlightClub.this);
 			((XCModelViewer) modelViewerThin).start();
 			((XCModelViewer) modelViewerThin).clock.addObserver(StartFlightClub.this);
@@ -613,7 +613,11 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 	@Override
 	protected void onPause() {
 		super.onPause();
-		surfaceView.onPause();
+		if (surfaceView != null)
+			try {
+				surfaceView.onPause();
+			} catch (Exception e) {
+			}
 		soundPool.autoPause();
 		if (control_type == 1)
 			mGravity.pause();

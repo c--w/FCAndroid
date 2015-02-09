@@ -68,6 +68,7 @@ public class Obj3dStatic {
 		static_initialized = false;
 		static_initialized_wire = false;
 		num_points_wire = 0;
+		Log.w("FC OBJ3DSTATIC", "INIT");
 	}
 
 	/**
@@ -496,7 +497,7 @@ public class Obj3dStatic {
 	}
 
 	public static void fillVerticesDataWire() {
-
+		num_points_wire = 0;
 		for (int i = 0; i < polywires.size(); i++)
 			num_points_wire += polywires.get(i).n;
 		verticesFBWire = ByteBuffer.allocateDirect(num_points_wire * 3 * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -519,7 +520,6 @@ public class Obj3dStatic {
 				gl_index++;
 			}
 			gl_index++;
-			Log.i("FC" , Arrays.toString(indices));
 			lineIndicesSBWire.put(indices);
 		}
 		Log.i("FC WIRE", "num_points_wire: " + num_points_wire);

@@ -80,6 +80,8 @@ public class Task implements CameraSubject {
 			generateT9Task();
 		} else if (taskID.equals("default10")) {
 			generateT10Task();
+		} else if (taskID.equals("default11")) {
+			generateT11Task();
 		} else {
 			parseFile(taskID);
 		}
@@ -290,7 +292,7 @@ public class Task implements CameraSubject {
 		float[][] r1 = new float[][] { { 0, 0, 0 }, { 0.8f * x, 0.6f * x, 0 }, { 4 * x, x * .1f, 0 }, { 8 * x, 0.5f * x, 0 } };
 		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { 0.8f * x, 0.6f * x + 0.1f, 0 }, { 4 * x, x * .1f + 0.1f, 0 }, { 8 * x, 0.5f * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
-		
+
 	}
 
 	private void generateT9Task() {
@@ -326,11 +328,11 @@ public class Task implements CameraSubject {
 		float[][] r2 = new float[][] { { 0, 0, 0 }, { 0.8f * x, x + 0.1f, 0 }, { x, 2 * x + 0.1f, 0 }, { 2 * x, 4 * x + 0.1f, 0 } };
 		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 });
 
-//		Random r = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
-//		for (int i = 0; i < 100; i++) {
-//			Building.createTree(xcModelViewer, (4 + r.nextFloat()), (4 + r.nextFloat()), (4 + r.nextFloat()), r.nextFloat()
-//					* 3f * x, r.nextFloat() * 3f * x, 0, Color.rgb(200, 240, 200), Color.rgb(240, 240, 200));
-//		}
+		// Random r = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
+		// for (int i = 0; i < 100; i++) {
+		// Building.createTree(xcModelViewer, (4 + r.nextFloat()), (4 + r.nextFloat()), (4 + r.nextFloat()), r.nextFloat()
+		// * 3f * x, r.nextFloat() * 3f * x, 0, Color.rgb(200, 240, 200), Color.rgb(240, 240, 200));
+		// }
 	}
 
 	private void generateT10Task() {
@@ -368,9 +370,50 @@ public class Task implements CameraSubject {
 
 		Random r = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
 		for (int i = 0; i < 100; i++) {
-			Building.createTree(xcModelViewer, (4 + r.nextFloat()), (4 + r.nextFloat()), (4 + r.nextFloat()), r.nextFloat()
-					* 3f * x, r.nextFloat() * 3f * x, 0, Color.rgb(200, 240, 200), Color.rgb(240, 240, 200));
+			Building.createTree(xcModelViewer, (4 + r.nextFloat()), (4 + r.nextFloat()), (4 + r.nextFloat()), r.nextFloat() * 3f * x, r.nextFloat() * 3f * x,
+					0, Color.rgb(200, 240, 200), Color.rgb(240, 240, 200));
 		}
+
+	}
+
+	private void generateT11Task() {
+		latitude = 40;
+		time_of_day = "12";
+		desc = "Nice blue day with lots of high blue thermals but only 50% of triggers visible. \n150km task to ENE. \nWind weak W. \nCloudbase varies around 2000m.\nDifferent triggers every day!";
+		type = TIME_PRECISE;
+		CLOUDBASE =	3;
+		NODE_SPACING = CLOUDBASE * 12f;
+		HEXAGON = CLOUDBASE * 10;
+
+		// wind
+		wind_x = 0.05f;
+		wind_y = 0.00f;
+
+		// triggers
+		Random r = new Random(System.currentTimeMillis() / 1000 / 60 / 60 / 24);
+		triggers = new Trigger[9 * 1 * 6];
+		float x_ = 0, y_ = 0;
+		for (int i = 1; i < 10; i++) {
+			// HEXAGON = (float) (CLOUDBASE * (7 + Math.pow(i, 1.46f)));
+			flatLandRandom(x_ += HEXAGON, y_ += HEXAGON / 2, 5, CLOUDBASE);
+			for (int j = 0; j < 10; j++) {
+				Building.createTree(xcModelViewer, (4 + r.nextFloat()), (4 + r.nextFloat()), (4 + r.nextFloat()), x_ + r.nextFloat() * HEXAGON,
+						y_ + r.nextFloat() * HEXAGON, 0, Color.rgb(200, 240, 200), Color.rgb(240, 240, 200));
+			}
+
+			// r1[i - 1] = new float[] { x_ + HEXAGON / 2 + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2,
+			// + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2, 0 };
+		}
+
+		float[] xs = { CLOUDBASE * 10, x_ + HEXAGON };
+		float[] ys = { CLOUDBASE * 10 / 2, y_ + HEXAGON * .5f };
+		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
+
+		// roads - specify start and end points
+		float[][] r1 = new float[][] { { 0, 0, 0 }, { x_ / 3, y_ * .3f, 0 }, { x_ / 1.5f, y_ * .7f, 0 }, { x_ + HEXAGON, y_ + HEXAGON * .3f, 0 } };
+		float[][] r2 = new float[][] { { 0, 0.1f, 0 }, { x_ / 3, y_ * .3f + 0.1f, 0 }, { x_ / 1.5f, y_ * .7f + 0.1f, 0 },
+				{ x_ + HEXAGON, y_ + HEXAGON * .3f + 0.1f, 0 } };
+		roadManager = new RoadManager(xcModelViewer, new float[][][] { r1, r2 }, 20, 2);
 
 	}
 

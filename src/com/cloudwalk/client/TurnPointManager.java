@@ -18,6 +18,7 @@ import java.io.*;
 class TurnPointManager {
 	XCModelViewer xcModelViewer;
 	TurnPoint[] turnPoints;
+	boolean rendered = false;
 
 	public TurnPointManager(XCModelViewer xcModelViewer, StreamTokenizer st) throws IOException {
 		this.xcModelViewer = xcModelViewer;
@@ -88,8 +89,11 @@ class TurnPointManager {
 	 * Renders the turn points. What you get depends on which nodes are loaded.
 	 */
 	void renderMe() {
-		for (int i = 0; i < turnPoints.length; i++) {
-			turnPoints[i].renderMe();
+		if (!rendered) {
+			for (int i = 0; i < turnPoints.length; i++) {
+				turnPoints[i].renderMe();
+			}
+			rendered = true;
 		}
 	}
 

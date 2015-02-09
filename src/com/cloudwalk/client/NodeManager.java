@@ -191,6 +191,14 @@ class NodeManager {
 		return nodes[nearestNodeIndex(p)];
 	}
 
+	Node nextNode(float[] p) {
+		int i = nearestNodeIndex(p);
+		i++;
+		if(i==nodes.length)
+			i=0;
+		return nodes[i];
+	}
+
 	/**
 	 * Returns the current node
 	 */

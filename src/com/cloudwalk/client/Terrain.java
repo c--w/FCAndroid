@@ -19,7 +19,7 @@ import com.cloudwalk.framework3d.*;
 public class Terrain extends Obj3d {
 	float dx, dy;
 	float x0, y0;
-	static final int NUM_CELLS = 20;
+	static final int NUM_CELLS = 200;
 	public static final float SITE_SIZE = 50f;
 
 	public Terrain(ModelViewer modelViewer, float x0, float y0, boolean register) {

@@ -30,7 +30,7 @@
             android:summary="Number of sailplane AIs in solo game"
             android:title="Sailplanes" />
         <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="2"
             android:dialogTitle="Amount of birds"
             android:entries="@array/birds_label"
             android:entryValues="@array/birds_amount"
@@ -70,16 +70,11 @@
             android:key="real_shadows"
             android:summary="Real sun shadows are not directly beneath for usual mid-latitudes. Shadows depend on latitude and local date/time of day which is now set for each task separately."
             android:title="Real shadows" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="fancy"
-            android:summary="Paint ground and sky. (Disable if you have problems starting the race)"
-            android:title="Fancy" />
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="no_vbo"
-            android:summary="Use if you have problems starting the race"
+            android:summary="Use if you have problems after starting the race. It will affect performance."
             android:title="Safe mode" />
         
         <afzkl.development.colorpickerview.preference.ColorPickerPreference

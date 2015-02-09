@@ -97,6 +97,7 @@ public class Glider extends MovingBody {
 			this.iP = iP;
 			setPolar();
 		}
+
 	}
 
 	/**

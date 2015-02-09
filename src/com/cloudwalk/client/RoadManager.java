@@ -26,6 +26,7 @@ import com.cloudwalk.framework3d.Tools3d;
 public class RoadManager {
 	XCModelViewer xcModelViewer;
 	Road[] roads;
+	boolean rendered = false;
 
 	public RoadManager(XCModelViewer xcModelViewer, StreamTokenizer st) throws IOException {
 		this(xcModelViewer, st, 10f, 2f);
@@ -64,8 +65,11 @@ public class RoadManager {
 	}
 
 	void renderMe() {
-		for (int i = 0; i < roads.length; i++) {
-			roads[i].renderMe();
+		if (!rendered) {
+			for (int i = 0; i < roads.length; i++) {
+				roads[i].renderMe();
+			}
+			rendered = true;
 		}
 	}
 

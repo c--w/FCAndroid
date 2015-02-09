@@ -16,6 +16,7 @@ import android.graphics.Color;
 import android.util.Log;
 
 import com.cloudwalk.framework3d.Obj3d;
+import com.cloudwalk.framework3d.Obj3dStatic;
 import com.cloudwalk.framework3d.Tools3d;
 
 /**
@@ -52,6 +53,7 @@ public class TurnPoint {
 	static final float SECTOR_DOT = (float) Math.cos(SECTOR_ANGLE);
 	float radius = 3f;
 	float dPerp;
+	boolean no_vbo = false;
 
 	public TurnPoint(XCModelViewer xcModelViewer, StreamTokenizer st) throws IOException {
 		this.xcModelViewer = xcModelViewer;
@@ -158,6 +160,8 @@ public class TurnPoint {
 	 * point. B.
 	 */
 	void renderMe() {
+		no_vbo = xcModelViewer.modelEnv.getPrefs().getBoolean("no_vbo", false);
+		COLOR_SECTOR = xcModelViewer.modelEnv.getPrefs().getInt("tp_color", Color.YELLOW);
 		if (prevTP == null) {
 			renderStart();
 			renderArrows();
@@ -187,11 +191,7 @@ public class TurnPoint {
 	 * </pre>
 	 */
 	private void renderSector() {
-		if (objA != null) {
-			return;
-		}
 		float[][] ps = new float[3][3];
-		float[] p = new float[3];
 		Tools3d.linearSum(radius, bisect, -dPerp, bisectPerp, ps[1]);
 		Tools3d.linearSum(radius, bisect, dPerp, bisectPerp, ps[2]);
 
@@ -200,8 +200,11 @@ public class TurnPoint {
 			ps[i][1] += y;
 		}
 
-		objA = new Obj3d(xcModelViewer);
-		objA.addPolywireClosed(ps, COLOR_SECTOR);
+		if (no_vbo) {
+			objA = new Obj3d(xcModelViewer);
+			objA.addPolywireClosed(ps, COLOR_SECTOR);
+		} else
+			Obj3dStatic.addPolywireClosed(ps, COLOR_SECTOR);
 	}
 
 	private Obj3d objB = null; // arrows
@@ -219,14 +222,9 @@ public class TurnPoint {
 	 * </pre>
 	 */
 	private void renderArrows() {
-		if(xcModelViewer.xcModel.task.type == Task.DISTANCE)
+		if (xcModelViewer.xcModel.task.type == Task.DISTANCE)
 			return;
-		
-		// have we already created the sector ?
-		if (objB != null) {
-			return;
-		}
-		
+
 		float ARROW_SPACING = distanceToNext / 20f;
 		float ARROW_LEN = ARROW_SPACING * 0.3f;
 		float ARROW_HEAD = ARROW_LEN * 0.2f;
@@ -245,7 +243,6 @@ public class TurnPoint {
 		float[][][] pss = new float[num][2][3]; // tails
 		float[][][] qss = new float[num][3][3]; // heads
 		NodeManager nodeManager = xcModelViewer.xcModel.task.nodeManager;
-
 
 		int n = 0;
 		float dist = 0;
@@ -279,21 +276,24 @@ public class TurnPoint {
 			d[0] += dx_;
 			d[1] += dy_;
 		}
+		if (no_vbo) {
+			objB = new Obj3d(xcModelViewer);
 
-		objB = new Obj3d(xcModelViewer);
-
-		for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
-			objB.addPolywire(pss[i], COLOR_SECTOR, 2);
-			objB.addPolywire(qss[i], COLOR_SECTOR, 2);
+			for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
+				objB.addPolywire(pss[i], COLOR_SECTOR, 2);
+				objB.addPolywire(qss[i], COLOR_SECTOR, 2);
+			}
+		} else {
+			for (int i = 0; i < n; i++) { // note we use n and *not* ps.length
+				Obj3dStatic.addPolywire(pss[i], COLOR_SECTOR, 2);
+				Obj3dStatic.addPolywire(qss[i], COLOR_SECTOR, 2);
+			}
 		}
+
 	}
 
 	/** Draws a perp line. */
 	private void renderStart() {
-		if (objA != null) {
-			return;
-		}
-		COLOR_SECTOR = xcModelViewer.modelEnv.getPrefs().getInt("tp_color", Color.YELLOW);
 
 		float[][] ps = new float[2][3];
 		ps[0][0] = x - dPerp * dy;
@@ -301,8 +301,11 @@ public class TurnPoint {
 		ps[1][0] = x + dPerp * dy;
 		ps[1][1] = y - dPerp * dx;
 
-		objA = new Obj3d(xcModelViewer);
-		objA.addPolywireClosed(ps, COLOR_SECTOR);
+		if (no_vbo) {
+			objA = new Obj3d(xcModelViewer);
+			objA.addPolywireClosed(ps, COLOR_SECTOR);
+		} else
+			Obj3dStatic.addPolywireClosed(ps, COLOR_SECTOR);
 	}
 
 	// for now...
@@ -317,8 +320,11 @@ public class TurnPoint {
 		ps[1][0] = x + dPerp * prevTP.dy;
 		ps[1][1] = y - dPerp * prevTP.dx;
 
-		objA = new Obj3d(xcModelViewer);
-		objA.addPolywireClosed(ps, COLOR_SECTOR);
+		if (no_vbo) {
+			objA = new Obj3d(xcModelViewer);
+			objA.addPolywireClosed(ps, COLOR_SECTOR);
+		} else
+			Obj3dStatic.addPolywireClosed(ps, COLOR_SECTOR);
 	}
 
 }

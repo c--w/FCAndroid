@@ -26,7 +26,7 @@ import com.cloudwalk.framework3d.Tools3d;
  */
 public class GliderAI extends GliderTask {
 	MovementManager moveManager;
-	private boolean tryLater = false; // no lift found yet so glide for a bit on
+	boolean tryLater = false; // no lift found yet so glide for a bit on
 										// track
 	// vars for delayed camera cuts
 	boolean cutPending = false;

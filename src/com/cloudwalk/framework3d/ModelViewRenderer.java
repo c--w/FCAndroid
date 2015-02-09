@@ -38,8 +38,6 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	 */
 	private float[] mModelMatrix = new float[16];
 
-	private float[] mLightModelMatrix = new float[16];
-
 	/**
 	 * Store the view matrix. This can be thought of as our camera. This matrix transforms world space to eye space; it positions things relative to our eye.
 	 */
@@ -75,24 +73,6 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	/** This will be used to pass in model normal information. */
 	private int mFarDistanceHandle;
 
-	/** How many bytes per float. */
-	private final int mBytesPerFloat = 4;
-
-	/** How many elements per vertex. */
-	private final int mStrideBytes = 7 * mBytesPerFloat;
-
-	/** Offset of the position data. */
-	private final int mPositionOffset = 0;
-
-	/** Size of the position data in elements. */
-	private final int mPositionDataSize = 3;
-
-	/** Offset of the color data. */
-	private final int mColorOffset = 3;
-
-	/** Size of the color data in elements. */
-	private final int mColorDataSize = 4;
-
 	/**
 	 * Used to hold a light centered on the origin in model space. We need a 4th coordinate so we can get translations to work when we multiply this by our
 	 * transformation matrices.
@@ -109,7 +89,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	public int width;
 	public int height;
 	public int viewAngle;
-	boolean fancy = false;
+	boolean no_vbo = false;
 	int sky_color = Color.WHITE;
 	int ground_color = Color.WHITE;
 	SharedPreferences prefs;
@@ -123,7 +103,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	public ModelViewRenderer(Context c, ErrorHandler errorHandler) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(c);
 		viewAngle = Integer.parseInt(prefs.getString("view_angle", "10"));
-		fancy = prefs.getBoolean("fancy", false);
+		no_vbo = prefs.getBoolean("no_vbo", false);		
 		sky_color = prefs.getInt("sky_color", Color.WHITE);
 		ground_color = prefs.getInt("ground_color", Color.WHITE);
 		this.errorHandler = errorHandler;
@@ -173,8 +153,10 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-		if (fancy) {
-			heightMap = new HeightMap();
+		if (!no_vbo) {
+			heightMap = new HeightMap(16, -3000, 4000, -0.1f);
+			Obj3dStatic.static_initialized = false;
+			Obj3dStatic.static_initialized_wire = false;
 			GLES20.glClearColor(Color.red(sky_color) / 255f, Color.green(sky_color) / 255f, Color.blue(sky_color) / 255f, 0f);
 		} else
 			GLES20.glClearColor(1f, 1f, 1f, 1f);
@@ -391,7 +373,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		GLES20.glVertexAttrib1f(mFarDistanceHandle, far);
 
 		// drawWorld();
-		if (fancy)
+		if (!no_vbo)
 			heightMap.render();
 		Obj3dStatic.draw(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
 		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
@@ -424,7 +406,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 		int indexCount;
 
-		HeightMap() {
+		HeightMap(int SIZE_PER_SIDE, float MIN_POSITION, float POSITION_RANGE, float height) {
 			try {
 				final int floatsPerVertex = POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS;
 				final int xLength = SIZE_PER_SIDE;
@@ -450,9 +432,9 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 						heightMapVertexData[offset++] = -0.1f;
 						heightMapVertexData[offset++] = xPosition;
 
-						heightMapVertexData[offset++] = 0f;
-						heightMapVertexData[offset++] = 1f;
-						heightMapVertexData[offset++] = 0f;
+						heightMapVertexData[offset++] = 0;
+						heightMapVertexData[offset++] = 1;
+						heightMapVertexData[offset++] = 0;
 
 						// Add some fancy colors.
 						heightMapVertexData[offset++] = Color.red(ground_color) / 255f;

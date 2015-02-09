@@ -121,7 +121,7 @@ class Node implements CameraSubject {
 
 	private Obj3d obj3d;
 	static final int NUM_POINTS = 16;
-	static final int COLOR = Color.rgb(235, 235, 235);
+	static final int COLOR = Color.rgb(255, 0, 0);
 	boolean flagNoRender = true;
 
 	/**
@@ -222,7 +222,7 @@ class Node implements CameraSubject {
 		}
 	}
 
-	public LiftSource getRandomLS(Bird bird) {
+	public LiftSource getRandomLS(Bird bird, boolean must_be_active) {
 		try {
 			if (liftSources == null || liftSources.size() == 0)
 				return null;
@@ -236,17 +236,20 @@ class Node implements CameraSubject {
 				LiftSource ls = (LiftSource) liftSources.elementAt(pos);
 				if (ls instanceof Hill)
 					continue;
-				Tools3d.subtract(ls.getP(), p, r);
-				r[2] = 0; // work in a horizontal plane
-				float d = Tools3d.length(r);
-				float speed = bird.getSpeed();
-				float t = d / speed;
-				if (ls.isActive(t)) {
+				if (must_be_active) {
+					Tools3d.subtract(ls.getP(), p, r);
+					r[2] = 0; // work in a horizontal plane
+					float d = Tools3d.length(r);
+					float speed = bird.getSpeed(2);
+					float t = d / speed;
+					if (ls.isActive(t)) {
+						return ls;
+					}
+					pos++;
+					if (pos == size)
+						pos = 0;
+				} else
 					return ls;
-				}
-				pos++;
-				if (pos == size)
-					pos = 0;
 			}
 			return null;
 		} catch (Exception e) {

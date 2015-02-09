@@ -4,6 +4,8 @@ import android.graphics.Color;
 import android.util.Log;
 
 public class Bird extends GliderAI {
+	float last_decision = 0;
+	private static final float T_LATER = 15.0f;
 
 	public Bird(XCModelViewer xcModelViewer, GliderType gliderType, int id) {
 		super(xcModelViewer, gliderType, id);
@@ -19,7 +21,7 @@ public class Bird extends GliderAI {
 		launchPending = false;
 		landed = false;
 		nextTurn = 0;
-		setPolar();
+		setPolar(2);
 		makeDecision(xcModelViewer.clock.getTime());
 	}
 
@@ -32,15 +34,28 @@ public class Bird extends GliderAI {
 		}
 
 		// am i at base ?
-		if (moveManager.cloud != null && this.p[2] >= moveManager.cloud.h) {
+		if (moveManager.cloud != null && this.p[2] >= moveManager.cloud.h - 0.05f) {
 			makeDecision(t);
 			return;
 		}
 
-		if (moveManager.cloud != null && this.p[2] < moveManager.cloud.h / 10) {
-			setPolar(1);
-		} else if (moveManager.cloud != null && this.p[2] >= moveManager.cloud.h / 4) {
+		if (this.airv > 0) {
 			setPolar(0);
+		} else if (this.p[2] < 0.6f) {
+			setPolar(0);
+		} else if (this.p[2] < 0.8f) {
+			setPolar(1);
+		} else {
+			setPolar(2);
+		}
+
+		// am i gliding and waiting
+		if (tryLater) {
+			if (t > last_decision + T_LATER) {
+				tryLater = false;
+				makeDecision(t);
+			}
+			return;
 		}
 
 	}
@@ -48,7 +63,7 @@ public class Bird extends GliderAI {
 	LiftSource searchNodes() {
 		LiftSource ls = null;
 		Node node = xcModelViewer.xcModel.task.nodeManager.nearestNode(p);
-		ls = node.getRandomLS(this);
+		ls = node.getRandomLS(this, true);
 		return ls;
 	}
 
@@ -56,10 +71,15 @@ public class Bird extends GliderAI {
 	 * Searches my node for the next lift source.
 	 */
 	void makeDecision(float t) {
+		last_decision = t;
 
 		LiftSource ls = searchNodes();
-		if (ls == null)
+		if (ls == null || ls == moveManager.cloud) {
+			Node node = xcModelViewer.xcModel.task.nodeManager.nextNode();
+			this.moveManager.setTargetPoint(new float[] { node.x, node.y, 0 }, true);
+			tryLater = true;
 			return;
+		}
 		currentLS = ls;
 
 		// glide to lift source - a cloud or hill
