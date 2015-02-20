@@ -379,11 +379,11 @@ public class Task implements CameraSubject {
 	private void generateT11Task() {
 		latitude = 40;
 		time_of_day = "12";
-		desc = "Nice blue day with lots of high blue thermals but only 50% of triggers visible. \n150km task to ENE. \nWind weak W. \nCloudbase varies around 2000m.\nDifferent triggers every day!";
+		desc = "Nice blue day with high blue thermals but only 50% of triggers visible. \n150km task to ENE. \nWind weak W. \nCloudbase varies around 3000m.\nDifferent triggers every day!";
 		type = TIME_PRECISE;
-		CLOUDBASE =	3;
-		NODE_SPACING = CLOUDBASE * 12f;
-		HEXAGON = CLOUDBASE * 10;
+		CLOUDBASE =	6;
+		NODE_SPACING = 3 * 12f;
+		HEXAGON = 3 * 10;
 
 		// wind
 		wind_x = 0.05f;
@@ -405,8 +405,8 @@ public class Task implements CameraSubject {
 			// + (Tools.get01Value4(x_, y_) - 0.5f) * HEXAGON / 2, 0 };
 		}
 
-		float[] xs = { CLOUDBASE * 10, x_ + HEXAGON };
-		float[] ys = { CLOUDBASE * 10 / 2, y_ + HEXAGON * .5f };
+		float[] xs = { 3 * 10, x_ + HEXAGON };
+		float[] ys = { 3 * 10 / 2, y_ + HEXAGON * .5f };
 		turnPointManager = new TurnPointManager(xcModelViewer, xs, ys);
 
 		// roads - specify start and end points
