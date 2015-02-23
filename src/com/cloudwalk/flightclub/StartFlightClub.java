@@ -393,7 +393,7 @@ public class StartFlightClub extends Activity implements ModelEnv, OnTouchListen
 					// Request an OpenGL ES 2.0 compatible context.
 					modelView.setEGLContextClientVersion(2);
 					// Set the renderer to our demo renderer, defined below.
-					renderer = new ModelViewRenderer(StartFlightClub.this, modelView);
+					renderer = new ModelViewRenderer(StartFlightClub.this);
 					renderer.modelViewer = (XCModelViewer) modelViewerThin;
 					modelView.setRenderer(renderer);
 				} else {

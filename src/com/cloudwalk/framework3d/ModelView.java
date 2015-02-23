@@ -28,7 +28,7 @@ import android.widget.Toast;
  * @see ModelViewer
  * @see CameraMan
  */
-public class ModelView extends GLSurfaceView implements ErrorHandler {
+public class ModelView extends GLSurfaceView {
 
 	public ModelViewer modelViewer;
 	protected int backColor = Color.WHITE;
@@ -149,25 +149,4 @@ public class ModelView extends GLSurfaceView implements ErrorHandler {
 		return;
 	}
 
-	@Override
-	public void handleError(final ErrorType errorType, final String cause) {
-		// Queue on UI thread.
-		post(new Runnable() {
-			@Override
-			public void run() {
-				final String text;
-
-				switch (errorType) {
-				case BUFFER_CREATION_ERROR:
-					text = "Problem creating VBO";
-					break;
-				default:
-					text = "Unknown OPENGL problem";
-				}
-
-				Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
-
-			}
-		});
-	}
 }

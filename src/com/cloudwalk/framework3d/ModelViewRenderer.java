@@ -3,10 +3,6 @@ package com.cloudwalk.framework3d;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -18,19 +14,15 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.cloudwalk.client.Task;
 import com.cloudwalk.client.XCModelViewer;
-import com.cloudwalk.framework3d.ErrorHandler.ErrorType;
 
 /**
  * This class implements our custom renderer. Note that the GL10 parameter passed in is unused for OpenGL ES 2.0 renderers -- the static class GLES20 is used
  * instead.
  */
 public class ModelViewRenderer implements GLSurfaceView.Renderer {
-
-	private final ErrorHandler errorHandler;
 
 	/**
 	 * Store the model matrix. This matrix is used to move models from object space (where each model can be thought of being located at the center of the
@@ -94,19 +86,15 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	int ground_color = Color.WHITE;
 	SharedPreferences prefs;
 
-	/** The current heightmap object. */
-	private HeightMap heightMap;
-
 	/**
 	 * Initialize the model data.
 	 */
-	public ModelViewRenderer(Context c, ErrorHandler errorHandler) {
+	public ModelViewRenderer(Context c) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(c);
 		viewAngle = Integer.parseInt(prefs.getString("view_angle", "10"));
-		no_vbo = prefs.getBoolean("no_vbo", false);		
+		no_vbo = prefs.getBoolean("no_vbo", false);
 		sky_color = prefs.getInt("sky_color", Color.WHITE);
 		ground_color = prefs.getInt("ground_color", Color.WHITE);
-		this.errorHandler = errorHandler;
 	}
 
 	public void updateCamera() {
@@ -154,12 +142,10 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
 		if (!no_vbo) {
-			heightMap = new HeightMap(16, -3000, 4000, -0.1f);
 			Obj3dStatic.static_initialized = false;
 			Obj3dStatic.static_initialized_wire = false;
-			GLES20.glClearColor(Color.red(sky_color) / 255f, Color.green(sky_color) / 255f, Color.blue(sky_color) / 255f, 0f);
-		} else
-			GLES20.glClearColor(1f, 1f, 1f, 1f);
+		} 
+		GLES20.glClearColor(Color.red(sky_color) / 255f, Color.green(sky_color) / 255f, Color.blue(sky_color) / 255f, 0f);
 
 		updateCamera();
 		final String vertexShader = "uniform mat4 u_MVPMatrix;      \n" // A constant representing the combined model/view/projection matrix.
@@ -173,8 +159,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 				+ "varying vec4 v_Color;          \n" // This will be passed into the fragment shader.
 				+ "varying vec3 v_Position;          \n" // This will be passed into the fragment shader.
-				+ "varying float v_FarDist;			\n"
-				+ "void main()                    \n" // The entry point for our vertex shader.
+				+ "varying float v_FarDist;			\n" + "void main()                    \n" // The entry point for our vertex shader.
 				+ "{                              \n"
 				// Transform the vertex into eye space.
 				+ "   v_Position = vec3(u_MVMatrix * a_Position);              \n"
@@ -184,11 +169,10 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 				+ "   vec3 lightVector = normalize(u_LightPos - v_Position);             \n"
 				// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
 				// pointing in the same direction then it will get max illumination.
-				+ "   float diffuse = max(dot(normal, lightVector), 0.1);              \n" 
-				+ "   v_Color = a_Color * pow(diffuse, 0.25);						\n"
-//				+ "   vec4 color = a_Color;						\n"
+				+ "   float diffuse = max(dot(normal, lightVector), 0.1);              \n" + "   v_Color = a_Color * pow(diffuse, 0.25);						\n"
+				// + "   vec4 color = a_Color;						\n"
 
-				+ "   v_FarDist = a_FarDist; "																												// the pipeline.
+				+ "   v_FarDist = a_FarDist; " // the pipeline.
 				+ "   gl_Position = u_MVPMatrix * a_Position;   \n" // gl_Position is a special variable used to store the final position.
 				+ "                 \n" // Multiply the vertex by the matrix to get the final point in
 				+ "}                              \n"; // normalized screen coordinates.
@@ -202,12 +186,12 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 				+ "varying float v_FarDist;       \n" // Per-vertex normal information we will pass in.
 
 				+ "void main()                    \n" // The entry point for our fragment shader.
-				+ "{                              \n" 
+				+ "{                              \n"
 				+ "   float distance = length(v_Position);     \n"
 				+ "   float factor = 1.0 - (1.0 / (1.0 + (0.06 * (100.0 / v_FarDist) * distance)));"
 				+ "   vec4 fog_color = vec4(1.0,1.0,1.0,1.0);	     \n"
 				+ "   gl_FragColor = mix(v_Color, fog_color, factor);     \n" // Pass the color directly through
-//				+ "   gl_FragColor = v_Color;     \n" // Pass the color directly through the pipeline.
+				// + "   gl_FragColor = v_Color;     \n" // Pass the color directly through the pipeline.
 				+ "}                              \n";
 
 		// Load in the vertex shader.
@@ -321,7 +305,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 			Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 			lastFar = far;
-			//Log.i("FC MVR", "" + far);
+			// Log.i("FC MVR", "" + far);
 		}
 
 	}
@@ -333,10 +317,10 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 		GLES20.glEnable(GLES20.GL_CULL_FACE);
 		GLES20.glHint(GL10.GL_POLYGON_SMOOTH_HINT, GL10.GL_NICEST);
-//		GLES20.glEnable(GL10.GL_POLYGON_OFFSET_FILL);
-//		GLES20.glPolygonOffset(-0.1f,0);
+		// GLES20.glEnable(GL10.GL_POLYGON_OFFSET_FILL);
+		// GLES20.glPolygonOffset(-0.1f,0);
 		// GLES20.glEnable(GL10.GL_ALPHA_TEST);
-		//GLES20.glEnable(GL10.GL_BLEND);
+		// GLES20.glEnable(GL10.GL_BLEND);
 		// GLES20.glBlendFunc(GL10.GL_SRC_ALPHA_SATURATE, GL10.GL_ONE);
 		// GLES20.glDepthFunc(GL10.GL_LEQUAL);
 		// GLES20.glEnable(GL10.GL_SMOOTH);
@@ -372,9 +356,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 
 		GLES20.glVertexAttrib1f(mFarDistanceHandle, far);
 
-		// drawWorld();
-		if (!no_vbo)
-			heightMap.render();
+		drawWorld();
 		Obj3dStatic.draw(mMVPMatrix, mMVPMatrixHandle, mPositionHandle, mColorHandle, mNormalHandle);
 		for (int i = 0; i < modelViewer.obj3dManager.size(); i++) {
 			try {
@@ -386,159 +368,38 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-	/** Additional constants. */
-	private static final int POSITION_DATA_SIZE_IN_ELEMENTS = 3;
-	private static final int NORMAL_DATA_SIZE_IN_ELEMENTS = 3;
-	private static final int COLOR_DATA_SIZE_IN_ELEMENTS = 4;
+	FloatBuffer worldBuffer;
 
-	private static final int BYTES_PER_FLOAT = 4;
-	private static final int BYTES_PER_SHORT = 2;
+	private void drawWorld() {
+		float d = 5000f;
+		float b = -0.02f;
 
-	private static final int STRIDE = (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT;
-
-	class HeightMap {
-		static final int SIZE_PER_SIDE = 4;
-		static final float MIN_POSITION = -3000f;
-		static final float POSITION_RANGE = 4000f;
-
-		final int[] vbo = new int[1];
-		final int[] ibo = new int[1];
-
-		int indexCount;
-
-		HeightMap(int SIZE_PER_SIDE, float MIN_POSITION, float POSITION_RANGE, float height) {
-			try {
-				final int floatsPerVertex = POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS;
-				final int xLength = SIZE_PER_SIDE;
-				final int yLength = SIZE_PER_SIDE;
-
-				final float[] heightMapVertexData = new float[xLength * yLength * floatsPerVertex];
-
-				int offset = 0;
-
-				// First, build the data for the vertex buffer
-				for (int y = 0; y < yLength; y++) {
-					for (int x = 0; x < xLength; x++) {
-						final float xRatio = x / (float) (xLength - 1);
-
-						// Build our heightmap from the top down, so that our triangles are counter-clockwise.
-						final float yRatio = 1f - (y / (float) (yLength - 1));
-
-						final float xPosition = MIN_POSITION + (xRatio * POSITION_RANGE);
-						final float yPosition = MIN_POSITION + (yRatio * POSITION_RANGE);
-
-						// Position
-						heightMapVertexData[offset++] = yPosition;
-						heightMapVertexData[offset++] = -0.1f;
-						heightMapVertexData[offset++] = xPosition;
-
-						heightMapVertexData[offset++] = 0;
-						heightMapVertexData[offset++] = 1;
-						heightMapVertexData[offset++] = 0;
-
-						// Add some fancy colors.
-						heightMapVertexData[offset++] = Color.red(ground_color) / 255f;
-						heightMapVertexData[offset++] = Color.green(ground_color) / 255f;
-						heightMapVertexData[offset++] = Color.blue(ground_color) / 255f;
-						heightMapVertexData[offset++] = 1f;
-					}
-				}
-
-				// Now build the index data
-				final int numStripsRequired = yLength - 1;
-				final int numDegensRequired = 2 * (numStripsRequired - 1);
-				final int verticesPerStrip = 2 * xLength;
-
-				short[] heightMapIndexData = new short[(verticesPerStrip * numStripsRequired) + numDegensRequired];
-
-				offset = 0;
-
-				for (int y = 0; y < yLength - 1; y++) {
-					if (y > 0) {
-						// Degenerate begin: repeat first vertex
-						heightMapIndexData[offset++] = (short) (y * yLength);
-					}
-
-					for (int x = 0; x < xLength; x++) {
-						// One part of the strip
-						heightMapIndexData[offset++] = (short) ((y * yLength) + x);
-						heightMapIndexData[offset++] = (short) (((y + 1) * yLength) + x);
-					}
-
-					if (y < yLength - 2) {
-						// Degenerate end: repeat last vertex
-						heightMapIndexData[offset++] = (short) (((y + 1) * yLength) + (xLength - 1));
-					}
-				}
-				indexCount = heightMapIndexData.length;
-
-				final FloatBuffer heightMapVertexDataBuffer = ByteBuffer.allocateDirect(heightMapVertexData.length * BYTES_PER_FLOAT)
-						.order(ByteOrder.nativeOrder()).asFloatBuffer();
-				heightMapVertexDataBuffer.put(heightMapVertexData).position(0);
-
-				final ShortBuffer heightMapIndexDataBuffer = ByteBuffer.allocateDirect(heightMapIndexData.length * BYTES_PER_SHORT)
-						.order(ByteOrder.nativeOrder()).asShortBuffer();
-				heightMapIndexDataBuffer.put(heightMapIndexData).position(0);
-
-				GLES20.glGenBuffers(1, vbo, 0);
-				GLES20.glGenBuffers(1, ibo, 0);
-
-				if (vbo[0] > 0 && ibo[0] > 0) {
-					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
-					GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, heightMapVertexDataBuffer.capacity() * BYTES_PER_FLOAT, heightMapVertexDataBuffer,
-							GLES20.GL_STATIC_DRAW);
-
-					GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
-					GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, heightMapIndexDataBuffer.capacity() * BYTES_PER_SHORT, heightMapIndexDataBuffer,
-							GLES20.GL_STATIC_DRAW);
-
-					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-					GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-				} else {
-					errorHandler.handleError(ErrorType.BUFFER_CREATION_ERROR, "glGenBuffers");
-				}
-			} catch (Throwable t) {
-				Log.w("FC MVR", t);
-				errorHandler.handleError(ErrorType.BUFFER_CREATION_ERROR, t.getLocalizedMessage());
-			}
+		if (worldBuffer == null) {
+			final float[] triangle1VerticesData = {
+					// X, Y, Z,
+					// R, G, B, A
+					0, b, d, 0, 1, 0, Color.red(ground_color) / 255f, Color.green(ground_color) / 255f, Color.blue(ground_color) / 255f, 1.0f, d, b, -d, 0, 1,
+					0, Color.red(ground_color) / 255f, Color.green(ground_color) / 255f, Color.blue(ground_color) / 255f, 1.0f, -d, b, -d, 0, 1, 0,
+					Color.red(ground_color) / 255f, Color.green(ground_color) / 255f, Color.blue(ground_color) / 255f, 1.0f };
+			// Initialize the buffers.
+			worldBuffer = ByteBuffer.allocateDirect(triangle1VerticesData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			worldBuffer.put(triangle1VerticesData).position(0);
 		}
 
-		void render() {
-			if (vbo[0] > 0 && ibo[0] > 0) {
-				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
+		// Pass in the position information
+		worldBuffer.position(0);
+		GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 40, worldBuffer);
+		GLES20.glEnableVertexAttribArray(mPositionHandle);
+		// Pass in the normal information
+		worldBuffer.position(3);
+		GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 40, worldBuffer);
+		GLES20.glEnableVertexAttribArray(mNormalHandle);
+		// Pass in the color information
+		worldBuffer.position(6);
+		GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 40, worldBuffer);
+		GLES20.glEnableVertexAttribArray(mColorHandle);
+		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
 
-				// Bind Attributes
-				GLES20.glVertexAttribPointer(mPositionHandle, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, STRIDE, 0);
-				GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-				GLES20.glVertexAttribPointer(mNormalHandle, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, STRIDE, POSITION_DATA_SIZE_IN_ELEMENTS
-						* BYTES_PER_FLOAT);
-				GLES20.glEnableVertexAttribArray(mNormalHandle);
-
-				GLES20.glVertexAttribPointer(mColorHandle, COLOR_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, STRIDE,
-						(POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT);
-				GLES20.glEnableVertexAttribArray(mColorHandle);
-
-				// Draw
-				GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
-				GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, indexCount, GLES20.GL_UNSIGNED_SHORT, 0);
-
-				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-				GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-			}
-		}
-
-		void release() {
-			if (vbo[0] > 0) {
-				GLES20.glDeleteBuffers(vbo.length, vbo, 0);
-				vbo[0] = 0;
-			}
-
-			if (ibo[0] > 0) {
-				GLES20.glDeleteBuffers(ibo.length, ibo, 0);
-				ibo[0] = 0;
-			}
-		}
 	}
 
 }

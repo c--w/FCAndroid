@@ -80,12 +80,12 @@
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFFC0FBFF"
             android:key="sky_color"
-            android:summary="Choose color of the sky (if &apos;Fancy&apos; is on)"
+            android:summary="Choose color of the sky"
             android:title="Sky color" />
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
-            android:defaultValue="0xFFFFFFE0"
+            android:defaultValue="0xFFFFFFA0"
             android:key="ground_color"
-            android:summary="Choose ground color (if &apos;Fancy&apos; is on)"
+            android:summary="Choose ground color"
             android:title="Ground color" />
         <afzkl.development.colorpickerview.preference.ColorPickerPreference
             android:defaultValue="0xFFAAAA00"

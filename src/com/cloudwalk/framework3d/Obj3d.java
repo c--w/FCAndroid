@@ -768,19 +768,16 @@ public class Obj3d implements CameraSubject {
 		// Pass in the position information
 		verticesFB.position(mPositionOffset);
 		GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, verticesFB);
-
 		GLES20.glEnableVertexAttribArray(mPositionHandle);
 
 		// Pass in the color information
 		colorsFB.position(mColorOffset);
 		GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false, mStrideColorBytes, colorsFB);
-
 		GLES20.glEnableVertexAttribArray(mColorHandle);
 
 		// Pass in the normal information
 		normalsFB.position(mNormalOffset);
 		GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideNormalBytes, normalsFB);
-
 		GLES20.glEnableVertexAttribArray(mNormalHandle);
 
 		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3 * triangles.size());
