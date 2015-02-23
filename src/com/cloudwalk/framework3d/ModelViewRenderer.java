@@ -397,7 +397,7 @@ public class ModelViewRenderer implements GLSurfaceView.Renderer {
 	private static final int STRIDE = (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT;
 
 	class HeightMap {
-		static final int SIZE_PER_SIDE = 16;
+		static final int SIZE_PER_SIDE = 4;
 		static final float MIN_POSITION = -3000f;
 		static final float POSITION_RANGE = 4000f;
 
